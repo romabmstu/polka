@@ -1,0 +1,11 @@
+name: Feature request
+description: An idea for Polka
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: Describe the situation, not only the solution.
+    validations:
+      required: true

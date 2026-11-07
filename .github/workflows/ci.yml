@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test and build
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Select Xcode
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
+
+      - name: Versions
+        run: xcodebuild -version && swift --version
+
+      - name: Unit tests
+        run: swift test --package-path Packages/PolkaKit
+
+      - name: Generate project
+        run: brew install xcodegen && xcodegen generate
+
+      - name: Build app
+        run: |
+          xcodebuild -project Polka.xcodeproj -scheme Polka -configuration Release \
+            -derivedDataPath build -destination 'generic/platform=macOS' \
+            CODE_SIGN_IDENTITY=- -quiet build
+
+      - name: Style
+        run: swift format lint --recursive App Packages
