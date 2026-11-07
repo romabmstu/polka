@@ -29,16 +29,43 @@ jobs:
         run: xcodebuild -version && swift --version
 
       - name: Unit tests
-        run: swift test --package-path Packages/PolkaKit
+        id: tests
+        continue-on-error: true
+        run: swift test --package-path Packages/PolkaKit 2>&1 | tee test.log
 
       - name: Generate project
         run: brew install xcodegen && xcodegen generate
 
       - name: Build app
+        id: build
+        continue-on-error: true
         run: |
           xcodebuild -project Polka.xcodeproj -scheme Polka -configuration Release \
             -derivedDataPath build -destination 'generic/platform=macOS' \
-            CODE_SIGN_IDENTITY=- -quiet build
+            CODE_SIGN_IDENTITY=- -quiet build 2>&1 | tee build.log
+
+      - name: Report errors
+        if: steps.tests.outcome != 'success' || steps.build.outcome != 'success'
+        run: |
+          errors=$(cat test.log build.log 2>/dev/null | grep -E '^/.+:[0-9]+:[0-9]+: error: ' | sed "s#^$GITHUB_WORKSPACE/##" | sort -u)
+          failures=$(grep -E '✘|error: -\[|recorded an issue' test.log 2>/dev/null | head -40)
+          {
+            echo "### Compiler errors"
+            echo '```'
+            echo "${errors:-none}"
+            echo '```'
+            echo "### Test failures"
+            echo '```'
+            echo "${failures:-none}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "$errors" | head -10 | sed -E 's#^([^:]+):([0-9]+):([0-9]+): error: (.*)#::error file=\1,line=\2,col=\3::\4#'
 
       - name: Style
         run: swift format lint --recursive App Packages
+
+      - name: Result
+        if: steps.tests.outcome != 'success' || steps.build.outcome != 'success'
+        run: |
+          echo "tests: ${{ steps.tests.outcome }}, build: ${{ steps.build.outcome }}"
+          exit 1
