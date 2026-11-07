@@ -61,6 +61,25 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           echo "$errors" | head -10 | sed -E 's#^([^:]+):([0-9]+):([0-9]+): error: (.*)#::error file=\1,line=\2,col=\3::\4#'
 
+      - name: Summary
+        if: always()
+        run: |
+          tests=$(grep -E 'Test run with [0-9]+ tests|Executed [0-9]+ tests' test.log 2>/dev/null | tail -2 | tr '\n' ' ')
+          echo "::notice title=Tests::${tests:-no test summary} (outcome: ${{ steps.tests.outcome }})"
+          echo "::notice title=Build::outcome: ${{ steps.build.outcome }}"
+
+      - name: Package build
+        if: steps.build.outcome == 'success'
+        run: ditto -c -k --keepParent build/Build/Products/Release/Polka.app Polka-${{ github.sha }}.zip
+
+      - name: Upload build
+        if: steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Polka-${{ github.sha }}
+          path: Polka-${{ github.sha }}.zip
+          retention-days: 14
+
       - name: Style
         run: swift format lint --recursive App Packages
 
