@@ -7,6 +7,14 @@ struct TabsSection: View {
     @Environment(AppModel.self) private var app
     @State private var editingGroupID: UUID?
     @State private var groupName = ""
+    @State private var isCreating = false
+    @State private var creatingParent: UUID?
+
+    private func createChild(_ group: TabGroup) {
+        editingGroupID = nil
+        creatingParent = group.id
+        isCreating = true
+    }
 
     private func rename(_ group: TabGroup) {
         groupName = group.name
@@ -19,12 +27,13 @@ struct TabsSection: View {
             Placeholder(symbol: "exclamationmark.triangle", title: "Tabs are unavailable", message: LocalizedStringKey(error))
         } else {
             HStack(alignment: .top, spacing: 14) {
-                GroupList(editingGroupID: $editingGroupID, groupName: $groupName, rename: rename)
+                GroupList(editingGroupID: $editingGroupID, groupName: $groupName, isCreating: $isCreating,
+                          creatingParent: $creatingParent, rename: rename, createChild: createChild)
                     .frame(width: 196)
                 VStack(alignment: .leading, spacing: 12) {
                     CurrentPageBar()
                     if tabs.query.isEmpty {
-                        GroupDetail(rename: rename)
+                        GroupDetail(rename: rename, createChild: createChild)
                     } else {
                         SearchResults()
                     }
@@ -40,8 +49,10 @@ private struct GroupList: View {
     @Environment(AppModel.self) private var app
     @Binding var editingGroupID: UUID?
     @Binding var groupName: String
+    @Binding var isCreating: Bool
+    @Binding var creatingParent: UUID?
     let rename: (TabGroup) -> Void
-    @State private var isCreating = false
+    let createChild: (TabGroup) -> Void
     @State private var newName = ""
     @FocusState private var isSearchFocused: Bool
 
@@ -70,22 +81,27 @@ private struct GroupList: View {
                 VStack(spacing: 2) {
                     ForEach(tabs.library.orderedGroups) { group in
                         GroupRow(group: group, isSelected: tabs.selectedGroup?.id == group.id && tabs.query.isEmpty,
-                                 editingGroupID: $editingGroupID, groupName: $groupName, rename: rename)
+                                 editingGroupID: $editingGroupID, groupName: $groupName, rename: rename, createChild: createChild)
                     }
                 }
             }
             .scrollIndicators(.never)
 
             if isCreating {
+                if let parent = creatingParent.flatMap(tabs.library.group) {
+                    Text(parent.name).font(.caption).foregroundStyle(Theme.secondary).lineLimit(1)
+                }
                 GroupNameEditor(name: $newName, confirm: "Create") {
-                    tabs.createGroup(named: newName.trimmingCharacters(in: .whitespacesAndNewlines))
+                    tabs.createGroup(named: newName.trimmingCharacters(in: .whitespacesAndNewlines), parentID: creatingParent)
                     isCreating = false
+                    newName = ""
                 } cancel: {
                     isCreating = false
                 }
             } else {
                 Button {
                     editingGroupID = nil
+                    creatingParent = nil
                     newName = ""
                     isCreating = true
                 } label: {
@@ -114,7 +130,16 @@ private struct GroupRow: View {
     @Binding var editingGroupID: UUID?
     @Binding var groupName: String
     let rename: (TabGroup) -> Void
+    let createChild: (TabGroup) -> Void
     @State private var isTargeted = false
+    @State private var groupTargeted = false
+
+    private var depth: Int {
+        var current = group.parentID
+        var seen = Set<UUID>()
+        while let id = current, seen.insert(id).inserted { current = app.tabs.library.group(id)?.parentID }
+        return min(seen.count, 5)
+    }
 
     var body: some View {
         if editingGroupID == group.id {
@@ -151,20 +176,28 @@ private struct GroupRow: View {
                     .font(.system(size: 12).monospacedDigit())
                     .foregroundStyle(Theme.tertiary)
             }
-            .padding(.horizontal, 10)
+            .padding(.leading, 10 + CGFloat(depth) * 12)
+            .padding(.trailing, 10)
             .frame(height: 34)
             .background(
-                isTargeted ? Theme.accent.opacity(0.25) : (isSelected ? Color.white.opacity(0.12) : .clear),
+                (isTargeted || groupTargeted) ? Theme.accent.opacity(0.25) : (isSelected ? Color.white.opacity(0.12) : .clear),
                 in: .rect(cornerRadius: 10, style: .continuous)
             )
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .hoverHighlight(cornerRadius: 10)
+        .draggable("polka-group:\(group.id.uuidString)")
+        .dropDestination(for: String.self) { values, point in
+            guard let value = values.first, value.hasPrefix("polka-group:"),
+                  let id = UUID(uuidString: String(value.dropFirst("polka-group:".count))), id != group.id else { return false }
+            app.tabs.moveGroup(id, relativeTo: group.id, after: point.y >= 17)
+            return true
+        } isTargeted: { groupTargeted = $0 }
         .dropDestination(for: URL.self) { urls, _ in
             accept(urls)
         } isTargeted: { isTargeted = $0 }
-        .contextMenu { GroupMenu(group: group) { rename(group) } }
+        .contextMenu { GroupMenu(group: group, rename: { rename(group) }, createChild: { createChild(group) }) }
     }
 
     /// A dropped URL is either one of our own tabs being moved (it carries the
@@ -261,6 +294,7 @@ private struct CurrentPageBar: View {
 private struct GroupDetail: View {
     @Environment(AppModel.self) private var app
     let rename: (TabGroup) -> Void
+    let createChild: (TabGroup) -> Void
 
     var body: some View {
         if let group = app.tabs.selectedGroup {
@@ -272,7 +306,7 @@ private struct GroupDetail: View {
                         .foregroundStyle(Theme.tertiary)
                     Spacer()
                     Menu {
-                        GroupMenu(group: group) { rename(group) }
+                        GroupMenu(group: group, rename: { rename(group) }, createChild: { createChild(group) })
                     } label: {
                         Image(systemName: "ellipsis.circle").font(.system(size: 14, weight: .semibold))
                     }
@@ -448,10 +482,12 @@ struct GroupMenu: View {
     @Environment(AppModel.self) private var app
     let group: TabGroup
     let rename: () -> Void
+    let createChild: () -> Void
 
     var body: some View {
         let tabs = app.tabs
         Button("Rename…", action: rename)
+        Button("New Subgroup", action: createChild)
         Button {
             tabs.updateGroup(group.id) { $0.isPinned.toggle() }
         } label: {

@@ -49,7 +49,9 @@ final class NotchWindowController {
     private var screen: NSScreen?
     private var monitors: [Any] = []
     private var screenObserver: NSObjectProtocol?
+    private var windowObserver: NSObjectProtocol?
     private var hoverTask: Task<Void, Never>?
+    private var suppressHoverUntilExit = false
 
     init(model: AppModel) {
         self.model = model
@@ -71,6 +73,15 @@ final class NotchWindowController {
             forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.layout() }
+        }
+        windowObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didBecomeKeyNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, let window = NSApp.keyWindow, window !== self.panel else { return }
+                self.cancelHover()
+                self.model.panel.collapse()
+            }
         }
         observeDisplayPreference()
     }
@@ -216,7 +227,10 @@ final class NotchWindowController {
                     try? await Task.sleep(for: Self.closeDelay)
                     guard let self, !Task.isCancelled else { return }
                     self.hoverTask = nil
-                    if !self.expandedArea.contains(NSEvent.mouseLocation) { self.model.panel.collapse() }
+                    let state = self.model.panel
+                    if !state.isPinned, !state.isEditingText, !self.expandedArea.contains(NSEvent.mouseLocation) {
+                        state.collapse()
+                    }
                 }
             }
             return
@@ -226,6 +240,17 @@ final class NotchWindowController {
         if model.preferences.display == .pointer, let pointerScreen = Self.screen(at: point), pointerScreen != screen {
             cancelHover()
             layout()
+        }
+
+        if suppressHoverUntilExit {
+            if collapsedArea.contains(point) { return }
+            suppressHoverUntilExit = false
+        }
+
+        // A settings or setup window must remain usable above the shelf.
+        if NSApp.windows.contains(where: { $0 !== panel && $0.isVisible && $0.isKeyWindow }) {
+            cancelHover()
+            return
         }
 
         if isDragging, collapsedArea.contains(point) {
@@ -255,6 +280,7 @@ final class NotchWindowController {
         if state.isExpanded {
             if !state.isPinned, !expandedArea.contains(point) { state.collapse() }
         } else if collapsedArea.contains(point) {
+            suppressHoverUntilExit = false
             state.expand()
         }
     }
@@ -274,6 +300,7 @@ final class NotchWindowController {
 
     private func didCollapse() {
         cancelHover()
+        suppressHoverUntilExit = collapsedArea.contains(NSEvent.mouseLocation)
         panel.ignoresMouseEvents = true
         if panel.isKeyWindow { panel.resignKey() }
         model.panelDidCollapse()

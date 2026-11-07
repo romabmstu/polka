@@ -183,9 +183,9 @@ final class TabsModel {
     }
 
     @discardableResult
-    func createGroup(named name: String, color: GroupColor? = nil) -> UUID {
+    func createGroup(named name: String, color: GroupColor? = nil, parentID: UUID? = nil) -> UUID {
         var id = UUID()
-        mutate { id = $0.createGroup(named: name, color: color).id }
+        mutate { id = $0.createGroup(named: name, color: color, parentID: parentID).id }
         selectedGroupID = id
         return id
     }
@@ -222,11 +222,13 @@ final class TabsModel {
     // MARK: Opening
 
     func open(_ tab: SavedTab) {
+        guard URLNormalizer.isSavable(tab.url) else { return }
         mutate { $0.markOpened([tab.id]) }
         NSWorkspace.shared.open(tab.url)
     }
 
     func openInNewWindow(_ tab: SavedTab) async {
+        guard URLNormalizer.isSavable(tab.url) else { return }
         mutate { $0.markOpened([tab.id]) }
         do {
             try await browsers.open([tab.url], in: currentBrowser ?? .safari, inNewWindow: true)
@@ -236,7 +238,7 @@ final class TabsModel {
     }
 
     func openGroup(_ group: TabGroup, inNewWindow: Bool, removeAfterwards: Bool = false) async {
-        let tabs = group.sortedTabs
+        let tabs = group.sortedTabs.filter { URLNormalizer.isSavable($0.url) }
         guard !tabs.isEmpty else { return }
         mutate(undoable: removeAfterwards) { library in
             library.markOpened(tabs.map(\.id))

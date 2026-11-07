@@ -31,6 +31,38 @@ import Testing
         #expect(try await store.load().groups.count == 1)
     }
 
+    @Test func keepsPreviousLibraryBeforeSaving() async throws {
+        let store = LibraryStore(fileURL: directory.appending(path: "library.json"))
+        var library = Library()
+        library.add([PageReference(url: URL(string: "https://example.com")!)], to: library.groups[0].id)
+        try await store.save(library)
+        library.removeTab(library.groups[0].tabs[0].id)
+        try await store.save(library)
+        let recovery = directory.appending(path: "Recovery")
+        let backup = try #require(FileManager.default.contentsOfDirectory(at: recovery, includingPropertiesForKeys: nil).first)
+        let recovered = try await LibraryStore(fileURL: backup).load()
+        #expect(recovered.groups[0].tabs.count == 1)
+    }
+
+    @Test func loadsOlderLibrariesBeforeAddingNestedGroups() async throws {
+        let url = directory.appending(path: "library.json")
+        let store = LibraryStore(fileURL: url)
+        var old = Library()
+        old.add([PageReference(url: URL(string: "https://example.com")!)], to: old.groups[0].id)
+        try await store.save(old)
+        var json = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        json["version"] = 1
+        try JSONSerialization.data(withJSONObject: json).write(to: url)
+        var loaded = try await store.load()
+        let parent = loaded.groups[0].id
+        let child = loaded.createGroup(named: "Child", parentID: parent)
+        try await store.save(loaded)
+        let restored = try await store.load()
+        #expect(restored.group(parent)?.tabs.count == 1)
+        #expect(restored.group(child.id)?.parentID == parent)
+        #expect(restored.version == 2)
+    }
+
     @Test func corruptFileIsMovedAsideNotOverwritten() async throws {
         let url = directory.appending(path: "library.json")
         try Data("{ not json".utf8).write(to: url)

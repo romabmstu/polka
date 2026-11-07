@@ -51,9 +51,25 @@ public actor LibraryStore {
         let directory = fileURL.deletingLastPathComponent()
         try fileManager.createDirectory(
             at: directory, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
-        let data = try Self.makeEncoder().encode(library)
+        var updated = library
+        updated.version = Library.currentVersion
+        let data = try Self.makeEncoder().encode(updated)
+        let recovery = directory.appending(path: "Recovery", directoryHint: .isDirectory)
+        if fileManager.fileExists(atPath: fileURL.path(percentEncoded: false)) {
+            try fileManager.createDirectory(at: recovery, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+            let backup = recovery.appending(path: "auto-\(UUID().uuidString).json")
+            try fileManager.copyItem(at: fileURL, to: backup)
+            try fileManager.setAttributes([.posixPermissions: 0o600], ofItemAtPath: backup.path(percentEncoded: false))
+        }
         try data.write(to: fileURL, options: [.atomic])
         try fileManager.setAttributes([.posixPermissions: 0o600], ofItemAtPath: fileURL.path(percentEncoded: false))
+        if let files = try? fileManager.contentsOfDirectory(at: recovery, includingPropertiesForKeys: [.creationDateKey]) {
+            let backups = files.filter { $0.lastPathComponent.hasPrefix("auto-") }.sorted {
+                ((try? $0.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? .distantPast)
+                    > ((try? $1.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? .distantPast)
+            }
+            for old in backups.dropFirst(20) { try? fileManager.removeItem(at: old) }
+        }
     }
 
     private func quarantineUnreadableFile() throws {

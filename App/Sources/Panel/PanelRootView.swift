@@ -4,7 +4,6 @@ import UniformTypeIdentifiers
 
 struct PanelRootView: View {
     @Environment(AppModel.self) private var app
-    @State private var fileDropTargeted = false
 
     var body: some View {
         let panel = app.panel
@@ -14,8 +13,8 @@ struct PanelRootView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .onDrop(of: [UTType.fileURL.identifier], isTargeted: $fileDropTargeted) { providers in
-            guard panel.isExpanded, panel.section == .shelf else { return false }
+        .onDrop(of: [UTType.fileURL.identifier], isTargeted: nil) { providers in
+            guard panel.isExpanded else { return false }
             let fileProviders = providers.filter { $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) }
             for provider in fileProviders {
                 provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
@@ -24,13 +23,13 @@ struct PanelRootView: View {
                     else if let value = item as? URL { url = value }
                     else { url = nil }
                     guard let url, url.isFileURL else { return }
-                    Task { @MainActor in app.shelf.add([url]) }
+                    Task { @MainActor in
+                        app.shelf.add([url])
+                        panel.section = .shelf
+                    }
                 }
             }
             return !fileProviders.isEmpty
-        }
-        .onChange(of: fileDropTargeted) { _, targeted in
-            if targeted, panel.isExpanded { panel.section = .shelf }
         }
         .environment(\.colorScheme, .dark)
         .animation(.spring(response: 0.42, dampingFraction: 0.8), value: panel.isExpanded)
@@ -45,10 +44,10 @@ struct PanelRootView: View {
         return ZStack(alignment: .top) {
             if panel.isExpanded {
                 ExpandedPanel()
-                    .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)).animation(.easeOut(duration: 0.22).delay(0.06)))
+                    .transition(.opacity)
             } else {
                 CollapsedPanel()
-                    .transition(.opacity.animation(.easeOut(duration: 0.12)))
+                    .transition(.opacity)
             }
         }
         .frame(width: size.width, height: size.height, alignment: .top)

@@ -29,7 +29,7 @@ Polka runs with your user’s privileges and touches sensitive things (browser t
 
 **Signed updates.** The update metadata and archive are verified against the embedded Ed25519 public key. Each update ships with an `update.json` holding its size, SHA-256 and an Ed25519 signature made in CI with a key kept in GitHub secrets. Polka has the public key built in and installs nothing that does not match; it also checks that the unpacked app has the same bundle identifier and a valid code signature. Downloads are only accepted from this repository's releases.
 
-**Code identity.** When a usable project signing certificate is available, release builds use it to keep a consistent code identity. CI can fall back to ad hoc signing; in that case macOS may ask for permissions again after an update. Neither form of signing replaces Apple notarization.
+**Code identity.** Published builds require the project signing certificate; publication fails if it cannot be used. This keeps a consistent code identity across releases, although changing from an older ad hoc build may require granting permissions again. The self-signed certificate does not replace Apple notarization.
 
 **Supply chain.** One vendored component: the [MediaRemote Adapter](Vendor/MediaRemoteAdapter) (BSD 3-Clause), pinned to a reviewed commit and built from source with the app; Polka runs it inside `/usr/bin/perl` with fixed arguments. No package-manager dependencies. CI uses GitHub-hosted runners with read-only tokens; releases are built in CI from tags and carry SHA-256 checksums and build provenance attestations.
 

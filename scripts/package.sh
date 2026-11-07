@@ -18,7 +18,7 @@ minimum=$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$info")
 
 # Re-signs with the project certificate so every build keeps the same code
 # identity and macOS remembers its permissions across updates. Returns
-# non-zero instead of exiting, so a broken secret cannot block a release.
+# non-zero instead of silently changing the application's signing identity.
 sign_with_certificate() {
   local p12="$RUNNER_TEMP/polka.p12"
   local keychain="$RUNNER_TEMP/polka-signing.keychain-db"
@@ -66,16 +66,11 @@ sys.stdout.buffer.write(base64.b64decode(data + "=" * (-len(data) % 4)))
   return $status
 }
 
-if [[ -n "${CODESIGN_P12_BASE64:-}" ]]; then
-  if sign_with_certificate; then
-    echo "Signed with the project certificate"
-  else
-    # The ad hoc signature from the build is still valid; updates install,
-    # but macOS may ask for permissions again after this one.
-    echo "::warning title=Signed ad hoc::The project certificate could not be used, see the log above. Fix the CODESIGN_P12_* secrets to keep a stable code identity."
-    codesign --force --deep --sign - --options runtime --entitlements App/Polka.entitlements "$app"
-  fi
+if [[ -z "${CODESIGN_P12_BASE64:-}" ]] || ! sign_with_certificate; then
+  echo "::error title=Signing failed::The project certificate is missing or could not be used; refusing to publish a build with a different identity."
+  exit 1
 fi
+echo "Signed with the project certificate"
 codesign --verify --deep --strict "$app"
 
 name="Polka-$version-$build.zip"

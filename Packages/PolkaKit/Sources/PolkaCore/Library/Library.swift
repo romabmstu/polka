@@ -18,7 +18,7 @@ public struct Library: Codable, Equatable, Sendable {
         public init() {}
     }
 
-    public static let currentVersion = 1
+    public static let currentVersion = 2
 
     public var version: Int
     public var groups: [TabGroup]
@@ -48,7 +48,20 @@ public struct Library: Codable, Equatable, Sendable {
         case .size:
             result.sort { $0.tabs.count > $1.tabs.count }
         }
-        return result.filter(\.isPinned) + result.filter { !$0.isPinned }
+        var ordered: [TabGroup] = []
+        var visited = Set<UUID>()
+        func appendChildren(of parent: UUID?) {
+            let children = result.filter { $0.parentID == parent }
+            for group in children.filter(\.isPinned) + children.filter({ !$0.isPinned }) {
+                guard visited.insert(group.id).inserted else { continue }
+                ordered.append(group)
+                appendChildren(of: group.id)
+            }
+        }
+        appendChildren(of: nil)
+        // Preserve orphaned groups rather than hiding them.
+        for group in result where visited.insert(group.id).inserted { ordered.append(group) }
+        return ordered
     }
 
     public var defaultGroupID: UUID {
@@ -81,13 +94,14 @@ public struct Library: Codable, Equatable, Sendable {
     // MARK: Groups
 
     @discardableResult
-    public mutating func createGroup(named name: String, color: GroupColor? = nil) -> TabGroup {
+    public mutating func createGroup(named name: String, color: GroupColor? = nil, parentID: UUID? = nil) -> TabGroup {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let palette = GroupColor.allCases
-        let group = TabGroup(
+        var group = TabGroup(
             name: trimmed.isEmpty ? "Untitled" : String(trimmed.prefix(80)),
             color: color ?? palette[groups.count % palette.count]
         )
+        if let parentID, groups.contains(where: { $0.id == parentID }) { group.parentID = parentID }
         groups.insert(group, at: 0)
         lastUsedGroupID = group.id
         return group
@@ -101,6 +115,8 @@ public struct Library: Codable, Equatable, Sendable {
     }
 
     public mutating func deleteGroup(_ id: UUID) {
+        let parent = groups.first { $0.id == id }?.parentID
+        for index in groups.indices where groups[index].parentID == id { groups[index].parentID = parent }
         groups.removeAll { $0.id == id }
         ensureInbox()
     }
@@ -119,6 +135,15 @@ public struct Library: Codable, Equatable, Sendable {
             return
         }
         moving.isPinned = groups[target].isPinned
+        // Moving next to a group adopts its parent, never one of its descendants.
+        let parent = groups[target].parentID
+        var ancestor = parent
+        var seen = Set<UUID>()
+        while let current = ancestor, seen.insert(current).inserted {
+            if current == id { groups.insert(moving, at: from); return }
+            ancestor = groups.first(where: { $0.id == current })?.parentID
+        }
+        moving.parentID = parent
         groups.insert(moving, at: after ? target + 1 : target)
     }
 
@@ -167,8 +192,8 @@ public struct Library: Codable, Equatable, Sendable {
     }
 
     /// Moves a tab into `groupID`. Inside its own group this reorders and switches
-    /// the group to manual order; into another group it is appended, or dropped if
-    /// that group already has the same page.
+    /// the group to manual order. A duplicate in the destination leaves the
+    /// original untouched so its title and note cannot be lost.
     public mutating func moveTab(_ tabID: UUID, to groupID: UUID, before targetTabID: UUID? = nil) {
         guard
             let source = groups.firstIndex(where: { $0.tabs.contains { $0.id == tabID } }),
@@ -181,12 +206,8 @@ public struct Library: Codable, Equatable, Sendable {
             groups[destination].sortOrder = .manual
         }
         let current = groups[source].tabs.firstIndex(where: { $0.id == tabID }) ?? from
+        if source != destination, groups[destination].contains(groups[source].tabs[current].url) { return }
         let tab = groups[source].tabs.remove(at: current)
-
-        if source != destination, groups[destination].contains(tab.url) {
-            groups[source].updatedAt = .now
-            return
-        }
         let insertAt =
             targetTabID.flatMap { id in groups[destination].tabs.firstIndex { $0.id == id } }
             ?? groups[destination].tabs.count
@@ -219,10 +240,8 @@ public struct Library: Codable, Equatable, Sendable {
     /// version or from an edited file.
     public mutating func repair() {
         version = Self.currentVersion
-        for g in groups.indices {
-            var seen = Set<String>()
-            groups[g].tabs.removeAll { !URLNormalizer.isSavable($0.url) || !seen.insert(URLNormalizer.identity(of: $0.url)).inserted }
-        }
+        // Do not discard entries while loading: duplicates may have different
+        // titles or notes, and a later release may understand an old URL.
         ensureInbox()
     }
 }

@@ -11,6 +11,7 @@ public struct TabGroup: Identifiable, Hashable, Codable, Sendable {
 
     public var id: UUID
     public var name: String
+    public var parentID: UUID?
     public var color: GroupColor
     public var isPinned: Bool
     public var sortOrder: SortOrder

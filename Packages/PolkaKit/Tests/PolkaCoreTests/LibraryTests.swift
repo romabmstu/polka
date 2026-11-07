@@ -4,6 +4,27 @@ import Testing
 @testable import PolkaCore
 
 @Suite struct LibraryTests {
+    @Test func nestedGroupsSurviveParentDeletion() {
+        var library = Library()
+        let parent = library.createGroup(named: "Parent")
+        let child = library.createGroup(named: "Child", parentID: parent.id)
+        let grandchild = library.createGroup(named: "Grandchild", parentID: child.id)
+        library.add([PageReference(url: URL(string: "https://example.com")!)], to: child.id)
+        #expect(library.orderedGroups.firstIndex(where: { $0.id == parent.id })! < library.orderedGroups.firstIndex(where: { $0.id == child.id })!)
+        library.deleteGroup(parent.id)
+        #expect(library.group(child.id)?.parentID == nil)
+        #expect(library.group(child.id)?.tabs.count == 1)
+        #expect(library.group(grandchild.id)?.parentID == child.id)
+    }
+
+    @Test func preventsMovingParentIntoDescendant() {
+        var library = Library()
+        let parent = library.createGroup(named: "Parent")
+        let child = library.createGroup(named: "Child", parentID: parent.id)
+        library.moveGroup(parent.id, relativeTo: child.id, after: true)
+        #expect(library.group(parent.id)?.parentID == nil)
+        #expect(library.group(child.id)?.parentID == parent.id)
+    }
     private func page(_ string: String, _ title: String = "") -> PageReference {
         PageReference(url: URL(string: string)!, title: title)
     }
@@ -60,7 +81,7 @@ import Testing
         #expect(library.group(inbox)?.tabs.map(\.title) == ["C", "A", "B"])
     }
 
-    @Test func movingTabIntoGroupWithSamePageDropsIt() {
+    @Test func movingTabIntoGroupWithSamePageKeepsOriginal() {
         var library = Library()
         let inbox = library.groups[0].id
         let work = library.createGroup(named: "Work").id
@@ -70,7 +91,7 @@ import Testing
 
         library.moveTab(tab.id, to: work)
 
-        #expect(library.group(inbox)?.tabs.isEmpty == true)
+        #expect(library.group(inbox)?.tabs.count == 1)
         #expect(library.group(work)?.tabs.count == 1)
     }
 
@@ -89,11 +110,11 @@ import Testing
         #expect(hits.first?.tabs.map(\.title) == ["Swift blog"])
     }
 
-    @Test func repairRemovesDuplicatesFromEditedFiles() {
+    @Test func repairPreservesDuplicateEntriesFromEditedFiles() {
         var library = Library()
         let tab = SavedTab(title: "x", url: URL(string: "https://x.com")!)
         library.groups[0].tabs = [tab, SavedTab(title: "x again", url: URL(string: "https://X.com/")!)]
         library.repair()
-        #expect(library.groups[0].tabs.count == 1)
+        #expect(library.groups[0].tabs.count == 2)
     }
 }
