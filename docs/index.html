@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polka — a control center in your MacBook’s notch</title>
+<meta name="description" content="Saved tabs, VPN, music, your next meeting, a calculator and a clipboard — one hover away. Free and open source for macOS.">
+<meta property="og:title" content="Polka">
+<meta property="og:description" content="A control center that lives in your MacBook’s notch.">
+<meta property="og:image" content="https://romabmstu.github.io/polka/assets/icon.png">
+<link rel="icon" href="assets/icon.png">
+<style>
+:root {
+  --bg: #07070a;
+  --fg: #f5f5f7;
+  --muted: #a1a1aa;
+  --dim: #6e6e78;
+  --card: #111114;
+  --line: rgba(255,255,255,.08);
+  --green: #30d158;
+  --blue: #6aa3ff;
+  --orange: #ff9f0a;
+}
+* { box-sizing: border-box; }
+html { color-scheme: dark; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--fg); }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+header.nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 17px; text-decoration: none; }
+.brand img { width: 30px; height: 30px; }
+.nav-links { display: flex; gap: 22px; align-items: center; font-size: 14px; }
+.nav-links a { text-decoration: none; color: var(--muted); }
+.nav-links a:hover { color: var(--fg); }
+.lang { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; }
+
+.hero { text-align: center; padding: 60px 0 40px; }
+.hero h1 { font-size: clamp(38px, 6vw, 64px); line-height: 1.05; letter-spacing: -.03em; margin: 0 0 18px; font-weight: 700; }
+.hero p { font-size: clamp(17px, 2vw, 20px); color: var(--muted); max-width: 640px; margin: 0 auto 30px; }
+.cta { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: 23px; font-weight: 600; font-size: 15px; text-decoration: none; transition: transform .12s, background .15s; }
+.btn:active { transform: scale(.97); }
+.btn.primary { background: var(--fg); color: #000; }
+.btn.primary:hover { background: #fff; }
+.btn.ghost { background: rgba(255,255,255,.08); color: var(--fg); }
+.btn.ghost:hover { background: rgba(255,255,255,.14); }
+.small { color: var(--dim); font-size: 13px; margin-top: 14px; }
+
+/* Demo */
+.screen {
+  position: relative; margin: 56px auto 0; max-width: 980px; aspect-ratio: 16 / 9.4; border-radius: 22px; overflow: hidden;
+  background: radial-gradient(900px 500px at 80% 120%, #233766 0%, transparent 60%), radial-gradient(700px 500px at 0% -20%, #3a2a55 0%, transparent 55%), #0c0e14;
+  box-shadow: 0 50px 120px rgba(0,0,0,.6), inset 0 0 0 1px var(--line);
+}
+.menubar { position: absolute; inset: 0 0 auto; height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 12.5px; color: #e8e8ed; background: rgba(0,0,0,.35); }
+.menubar span + span { margin-left: 16px; }
+.notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 200px; height: 30px; background: #000; border-radius: 0 0 12px 12px;
+  transition: width .5s cubic-bezier(.3,1.3,.45,1), height .5s cubic-bezier(.3,1.3,.45,1), border-radius .4s;
+  overflow: hidden; cursor: pointer;
+}
+.notch::before, .notch::after { content: ""; position: absolute; top: 0; width: 10px; height: 10px; }
+.notch.open { width: min(720px, 86%); height: 62%; border-radius: 0 0 30px 30px; box-shadow: 0 30px 70px rgba(0,0,0,.55); }
+.wings { position: absolute; inset: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; font-size: 11px; font-weight: 600; transition: opacity .2s; }
+.notch.open .wings { opacity: 0; }
+.panel { position: absolute; inset: 0; padding: 40px 20px 20px; opacity: 0; transition: opacity .25s .12s; display: grid; grid-template-columns: 1.4fr 1fr 1fr; grid-template-rows: 1fr auto; gap: 12px; }
+.notch.open .panel { opacity: 1; }
+.pc { background: #121215; border-radius: 16px; padding: 14px; box-shadow: inset 0 0 0 1px var(--line); text-align: left; }
+.pc .lbl { font-size: 10px; color: var(--dim); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.pc .big { font-size: 17px; font-weight: 650; margin-top: 8px; }
+.pc .sub { font-size: 12px; color: var(--muted); }
+.scen { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.scen div { background: #121215; border-radius: 14px; padding: 12px; font-size: 13px; font-weight: 600; box-shadow: inset 0 0 0 1px var(--line); text-align: left; }
+.hint { position: absolute; top: 46px; left: 50%; transform: translateX(-50%); background: rgba(245,245,247,.95); color: #000; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 14px; animation: bob 2s ease-in-out infinite; transition: opacity .2s; }
+.screen.touched .hint { opacity: 0; }
+@keyframes bob { 50% { transform: translate(-50%, 4px); } }
+
+/* Features */
+section { padding: 90px 0 0; }
+h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -.02em; margin: 0 0 12px; }
+.lead { color: var(--muted); font-size: 18px; max-width: 620px; margin: 0 0 40px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.feature { background: var(--card); border-radius: 20px; padding: 22px; box-shadow: inset 0 0 0 1px var(--line); }
+.feature h3 { margin: 12px 0 6px; font-size: 17px; }
+.feature p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.ico { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: rgba(255,255,255,.07); }
+.ico svg { width: 20px; height: 20px; }
+.privacy { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+.privacy div { border-top: 1px solid var(--line); padding-top: 16px; }
+.privacy b { display: block; margin-bottom: 6px; }
+.privacy span { color: var(--muted); font-size: 14.5px; }
+pre { background: var(--card); border-radius: 14px; padding: 16px 18px; overflow-x: auto; font: 13.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; box-shadow: inset 0 0 0 1px var(--line); }
+footer { padding: 80px 0 50px; color: var(--dim); font-size: 13.5px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+footer a { color: var(--muted); }
+[data-lang="ru"] .en, [data-lang="en"] .ru { display: none; }
+@media (max-width: 720px) {
+  .nav-links a.hide-sm { display: none; }
+  .panel { grid-template-columns: 1fr; padding-top: 36px; }
+  .panel .pc:nth-child(n+2), .scen { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body data-lang="en">
+<div class="wrap">
+  <header class="nav">
+    <a class="brand" href="#"><img src="assets/icon.png" alt="">Polka</a>
+    <nav class="nav-links">
+      <a class="hide-sm" href="#features"><span class="en">Features</span><span class="ru">Возможности</span></a>
+      <a class="hide-sm" href="#privacy"><span class="en">Privacy</span><span class="ru">Приватность</span></a>
+      <a href="https://github.com/romabmstu/polka">GitHub</a>
+      <button class="lang" id="lang" type="button">RU</button>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1><span class="en">Your notch,<br>finally useful.</span><span class="ru">Чёлка, которая<br>наконец полезна.</span></h1>
+    <p>
+      <span class="en">Saved tabs, VPN, music, your next meeting, a calculator and a clipboard — one hover away. Free and open source.</span>
+      <span class="ru">Сохранённые вкладки, VPN, музыка, ближайшая встреча, калькулятор и буфер — на расстоянии одного движения мыши. Бесплатно и с открытым кодом.</span>
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/romabmstu/polka/releases/latest">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10"/></svg>
+        <span class="en">Download for macOS</span><span class="ru">Скачать для macOS</span>
+      </a>
+      <a class="btn ghost" href="https://github.com/romabmstu/polka"><span class="en">View source</span><span class="ru">Исходный код</span></a>
+    </div>
+    <div class="small"><span class="en">macOS 14 Sonoma or later · Apple silicon and Intel</span><span class="ru">macOS 14 Sonoma или новее · Apple silicon и Intel</span></div>
+
+    <div class="screen" id="screen">
+      <div class="menubar"><div><b>Safari</b><span class="en">&nbsp; File &nbsp; Edit &nbsp; View</span><span class="ru">&nbsp; Файл &nbsp; Правка &nbsp; Вид</span></div><div id="clock"></div></div>
+      <div class="notch" id="notch" role="button" tabindex="0" aria-label="Open the demo panel">
+        <div class="wings">
+          <span style="color:var(--blue)">● 12 <span class="en">min</span><span class="ru">мин</span></span>
+          <span style="color:var(--green)">◆</span>
+        </div>
+        <div class="panel">
+          <div class="pc"><div class="lbl"><span class="en">Music</span><span class="ru">Музыка</span></div><div class="big">Yandex Music</div><div class="sub">◀◀ &nbsp; ❚❚ &nbsp; ▶▶</div></div>
+          <div class="pc" style="box-shadow: inset 0 0 0 1.5px var(--green)"><div class="lbl">VPN</div><div class="big" style="color:var(--green)"><span class="en">Protected</span><span class="ru">Защищено</span></div><div class="sub">Happ</div></div>
+          <div class="pc"><div class="lbl"><span class="en">Up next</span><span class="ru">Следующее</span></div><div class="big" style="color:var(--blue)"><span class="en">In 12 min</span><span class="ru">Через 12 мин</span></div><div class="sub"><span class="en">Design review</span><span class="ru">Обсуждение макетов</span></div></div>
+          <div class="scen">
+            <div><span class="en">Work</span><span class="ru">Работа</span></div>
+            <div><span class="en">Call</span><span class="ru">Созвон</span></div>
+            <div><span class="en">Focus</span><span class="ru">Фокус</span></div>
+            <div><span class="en">Evening</span><span class="ru">Вечер</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="hint"><span class="en">Point here ↑</span><span class="ru">Наведите сюда ↑</span></div>
+    </div>
+  </div>
+
+  <section id="features">
+    <h2><span class="en">Everything you reach for, in one place</span><span class="ru">Всё, за чем вы тянетесь, — в одном месте</span></h2>
+    <p class="lead"><span class="en">Open the panel by pointing at the notch or pressing ⌥⇧K. On displays without a notch, Polka is a small capsule under the menu bar.</span><span class="ru">Панель открывается наведением на чёлку или по ⌥⇧K. На мониторах без чёлки Polka — небольшая капсула под строкой меню.</span></p>
+    <div class="grid">
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#6aa3ff" stroke-width="1.6"><rect x="3" y="6" width="11" height="11" rx="2.5"/><path d="M6 3.5h8.5A2.5 2.5 0 0 1 17 6v8.5"/></svg></div>
+        <h3><span class="en">Tab groups</span><span class="ru">Группы вкладок</span></h3>
+        <p><span class="en">Save the open Safari tab with ⌥⇧S, drag links in, paste whole lists. Sort, search, open a group in a new window.</span><span class="ru">Сохраняйте вкладку Safari по ⌥⇧S, перетаскивайте ссылки, вставляйте списки. Сортировка, поиск, открытие группы в новом окне.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#30d158" stroke-width="1.6"><path d="M10 2.5 16 5v4.5c0 3.6-2.6 6.2-6 7.5-3.4-1.3-6-3.9-6-7.5V5z"/></svg></div>
+        <h3>VPN</h3>
+        <p><span class="en">Every VPN registered with macOS — WireGuard, Happ, V2Box, L2TP — with a switch. One on, the rest off.</span><span class="ru">Все VPN, зарегистрированные в macOS — WireGuard, Happ, V2Box, L2TP — с переключателем. Один включён, остальные выключены.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#ff6b9a" stroke-width="1.6"><circle cx="6" cy="15" r="2.3"/><circle cx="15" cy="13" r="2.3"/><path d="M8.3 15V5l9-2v10"/></svg></div>
+        <h3><span class="en">Music</span><span class="ru">Музыка</span></h3>
+        <p><span class="en">Play, pause and skip for whatever is playing — Yandex Music, Music, Spotify or a video in the browser.</span><span class="ru">Пауза и переключение треков для того, что играет: Яндекс Музыка, Музыка, Spotify или видео в браузере.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#6aa3ff" stroke-width="1.6"><rect x="3" y="4" width="14" height="13" rx="2.5"/><path d="M3 8h14M7 2.5v3M13 2.5v3"/></svg></div>
+        <h3><span class="en">Next meeting</span><span class="ru">Ближайшая встреча</span></h3>
+        <p><span class="en">A countdown in the closed notch and a Join button for Meet, Zoom, Teams, Telemost and more.</span><span class="ru">Обратный отсчёт прямо в чёлке и кнопка входа для Meet, Zoom, Teams, Телемоста и других.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#ff9f0a" stroke-width="1.6"><rect x="4" y="2.5" width="12" height="15" rx="2.5"/><path d="M7 6h6M7 10h.01M10 10h.01M13 10h.01M7 13.5h.01M10 13.5h.01M13 13.5h.01"/></svg></div>
+        <h3><span class="en">Calculator and currencies</span><span class="ru">Калькулятор и валюты</span></h3>
+        <p><span class="en">Type 1250 × 1.2 + 15% and see the answer as you type. Convert between your currencies.</span><span class="ru">Пишете 1250 × 1,2 + 15% — ответ появляется сразу. Пересчёт между вашими валютами.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#bf5af2" stroke-width="1.6"><path d="M10 3v14M3 10h14" stroke-linecap="round"/><circle cx="10" cy="10" r="7.5"/></svg></div>
+        <h3><span class="en">Scenarios</span><span class="ru">Сценарии</span></h3>
+        <p><span class="en">“Work” connects the VPN, opens your work tabs and starts music. One click, any combination.</span><span class="ru">«Работа» подключает VPN, открывает рабочие вкладки и включает музыку. Один клик, любые сочетания.</span></p></div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <h2><span class="en">Stays on your Mac</span><span class="ru">Всё остаётся на вашем Mac</span></h2>
+    <p class="lead"><span class="en">No account, no analytics, no telemetry. The code is open, so you don’t have to take our word for it.</span><span class="ru">Ни аккаунта, ни аналитики, ни телеметрии. Код открыт — можно не верить на слово, а проверить.</span></p>
+    <div class="privacy">
+      <div><b><span class="en">One optional request</span><span class="ru">Один необязательный запрос</span></b><span><span class="en">Exchange rates, only if you turn them on. Nothing else touches the network.</span><span class="ru">Курсы валют, и только если вы их включите. Больше ничего не идёт в сеть.</span></span></div>
+      <div><b><span class="en">Passwords skipped</span><span class="ru">Пароли пропускаются</span></b><span><span class="en">Clipboard history lives in memory and ignores anything a password manager marks as concealed.</span><span class="ru">История буфера живёт в памяти и не трогает то, что менеджер паролей пометил как скрытое.</span></span></div>
+      <div><b><span class="en">Verifiable builds</span><span class="ru">Проверяемые сборки</span></b><span><span class="en">Every release is built by GitHub Actions and carries a signed provenance attestation.</span><span class="ru">Каждый релиз собирается в GitHub Actions и сопровождается подписанной аттестацией происхождения.</span></span></div>
+    </div>
+  </section>
+
+  <section id="install">
+    <h2><span class="en">Install</span><span class="ru">Установка</span></h2>
+    <p class="lead"><span class="en">Download the latest release, move Polka to Applications and run once:</span><span class="ru">Скачайте последний релиз, перенесите Polka в «Программы» и один раз выполните:</span></p>
+    <pre>xattr -dr com.apple.quarantine /Applications/Polka.app</pre>
+    <p class="small"><span class="en">Needed because the app is not notarized yet. Prefer to build it yourself? See the README.</span><span class="ru">Нужно, потому что приложение пока не нотаризовано. Хотите собрать сами? Инструкция в README.</span></p>
+  </section>
+
+  <footer>
+    <span>© 2026 romabmstu · <span class="en">MIT License</span><span class="ru">Лицензия MIT</span></span>
+    <span><a href="https://github.com/romabmstu/polka">GitHub</a> · <a href="https://github.com/romabmstu/polka/issues"><span class="en">Issues</span><span class="ru">Вопросы и ошибки</span></a></span>
+  </footer>
+</div>
+<script>
+(() => {
+  const body = document.body;
+  let saved = null;
+  try { saved = localStorage.getItem('polka-lang'); } catch (e) {}
+  const browserLang = (navigator.language || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en';
+  const lang = saved === 'ru' || saved === 'en' ? saved : browserLang;
+  const apply = l => {
+    body.dataset.lang = l;
+    document.documentElement.lang = l;
+    document.getElementById('lang').textContent = l === 'ru' ? 'EN' : 'RU';
+  };
+  apply(lang);
+  document.getElementById('lang').addEventListener('click', () => {
+    const next = body.dataset.lang === 'ru' ? 'en' : 'ru';
+    try { localStorage.setItem('polka-lang', next); } catch (e) {}
+    apply(next);
+  });
+
+  const notch = document.getElementById('notch');
+  const screen = document.getElementById('screen');
+  let timer;
+  const open = () => { clearTimeout(timer); notch.classList.add('open'); screen.classList.add('touched'); };
+  const close = () => { timer = setTimeout(() => notch.classList.remove('open'), 300); };
+  notch.addEventListener('mouseenter', open);
+  notch.addEventListener('mouseleave', close);
+  notch.addEventListener('click', () => notch.classList.contains('open') ? notch.classList.remove('open') : open());
+  notch.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); notch.classList.toggle('open'); screen.classList.add('touched'); } });
+
+  const clock = document.getElementById('clock');
+  const tick = () => { clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
+  tick(); setInterval(tick, 30000);
+})();
+</script>
+</body>
+</html>
