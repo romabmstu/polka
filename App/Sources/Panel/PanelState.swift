@@ -20,7 +20,16 @@ final class PanelState {
     }
 
     static let expandedSize = CGSize(width: 760, height: 420)
-    static let pillWidth: CGFloat = 180
+    /// The capsule sits inside the menu bar with this much air above and below.
+    static let pillInset: CGFloat = 3.5
+    /// Hover target for the capsule, wider than the capsule itself.
+    static let pillHitWidth: CGFloat = 150
+    /// Gap between the menu bar and the open panel on displays without a notch.
+    static let pillPanelGap: CGFloat = 6
+
+    static func pillHeight(menuBar: CGFloat) -> CGFloat {
+        max(16, menuBar - 2 * pillInset)
+    }
 
     private(set) var isExpanded = false
     private(set) var isPinned = false

@@ -108,7 +108,7 @@ final class NotchWindowController {
 
         let expanded = PanelState.expandedSize
         let width = expanded.width + Self.shadowMargin * 2
-        let height = expanded.height + Self.topOffset(for: style) + Self.shadowMargin
+        let height = expanded.height + Self.topOffset(for: style, expanded: true) + Self.shadowMargin
         let frame = NSRect(
             x: (screen.frame.midX - width / 2).rounded(),
             y: screen.frame.maxY - height,
@@ -144,10 +144,14 @@ final class NotchWindowController {
         return .pill(menuBarHeight: menuBar)
     }
 
-    static func topOffset(for style: PanelState.Style) -> CGFloat {
+    /// Distance from the top of the screen to the panel surface. On displays
+    /// without a notch the closed capsule is centered in the menu bar and the
+    /// open panel drops down just below it.
+    static func topOffset(for style: PanelState.Style, expanded: Bool) -> CGFloat {
         switch style {
         case .notch: 0
-        case .pill: 0
+        case .pill(let menuBar):
+            expanded ? menuBar + PanelState.pillPanelGap : PanelState.pillInset
         }
     }
 
@@ -161,9 +165,9 @@ final class NotchWindowController {
             return NSRect(x: screen.frame.midX - w / 2, y: screen.frame.maxY - height - 2, width: w, height: height + 2)
         case .pill(let menuBar):
             return NSRect(
-                x: screen.frame.midX - PanelState.pillWidth / 2 - 8,
+                x: screen.frame.midX - PanelState.pillHitWidth / 2,
                 y: screen.frame.maxY - menuBar,
-                width: PanelState.pillWidth + 16,
+                width: PanelState.pillHitWidth,
                 height: menuBar
             )
         }
@@ -172,7 +176,7 @@ final class NotchWindowController {
     private var expandedArea: NSRect {
         guard let screen else { return .zero }
         let size = PanelState.expandedSize
-        let top = Self.topOffset(for: model.panel.style)
+        let top = Self.topOffset(for: model.panel.style, expanded: true)
         return NSRect(
             x: screen.frame.midX - size.width / 2,
             y: screen.frame.maxY - top - size.height,

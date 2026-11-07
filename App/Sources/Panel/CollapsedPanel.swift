@@ -65,23 +65,53 @@ struct CollapsedPanel: View {
 
     // MARK: Pill
 
+    /// Width of the capsule for what it currently shows, so it stays small.
+    static func pillWidth(_ app: AppModel) -> CGFloat {
+        var width: CGFloat = 20
+        if showsMusic(app) { width += 14 + 8 + 12 + 8 }
+        if upcomingMeeting(app) != nil { width += 50 + 8 }
+        if showsVPN(app) { width += 12 + 8 }
+        return width == 20 ? 44 : width - 8
+    }
+
+    @ViewBuilder
     private var pillContent: some View {
-        HStack(spacing: 8) {
+        Group {
             if let flash = app.panel.flash {
-                Image(systemName: flash.symbol)
-                Text(flash.text).lineLimit(1)
+                HStack(spacing: 6) {
+                    Image(systemName: flash.symbol)
+                    Text(flash.text).lineLimit(1)
+                }
+                .font(.system(size: 11.5, weight: .semibold))
+            } else if Self.hasActivity(app) {
+                HStack(spacing: 8) {
+                    if Self.showsMusic(app) {
+                        ArtworkView(size: 14, cornerRadius: 3.5)
+                        Image(systemName: "waveform")
+                            .font(.system(size: 10.5, weight: .bold))
+                            .symbolEffect(.variableColor.iterative, isActive: true)
+                    }
+                    if let meeting = Self.upcomingMeeting(app) {
+                        MeetingBadge(meeting: meeting, now: app.agenda.now, compact: true)
+                    }
+                    if Self.showsVPN(app), let active = app.vpn.active {
+                        Image(systemName: active.status == .connected ? "lock.shield.fill" : "lock.shield")
+                            .font(.system(size: 10.5, weight: .semibold))
+                            .foregroundStyle(Theme.active)
+                            .symbolEffect(.pulse, isActive: active.status == .connecting)
+                            .help(Text(active.name))
+                    }
+                }
             } else {
-                Image(systemName: "square.on.square")
-                    .foregroundStyle(Theme.secondary)
-                leadingStatus
-                Spacer(minLength: 0)
-                trailingStatus
+                // Idle: a small handle that hints "pull me down".
+                Capsule()
+                    .fill(Color.white.opacity(0.55))
+                    .frame(width: 16, height: 3.5)
             }
         }
-        .font(.system(size: 12, weight: .semibold))
         .foregroundStyle(.white)
-        .padding(.horizontal, 14)
-        .frame(maxHeight: .infinity)
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: Status pieces
@@ -121,6 +151,7 @@ struct CollapsedPanel: View {
 private struct MeetingBadge: View {
     let meeting: AgendaItem
     let now: Date
+    var compact = false
 
     var body: some View {
         let minutes = max(0, Int(meeting.start.timeIntervalSince(now) / 60))
@@ -131,7 +162,7 @@ private struct MeetingBadge: View {
             Text(happening ? String(localized: "now") : String(localized: "\(minutes) min"))
                 .monospacedDigit()
         }
-        .font(.system(size: 11.5, weight: .semibold))
+        .font(.system(size: compact ? 10.5 : 11.5, weight: .semibold))
         .foregroundStyle(.white)
     }
 }

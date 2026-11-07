@@ -8,7 +8,7 @@ struct PanelRootView: View {
         let panel = app.panel
         VStack(spacing: 0) {
             surface
-                .padding(.top, NotchWindowController.topOffset(for: panel.style))
+                .padding(.top, NotchWindowController.topOffset(for: panel.style, expanded: panel.isExpanded))
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -32,10 +32,10 @@ struct PanelRootView: View {
             }
         }
         .frame(width: size.width, height: size.height, alignment: .top)
-        .background(panel.hasNotch ? Color.black : Color.black.opacity(0.9))
+        .background(panel.hasNotch ? Color.black : Color.black.opacity(panel.isExpanded ? 0.94 : 0.78))
         .clipShape(shape)
         .overlay {
-            if !panel.hasNotch { shape.stroke(Color.white.opacity(0.12), lineWidth: 1) }
+            if !panel.hasNotch { shape.stroke(Color.white.opacity(panel.isExpanded ? 0.12 : 0.16), lineWidth: 0.75) }
         }
         .shadow(color: .black.opacity(panel.isExpanded ? 0.5 : 0), radius: panel.isExpanded ? 26 : 0, y: 10)
         .contentShape(shape)
@@ -65,8 +65,11 @@ struct PanelRootView: View {
             }
             let wings = CollapsedPanel.hasActivity(app) ? 2 * PanelMetrics.wingWidth : 0
             return CGSize(width: width + shoulders + wings, height: height)
-        case .pill(let menuBarHeight):
-            return CGSize(width: PanelState.pillWidth, height: menuBarHeight)
+        case .pill(let menuBar):
+            // Only as wide as what it shows: a small handle when idle.
+            let height = PanelState.pillHeight(menuBar: menuBar)
+            if panel.flash != nil { return CGSize(width: 230, height: height) }
+            return CGSize(width: CollapsedPanel.pillWidth(app), height: height)
         }
     }
 }
