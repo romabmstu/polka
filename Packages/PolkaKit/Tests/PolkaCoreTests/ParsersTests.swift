@@ -160,15 +160,19 @@ import Testing
     @Test func keepsImagesApartFromTextAndCapsThem() {
         var history = ClipboardHistory(capacity: 30)
         let picture = ClipboardImage(png: Data([1, 2, 3]), pixelWidth: 10, pixelHeight: 5)
-        #expect(history.record(picture))
+        let recorded = history.record(picture)
+        #expect(recorded)
         history.record("hello")
         history.record(picture)
         #expect(history.entries.count == 2)
         #expect(history.entries[0].kind == .image)
         #expect(history.entries[1].text == "hello")
 
-        #expect(!history.record(ClipboardImage(png: Data(), pixelWidth: 1, pixelHeight: 1)))
-        #expect(!history.record(ClipboardImage(png: Data(count: ClipboardHistory.maximumImageBytes + 1), pixelWidth: 1, pixelHeight: 1)))
+        let empty = history.record(ClipboardImage(png: Data(), pixelWidth: 1, pixelHeight: 1))
+        let huge = history.record(
+            ClipboardImage(png: Data(count: ClipboardHistory.maximumImageBytes + 1), pixelWidth: 1, pixelHeight: 1))
+        #expect(!empty)
+        #expect(!huge)
 
         history.togglePin(history.entries[0].id)
         for byte in 10..<30 {

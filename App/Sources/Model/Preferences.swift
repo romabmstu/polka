@@ -139,8 +139,8 @@ final class Preferences {
         static let musicIndicator = "showMusicIndicator"
         static let closeAfterOpen = "closeAfterOpeningTab"
         static let vpnApps = "vpnApps"
-        static let askWhereToSave = ""askWhereToSave"
-        static let hiddenCalendars = ""hiddenCalendarIDs"
+        static let askWhereToSave = "askWhereToSave"
+        static let hiddenCalendars = "hiddenCalendarIDs"
         static let updateChannel = "updateChannel"
         static let autoUpdate = "checkForUpdatesAutomatically"
     }
