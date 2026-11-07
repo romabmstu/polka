@@ -58,6 +58,7 @@ final class NotchWindowController {
         panel.onCancel = { [weak self] in self?.model.panel.collapse() }
         model.panel.onExpand = { [weak self] in self?.didExpand() }
         model.panel.onCollapse = { [weak self] in self?.didCollapse() }
+        model.panel.openForKeyboard = { [weak self] in self?.openForKeyboard() }
     }
 
     func show() {
@@ -76,10 +77,14 @@ final class NotchWindowController {
         if model.panel.isExpanded {
             model.panel.collapse()
         } else {
-            layout()
-            model.panel.expand(pinned: true)
-            panel.makeKey()
+            openForKeyboard()
         }
+    }
+
+    private func openForKeyboard() {
+        if !model.panel.isExpanded { layout() }
+        model.panel.expand(pinned: true)
+        panel.makeKey()
     }
 
     // MARK: Layout

@@ -151,7 +151,7 @@ private struct GroupRow: View {
     }
 }
 
-// MARK: - Current Safari tab
+// MARK: - Current browser tab
 
 private struct CurrentPageBar: View {
     @Environment(AppModel.self) private var app
@@ -159,30 +159,37 @@ private struct CurrentPageBar: View {
     var body: some View {
         let tabs = app.tabs
         HStack(spacing: 12) {
-            switch tabs.safariState {
-            case .notAuthorized:
+            switch tabs.browserState {
+            case .notAuthorized(let browser):
                 Image(systemName: "hand.raised.fill").foregroundStyle(Theme.warning)
-                Text("Allow Polka to control Safari to save the open tab.")
+                Text("Allow Polka to control \(browser.name) to save the open tab.")
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.secondary)
                 Spacer()
                 Button("Open Settings") { SystemSettings.open(.automation) }
                     .buttonStyle(CapsuleButtonStyle())
-            case .ready where tabs.currentPage != nil:
+            case .ready(let browser) where tabs.currentPage != nil:
                 if let page = tabs.currentPage {
                     SiteBadge(site: URLNormalizer.readableForm(of: page.url), size: 28)
                     VStack(alignment: .leading, spacing: 1) {
-                        CardLabel("Open in Safari")
+                        CardLabel("Open in \(browser.name)")
                         Text(page.title.isEmpty ? URLNormalizer.readableForm(of: page.url) : page.title)
                             .font(.system(size: 13, weight: .semibold))
                             .lineLimit(1)
                     }
                     Spacer(minLength: 8)
                     saveButton(for: page)
+                    Button {
+                        app.saveFromBrowser()
+                    } label: {
+                        Image(systemName: "folder.badge.plus")
+                    }
+                    .buttonStyle(IconButtonStyle(size: 30))
+                    .help(Text("Choose where to save, or save the whole window"))
                 }
             default:
-                Image(systemName: "safari").foregroundStyle(Theme.tertiary)
-                Text("Open a page in Safari to save it here, or drag a link onto a group.")
+                Image(systemName: "globe").foregroundStyle(Theme.tertiary)
+                Text("Open a page in Safari, Chrome or Arc to save it here, or drag a link onto a group.")
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.secondary)
                 Spacer()
@@ -248,7 +255,7 @@ private struct GroupDetail: View {
                     Placeholder(
                         symbol: "square.dashed",
                         title: "Nothing here yet",
-                        message: "Save the open Safari tab, drag links onto this group or press ⌘V to paste a list of links.")
+                        message: "Save the open browser tab, drag links onto this group or press ⌘V to paste a list of links.")
                 } else {
                     TabGrid(group: group, tabs: group.sortedTabs)
                 }
@@ -364,7 +371,7 @@ private struct TabTile: View {
     private var menu: some View {
         Button("Open") { app.tabs.open(tab) }
         Button("Open in New Window") {
-            Task { try? await SafariBridge().open([tab.url], inNewWindow: true) }
+            Task { await app.tabs.openInNewWindow(tab) }
         }
         Divider()
         Button("Edit…") { isEditing = true }

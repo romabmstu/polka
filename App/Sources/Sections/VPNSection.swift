@@ -1,4 +1,5 @@
 import PolkaCore
+import UniformTypeIdentifiers
 import SwiftUI
 
 struct VPNSection: View {
@@ -11,12 +12,16 @@ struct VPNSection: View {
         if !vpn.hasLoaded {
             ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if vpn.connections.isEmpty {
-            Placeholder(
-                symbol: "lock.shield",
-                title: "No VPN connections found",
-                message:
-                    "Polka controls VPNs registered in System Settings › VPN. If your client doesn’t appear there, connect once in the client itself so it can add its configuration."
-            )
+            VStack(spacing: 14) {
+                Placeholder(
+                    symbol: "lock.shield",
+                    title: "No VPN connections found",
+                    message:
+                        "Polka controls VPNs registered in System Settings › VPN and proxy apps such as FSNT Client. If your client doesn’t appear, connect once in it, or add the app."
+                )
+                Button("Add VPN App…") { VPNAppPicker.run(app) }
+                    .buttonStyle(CapsuleButtonStyle())
+            }
         } else {
             VStack(alignment: .leading, spacing: 12) {
                 ScrollView {
@@ -47,6 +52,13 @@ struct VPNSection: View {
             }
             Spacer()
             Text("Only one VPN stays on at a time").foregroundStyle(Theme.tertiary)
+            Button {
+                VPNAppPicker.run(app)
+            } label: {
+                Image(systemName: "plus")
+            }
+            .buttonStyle(IconButtonStyle(size: 26))
+            .help(Text("Add a VPN app that is not listed, such as a proxy client"))
             if vpn.active != nil {
                 Button("Disconnect") { Task { await vpn.setActive(nil) } }
                     .buttonStyle(CapsuleButtonStyle())
@@ -116,7 +128,12 @@ private struct ConnectionTile: View {
             case .connecting: Text("Connecting…")
             case .disconnecting: Text("Disconnecting…")
             case .invalid: Text("Configuration is invalid")
-            case .disconnected, .unknown: Text("Off")
+            case .disconnected, .unknown:
+                if connection.isAppManaged, let id = connection.providerBundleID, vpn.runningApps.contains(id) {
+                    Text("Open, not connected")
+                } else {
+                    Text("Off")
+                }
             }
         }
         .font(.system(size: 12.5, weight: .medium).monospacedDigit())
@@ -137,6 +154,27 @@ private struct AppIcon: View {
                 .font(.system(size: 18))
                 .frame(width: 38, height: 38)
                 .background(Theme.cardHover, in: .rect(cornerRadius: 10, style: .continuous))
+        }
+    }
+}
+
+/// Lets the user point Polka at a VPN client it does not recognize.
+@MainActor
+enum VPNAppPicker {
+    static func run(_ app: AppModel) {
+        // The notch panel floats above everything, including this sheet.
+        app.panel.collapse()
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.application]
+        panel.directoryURL = URL(filePath: "/Applications")
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.prompt = String(localized: "Add")
+        panel.message = String(localized: "Choose a VPN app. Polka turns it on by opening it and off by quitting it.")
+        NSApp.activate()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        if !app.vpn.addApp(at: url) {
+            NSSound.beep()
         }
     }
 }

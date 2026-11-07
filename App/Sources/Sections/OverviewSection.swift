@@ -32,7 +32,7 @@ private struct WelcomeBanner: View {
             Image(systemName: "hand.wave.fill").foregroundStyle(Theme.warning)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Welcome to Polka").font(.system(size: 13, weight: .semibold))
-                Text("Point at the notch to open it, move away to close. ⌥⇧K opens it from the keyboard, ⌥⇧S saves the current Safari tab.")
+                Text("Point at the notch to open it, move away to close. ⌥⇧K opens it from the keyboard, ⌥⇧S saves the current browser tab.")
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.secondary)
             }
@@ -267,8 +267,22 @@ enum ScenarioSummary {
             case .openTabGroup(let id): app.tabs.library.group(id)?.name ?? String(localized: "Tabs")
             case .runShortcut(let name): name
             case .openURL(let url): url.host(percentEncoded: false) ?? url.absoluteString
+            case .openApp(let id): appName(id)
+            case .quitApp(let id): String(localized: "Quit \(appName(id))")
+            case .appearance(.dark): String(localized: "Dark")
+            case .appearance(.light): String(localized: "Light")
+            case .appearance(.toggle): String(localized: "Switch appearance")
+            case .volume(let percent): String(localized: "Volume \(percent)%")
+            case .mute(true): String(localized: "Mute")
+            case .mute(false): String(localized: "Unmute")
             }
         }
         .joined(separator: " · ")
+    }
+
+    @MainActor
+    private static func appName(_ bundleID: String) -> String {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return bundleID }
+        return FileManager.default.displayName(atPath: url.path(percentEncoded: false)).replacingOccurrences(of: ".app", with: "")
     }
 }

@@ -33,6 +33,52 @@ import Testing
     }
 }
 
+@Suite struct NetworkRoutingTests {
+    @Test func detectsLocalSystemProxy() {
+        let on = """
+            <dictionary> {
+              ExceptionsList : <array> {
+                0 : 127.0.0.1
+              }
+              HTTPEnable : 1
+              HTTPPort : 2080
+              HTTPProxy : 127.0.0.1
+              SOCKSEnable : 0
+            }
+            """
+        #expect(NetworkRouting.localProxyEnabled(scutilProxyOutput: on))
+
+        let corporate = "HTTPEnable : 1\nHTTPProxy : proxy.example.com\n"
+        #expect(!NetworkRouting.localProxyEnabled(scutilProxyOutput: corporate))
+
+        let switchedOff = "HTTPEnable : 0\nHTTPProxy : 127.0.0.1\nSOCKSEnable : 1\nSOCKSProxy : 10.0.0.1\n"
+        #expect(!NetworkRouting.localProxyEnabled(scutilProxyOutput: switchedOff))
+    }
+
+    @Test func readsDefaultInterface() {
+        let output = """
+               route to: default
+            destination: default
+                   mask: default
+                gateway: 198.18.0.1
+              interface: utun5
+                  flags: <UP,GATEWAY,DONE,STATIC,PRCLONING>
+            """
+        let interface = NetworkRouting.defaultInterface(routeOutput: output)
+        #expect(interface == "utun5")
+        #expect(NetworkRouting.isTunnel(interface))
+        #expect(!NetworkRouting.isTunnel("en0"))
+        #expect(NetworkRouting.defaultInterface(routeOutput: "route: writing to routing socket: not in table") == nil)
+    }
+
+    @Test func appIDsRoundTripAndRejectJunk() {
+        let app = VPNApp(bundleID: "moe.Throne.macosx", name: "FSNT Client")
+        #expect(VPNApp.bundleID(fromConnectionID: app.id) == "moe.Throne.macosx")
+        #expect(VPNApp.bundleID(fromConnectionID: "app:-rf /") == nil)
+        #expect(VPNApp.bundleID(fromConnectionID: "6A1F7E04-1B7B-4C2E-9F2D-0C5B8D2C7A11") == nil)
+    }
+}
+
 @Suite struct MeetingLinkTests {
     @Test func prefersURLField() {
         let match = MeetingLink.find(
@@ -93,6 +139,29 @@ import Testing
         #expect(history.entries[0].isPinned)
     }
 
+    @Test func keepsImagesApartFromTextAndCapsThem() {
+        var history = ClipboardHistory(capacity: 30)
+        let picture = ClipboardImage(png: Data([1, 2, 3]), pixelWidth: 10, pixelHeight: 5)
+        #expect(history.record(picture))
+        history.record("hello")
+        history.record(picture)
+        #expect(history.entries.count == 2)
+        #expect(history.entries[0].kind == .image)
+        #expect(history.entries[1].text == "hello")
+
+        #expect(!history.record(ClipboardImage(png: Data(), pixelWidth: 1, pixelHeight: 1)))
+        #expect(!history.record(ClipboardImage(png: Data(count: ClipboardHistory.maximumImageBytes + 1), pixelWidth: 1, pixelHeight: 1)))
+
+        history.togglePin(history.entries[0].id)
+        for byte in 10..<30 {
+            history.record(ClipboardImage(png: Data([UInt8(byte)]), pixelWidth: 1, pixelHeight: 1))
+        }
+        let images = history.entries.filter { $0.kind == .image }
+        #expect(images.count == ClipboardHistory.imageCapacity)
+        #expect(images.contains { $0.image == picture && $0.isPinned })
+        #expect(history.entries.contains { $0.text == "hello" })
+    }
+
     @Test func ignoresBlankAndHugeText() {
         var history = ClipboardHistory()
         let blank = history.record("   \n")
@@ -100,5 +169,31 @@ import Testing
         #expect(!blank)
         #expect(!huge)
         #expect(history.entries.isEmpty)
+    }
+}
+
+@Suite struct ScenarioTests {
+    @Test func oldScenariosStillDecodeAndNewActionsRoundTrip() throws {
+        let scenario = Scenario(
+            name: "Focus", symbol: "moon.fill",
+            actions: [
+                .quitApp(bundleID: "com.tdesktop.Telegram"), .vpn(serviceID: nil), .appearance(.dark), .volume(30),
+                .mute(false), .openApp(bundleID: "ru.yandex.desktop.music"), .runShortcut(name: "Work Focus"),
+            ])
+        let data = try JSONEncoder().encode([scenario])
+        #expect(try JSONDecoder().decode([Scenario].self, from: data) == [scenario])
+
+        let legacy = Scenario(name: "Old", symbol: "sparkles", actions: [.media(.play)])
+        let legacyData = try JSONEncoder().encode(legacy)
+        #expect(try JSONDecoder().decode(Scenario.self, from: legacyData).actions == [.media(.play)])
+    }
+
+    @Test func validatesBundleIDsAndVolume() {
+        #expect(Scenario.isValidBundleID("com.apple.Safari"))
+        #expect(!Scenario.isValidBundleID("Safari"))
+        #expect(!Scenario.isValidBundleID("-a com.apple.Safari"))
+        #expect(!Scenario.isValidBundleID("com.apple.Safari\nrm"))
+        #expect(Scenario.clampedVolume(140) == 100)
+        #expect(Scenario.clampedVolume(-3) == 0)
     }
 }

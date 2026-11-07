@@ -65,6 +65,9 @@ final class Preferences {
     var showVPNIndicator: Bool { didSet { defaults.set(showVPNIndicator, forKey: Key.vpnIndicator) } }
     var showMusicIndicator: Bool { didSet { defaults.set(showMusicIndicator, forKey: Key.musicIndicator) } }
     var closeAfterOpeningTab: Bool { didSet { defaults.set(closeAfterOpeningTab, forKey: Key.closeAfterOpen) } }
+    /// VPN apps the user added by hand, on top of the ones Polka recognizes.
+    var vpnApps: [VPNApp] { didSet { store(vpnApps, Key.vpnApps) } }
+    var askWhereToSave: Bool { didSet { defaults.set(askWhereToSave, forKey: Key.askWhereToSave) } }
     var hiddenCalendarIDs: Set<String> { didSet { store(hiddenCalendarIDs, Key.hiddenCalendars) } }
 
     var updateChannel: UpdateChannel { didSet { defaults.set(updateChannel.rawValue, forKey: Key.updateChannel) } }
@@ -87,6 +90,8 @@ final class Preferences {
         showVPNIndicator = defaults.object(forKey: Key.vpnIndicator) as? Bool ?? true
         showMusicIndicator = defaults.object(forKey: Key.musicIndicator) as? Bool ?? true
         closeAfterOpeningTab = defaults.object(forKey: Key.closeAfterOpen) as? Bool ?? true
+        vpnApps = (Self.load([VPNApp].self, Key.vpnApps, defaults) ?? []).filter { VPNApp.isValidBundleID($0.bundleID) }
+        askWhereToSave = defaults.object(forKey: Key.askWhereToSave) as? Bool ?? true
         hiddenCalendarIDs = Self.load(Set<String>.self, Key.hiddenCalendars, defaults) ?? []
         updateChannel = defaults.string(forKey: Key.updateChannel).flatMap { UpdateChannel(rawValue: $0) } ?? .stable
         checkForUpdatesAutomatically = defaults.object(forKey: Key.autoUpdate) as? Bool ?? true
@@ -133,7 +138,9 @@ final class Preferences {
         static let vpnIndicator = "showVPNIndicator"
         static let musicIndicator = "showMusicIndicator"
         static let closeAfterOpen = "closeAfterOpeningTab"
-        static let hiddenCalendars = "hiddenCalendarIDs"
+        static let vpnApps = "vpnApps"
+        static let askWhereToSave = ""askWhereToSave"
+        static let hiddenCalendars = ""hiddenCalendarIDs"
         static let updateChannel = "updateChannel"
         static let autoUpdate = "checkForUpdatesAutomatically"
     }

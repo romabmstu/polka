@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Save tabs from Chrome, Arc, Brave, Edge and Yandex Browser, not only Safari.
+- ⌥⇧S asks where to save: pick or create a group from the keyboard, or save the whole window.
+- *Save to Polka…* in the Services menu, available from the context menu of selected text and links.
+- Proxy-based VPN clients such as FSNT Client: Polka starts and quits them and shows whether they carry traffic. Other apps can be added in Settings.
+- Pictures and screenshots in clipboard history, with *Add to Shelf*.
+- Scenario actions: open and quit apps, dark or light appearance, volume and mute.
+
 - Built-in updates from GitHub releases with Ed25519-signed manifests; beta channel with every build from `main`.
 - Real Now Playing information: title, artist, artwork, seeking, and the app being controlled.
 - The panel follows the pointer to other displays.

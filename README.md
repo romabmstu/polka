@@ -26,9 +26,9 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
 
 ## What it does
 
-**Tabs.** Keep pages in named, colored groups instead of a hundred open tabs. Save the current Safari tab with one click or <kbd>⌥⇧S</kbd>, drag links from anywhere onto a group, paste a whole list (plain links, Markdown or a OneTab export). Sort by title, site, date or recent use, search across everything, open a group in the current or a new window.
+**Tabs.** Keep pages in named, colored groups instead of a hundred open tabs. Save the current tab from Safari, Chrome, Arc, Brave, Edge or Yandex Browser with <kbd>⌥⇧S</kbd> and pick the group right in the notch — or the whole window at once. *Save to Polka…* in the Services menu (right-click a selection or a link) does the same from any app. Drag links from anywhere onto a group, paste a whole list (plain links, Markdown or a OneTab export). Sort by title, site, date or recent use, search across everything, open a group in the current or a new window.
 
-**VPN.** Every VPN registered in System Settings — WireGuard, Happ, V2Box, corporate L2TP and others — with a switch. Turning one on turns the others off.
+**VPN.** Every VPN registered in System Settings — WireGuard, Happ, V2Box, corporate L2TP and others — with a switch, plus proxy clients such as FSNT Client that Polka starts and quits for you. Turning one on turns the others off.
 
 **Music.** Title, artist, artwork and a seekable progress bar for whatever is playing — Yandex Music, Music, Spotify, a video in the browser — and which app that is, so play and pause always act where you expect.
 
@@ -36,11 +36,11 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
 
 **Calculator and currencies.** Type `1250 × 1.2 + 15%`, get the answer. Convert between your favorite currencies.
 
-**Clipboard.** The last 30 things you copied. Passwords are never recorded.
+**Clipboard.** The last 30 things you copied, screenshots and pictures included. Passwords are never recorded.
 
 **Shelf.** Drop files into the notch and drag them out later, or send them over AirDrop.
 
-**Scenarios.** One click for several things at once — for example *Work*: connect the VPN, open the work tabs, start music.
+**Scenarios.** One click for several things at once — for example *Work*: quit the messengers, connect the VPN, switch to dark mode, set the volume, open the work tabs and apps, start music. Focus modes switch through a shortcut.
 
 ## Install
 
@@ -67,7 +67,7 @@ Polka updates itself: Settings › Updates › *Check Now*, or wait for the *Upd
 | Shortcut | Action |
 | --- | --- |
 | <kbd>⌥⇧K</kbd> | Open or close Polka |
-| <kbd>⌥⇧S</kbd> | Save the current Safari tab |
+| <kbd>⌥⇧S</kbd> | Save the current browser tab, choosing the group |
 | <kbd>⌘1</kbd> … <kbd>⌘8</kbd> | Switch sections |
 | <kbd>⌘V</kbd> | Paste links into the open group |
 | <kbd>Esc</kbd> | Close the panel |

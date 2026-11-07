@@ -6,9 +6,15 @@ struct ExpandedPanel: View {
     var body: some View {
         let panel = app.panel
         VStack(alignment: .leading, spacing: 14) {
-            header
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            if let request = panel.saveRequest {
+                SavePicker(request: request)
+                    .id(request.id)
+                    .transition(.opacity)
+            } else {
+                header
+                content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
         }
         .padding(.top, panel.hasNotch ? panel.notchHeight + 6 : 14)
         .padding(.horizontal, PanelMetrics.contentPadding + (panel.hasNotch ? 10 : 0))

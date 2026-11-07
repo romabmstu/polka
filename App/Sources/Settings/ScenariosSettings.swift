@@ -1,15 +1,24 @@
+import AppKit
 import PolkaCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// Editable form of a scenario: one optional choice per kind of action.
 struct ScenarioDraft: Equatable {
     enum VPNChoice: Hashable { case unchanged, off, connect(String) }
     enum MediaChoice: Hashable { case unchanged, play, pause }
+    enum AppearanceChoice: Hashable { case unchanged, dark, light, toggle }
+    enum SoundChoice: Hashable { case unchanged, mute, unmute, level }
 
     var name = ""
     var symbol = "sparkles"
     var vpn: VPNChoice = .unchanged
     var media: MediaChoice = .unchanged
+    var appearance: AppearanceChoice = .unchanged
+    var sound: SoundChoice = .unchanged
+    var volume: Double = 50
+    var appsToOpen: [String] = []
+    var appsToQuit: [String] = []
     var tabGroup: UUID?
     var shortcut = ""
     var link = ""
@@ -28,17 +37,41 @@ struct ScenarioDraft: Equatable {
             case .openTabGroup(let id): tabGroup = id
             case .runShortcut(let name): shortcut = name
             case .openURL(let url): link = url.absoluteString
+            case .openApp(let id): appsToOpen.append(id)
+            case .quitApp(let id): appsToQuit.append(id)
+            case .appearance(.dark): appearance = .dark
+            case .appearance(.light): appearance = .light
+            case .appearance(.toggle): appearance = .toggle
+            case .volume(let percent):
+                sound = .level
+                volume = Double(percent)
+            case .mute(let muted): sound = muted ? .mute : .unmute
             }
         }
     }
 
+    /// Actions in the order they make sense: close distractions, switch the
+    /// network and the look of the system, then open things.
     func scenario(id: UUID) -> Scenario {
-        var actions: [Scenario.Action] = []
+        var actions: [Scenario.Action] = appsToQuit.filter(Scenario.isValidBundleID).map { .quitApp(bundleID: $0) }
         switch vpn {
         case .unchanged: break
         case .off: actions.append(.vpn(serviceID: nil))
         case .connect(let id): actions.append(.vpn(serviceID: id))
         }
+        switch appearance {
+        case .unchanged: break
+        case .dark: actions.append(.appearance(.dark))
+        case .light: actions.append(.appearance(.light))
+        case .toggle: actions.append(.appearance(.toggle))
+        }
+        switch sound {
+        case .unchanged: break
+        case .mute: actions.append(.mute(true))
+        case .unmute: actions.append(.mute(false))
+        case .level: actions.append(.volume(Scenario.clampedVolume(Int(volume.rounded()))))
+        }
+        actions += appsToOpen.filter(Scenario.isValidBundleID).map { .openApp(bundleID: $0) }
         switch media {
         case .unchanged: break
         case .play: actions.append(.media(.play))
@@ -97,7 +130,7 @@ struct ScenariosSettings: View {
                 ScenarioEditor(id: id, draft: ScenarioDraft(scenario))
                     .id(id)
             } else {
-                Text("Scenarios run several actions at once — connect a VPN, start music, open a group of tabs or run a shortcut from the Shortcuts app.")
+                Text("Scenarios run several actions at once — connect a VPN, switch to dark mode, set the volume, open or quit apps, start music, open a group of tabs or run a shortcut.")
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(30)
@@ -135,6 +168,23 @@ private struct ScenarioEditor: View {
                         Text(connection.name).tag(ScenarioDraft.VPNChoice.connect(connection.id))
                     }
                 }
+                Picker("Appearance", selection: $draft.appearance) {
+                    Text("Don’t change").tag(ScenarioDraft.AppearanceChoice.unchanged)
+                    Text("Dark").tag(ScenarioDraft.AppearanceChoice.dark)
+                    Text("Light").tag(ScenarioDraft.AppearanceChoice.light)
+                    Text("Switch").tag(ScenarioDraft.AppearanceChoice.toggle)
+                }
+                Picker("Sound", selection: $draft.sound) {
+                    Text("Don’t change").tag(ScenarioDraft.SoundChoice.unchanged)
+                    Text("Mute").tag(ScenarioDraft.SoundChoice.mute)
+                    Text("Unmute").tag(ScenarioDraft.SoundChoice.unmute)
+                    Text("Set volume").tag(ScenarioDraft.SoundChoice.level)
+                }
+                if draft.sound == .level {
+                    Slider(value: $draft.volume, in: 0...100, step: 5) {
+                        Text("Volume \(Int(draft.volume))%")
+                    }
+                }
                 Picker("Music", selection: $draft.media) {
                     Text("Don’t change").tag(ScenarioDraft.MediaChoice.unchanged)
                     Text("Play").tag(ScenarioDraft.MediaChoice.play)
@@ -152,6 +202,14 @@ private struct ScenarioEditor: View {
                 }
                 TextField("Open link", text: $draft.link, prompt: Text("meet.google.com/…"))
             }
+            Section {
+                AppList(title: "Open apps", bundleIDs: $draft.appsToOpen)
+                AppList(title: "Quit apps", bundleIDs: $draft.appsToQuit)
+            } footer: {
+                Text("To switch a Focus mode, make a shortcut with the “Set Focus” action in the Shortcuts app and pick it above.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .task { shortcuts = await app.availableShortcuts() }
@@ -164,5 +222,54 @@ private struct ScenarioEditor: View {
     /// Keeps the saved shortcut selectable even before the list has loaded.
     private var shortcutChoices: [String] {
         draft.shortcut.isEmpty || shortcuts.contains(draft.shortcut) ? shortcuts : [draft.shortcut] + shortcuts
+    }
+}
+
+/// Apps a scenario opens or quits, picked from the Applications folder.
+private struct AppList: View {
+    let title: LocalizedStringKey
+    @Binding var bundleIDs: [String]
+
+    var body: some View {
+        LabeledContent(title) {
+            Button("Add…", action: add)
+        }
+        ForEach(bundleIDs, id: \.self) { id in
+            HStack(spacing: 8) {
+                if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) {
+                    Image(nsImage: NSWorkspace.shared.icon(forFile: url.path(percentEncoded: false)))
+                        .resizable()
+                        .frame(width: 18, height: 18)
+                    Text(FileManager.default.displayName(atPath: url.path(percentEncoded: false)).replacingOccurrences(of: ".app", with: ""))
+                } else {
+                    Image(systemName: "questionmark.app").frame(width: 18, height: 18)
+                    Text(id).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button {
+                    bundleIDs.removeAll { $0 == id }
+                } label: {
+                    Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(Text("Remove"))
+            }
+            .padding(.leading, 12)
+        }
+    }
+
+    private func add() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.application]
+        panel.directoryURL = URL(filePath: "/Applications")
+        panel.allowsMultipleSelection = true
+        panel.prompt = String(localized: "Add")
+        guard panel.runModal() == .OK else { return }
+        for url in panel.urls {
+            guard let id = Bundle(url: url)?.bundleIdentifier, Scenario.isValidBundleID(id),
+                id != Bundle.main.bundleIdentifier, !bundleIDs.contains(id)
+            else { continue }
+            bundleIDs.append(id)
+        }
     }
 }

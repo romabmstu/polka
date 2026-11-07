@@ -38,6 +38,31 @@ public enum LinkExtractor {
         return result
     }
 
+    /// Links from an HTML fragment, such as a selection copied from a web page.
+    /// Anchor text becomes the title. Relative links are skipped: a fragment
+    /// carries no base address to resolve them against.
+    public static func pages(inHTML html: String) -> [PageReference] {
+        var result: [PageReference] = []
+        var seen = Set<String>()
+        for match in html.matches(of: anchor) {
+            let raw = decodeEntities(String(match.output.href)).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let url = URL(string: raw), URLNormalizer.isSavable(url) else { continue }
+            guard seen.insert(URLNormalizer.identity(of: url)).inserted else { continue }
+            let text = decodeEntities(String(match.output.body).replacing(tag, with: ""))
+                .split(whereSeparator: \.isWhitespace).joined(separator: " ")
+            result.append(PageReference(url: url, title: text))
+        }
+        return result
+    }
+
+    private static func decodeEntities(_ string: String) -> String {
+        guard string.contains("&") else { return string }
+        let named = ["&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": "\"", "&#39;": "'", "&apos;": "'", "&nbsp;": " "]
+        var s = string
+        for (entity, value) in named { s = s.replacingOccurrences(of: entity, with: value) }
+        return s
+    }
+
     private static func trimTrailingPunctuation(_ string: String) -> String {
         var s = string
         while let last = s.last, ").,;:!?]>»\"'".contains(last) {
@@ -50,5 +75,8 @@ public enum LinkExtractor {
 
     nonisolated(unsafe) private static let markdownLink = /\[(?<title>[^\]]*)\]\((?<url>https?:\/\/[^\s)]+)\)/
     nonisolated(unsafe) private static let oneTabLine = /\s*(?<url>https?:\/\/\S+)\s+\|\s+(?<title>.+)/
+    nonisolated(unsafe) private static let anchor = /<a\s[^>]*?href\s*=\s*["'](?<href>[^"']+)["'][^>]*>(?<body>.*?)<\/a>/
+        .ignoresCase().dotMatchesNewlines()
+    nonisolated(unsafe) private static let tag = /<[^>]*>/
     nonisolated(unsafe) private static let bareURL = /(?:https?|file):\/\/[^\s<>"']+/
 }

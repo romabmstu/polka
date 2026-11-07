@@ -12,10 +12,20 @@ public struct Scenario: Identifiable, Hashable, Codable, Sendable {
         /// Focus modes and do anything else the system does not expose directly.
         case runShortcut(name: String)
         case openURL(URL)
+        case openApp(bundleID: String)
+        case quitApp(bundleID: String)
+        case appearance(Appearance)
+        /// Output volume in percent, 0…100.
+        case volume(Int)
+        case mute(Bool)
     }
 
     public enum MediaCommand: String, Codable, Sendable, CaseIterable {
         case play, pause
+    }
+
+    public enum Appearance: String, Codable, Sendable, CaseIterable {
+        case dark, light, toggle
     }
 
     public var id: UUID
@@ -37,4 +47,16 @@ public struct Scenario: Identifiable, Hashable, Codable, Sendable {
         return !trimmed.isEmpty && trimmed.count <= 200 && !trimmed.contains(where: \.isNewline)
             && !trimmed.hasPrefix("-")
     }
+
+    /// Bundle identifiers are handed to Launch Services; accept only their
+    /// documented shape.
+    public static func isValidBundleID(_ id: String) -> Bool {
+        id.count <= 255 && id.wholeMatch(of: bundleIDPattern) != nil
+    }
+
+    public static func clampedVolume(_ value: Int) -> Int {
+        min(100, max(0, value))
+    }
+
+    nonisolated(unsafe) private static let bundleIDPattern = /[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)+/
 }

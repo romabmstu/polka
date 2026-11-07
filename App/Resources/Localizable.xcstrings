@@ -1,12 +1,32 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ is open but not connected. Turn on connecting at launch and the system proxy or TUN mode in its settings.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ открыт, но не подключён. Включите в его настройках подключение при запуске и системный прокси или режим TUN."
+          }
+        }
+      }
+    },
     "%lld min": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld мин"
+          }
+        }
+      }
+    },
+    "%lld tabs saved to “%@”": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранено вкладок: %lld — в «%@»"
           }
         }
       }
@@ -111,12 +131,52 @@
         }
       }
     },
+    "Add": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить"
+          }
+        }
+      }
+    },
+    "Add a VPN app that is not listed, such as a proxy client": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить VPN-приложение, которого нет в списке, например прокси-клиент"
+          }
+        }
+      }
+    },
     "Add Scenario": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Добавить сценарий"
+          }
+        }
+      }
+    },
+    "Add to Shelf": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить на полку"
+          }
+        }
+      }
+    },
+    "Add VPN App…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить VPN-приложение…"
           }
         }
       }
@@ -173,12 +233,32 @@
         }
       }
     },
+    "Added to Shelf": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавлено на полку"
+          }
+        }
+      }
+    },
     "Address": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Адрес"
+          }
+        }
+      }
+    },
+    "Add…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить…"
           }
         }
       }
@@ -233,12 +313,22 @@
         }
       }
     },
-    "Allow Polka to control Safari to save the open tab.": {
+    "Allow Polka to control %@": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Разрешите Polka управлять Safari, чтобы сохранять открытую вкладку."
+            "value": "Разрешите Polka управлять %@"
+          }
+        }
+      }
+    },
+    "Allow Polka to control %@ to save the open tab.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешите Polka управлять %@, чтобы сохранять открытую вкладку."
           }
         }
       }
@@ -249,6 +339,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Разрешено"
+          }
+        }
+      }
+    },
+    "Already here": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уже здесь"
           }
         }
       }
@@ -273,12 +373,42 @@
         }
       }
     },
+    "Appearance": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Оформление"
+          }
+        }
+      }
+    },
+    "Ask where to save with ⌥⇧S": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Спрашивать, куда сохранять, по ⌥⇧S"
+          }
+        }
+      }
+    },
     "Blue": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Синий"
+          }
+        }
+      }
+    },
+    "Browsers": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Браузеры"
           }
         }
       }
@@ -353,12 +483,12 @@
         }
       }
     },
-    "Check Now": {
+    "cancel": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Проверить"
+            "value": "отмена"
           }
         }
       }
@@ -383,6 +513,16 @@
         }
       }
     },
+    "Check Now": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить"
+          }
+        }
+      }
+    },
     "Checking…": {
       "localizations": {
         "ru": {
@@ -403,12 +543,42 @@
         }
       }
     },
+    "choose": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "выбор"
+          }
+        }
+      }
+    },
     "Choose a player in Settings…": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Выбрать плеер в настройках…"
+          }
+        }
+      }
+    },
+    "Choose a VPN app. Polka turns it on by opening it and off by quitting it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите VPN-приложение. Polka включает его, открывая, и выключает, закрывая."
+          }
+        }
+      }
+    },
+    "Choose where to save, or save the whole window": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать, куда сохранить, или сохранить всё окно"
           }
         }
       }
@@ -613,12 +783,12 @@
         }
       }
     },
-    "Copy some text and it shows up here. Kept in memory only; passwords are skipped.": {
+    "Copy some text or a picture and it shows up here. Kept in memory only; passwords are skipped.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Скопируйте текст — он появится здесь. Хранится только в памяти, пароли пропускаются."
+            "value": "Скопируйте текст или картинку — они появятся здесь. Хранится только в памяти, пароли пропускаются."
           }
         }
       }
@@ -709,6 +879,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вырезать"
+          }
+        }
+      }
+    },
+    "Dark": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тёмное"
           }
         }
       }
@@ -863,6 +1043,36 @@
         }
       }
     },
+    "Find a group or name a new one": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найдите группу или назовите новую"
+          }
+        }
+      }
+    },
+    "For clients that don’t appear in System Settings › VPN. Polka turns them on by opening the app and off by quitting it, so let the app connect at launch.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для клиентов, которых нет в Системных настройках › VPN. Polka включает их, открывая приложение, и выключает, закрывая его, — поэтому включите в приложении подключение при запуске."
+          }
+        }
+      }
+    },
+    "Found automatically": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найдено автоматически"
+          }
+        }
+      }
+    },
     "Free and open source under the MIT License.": {
       "localizations": {
         "ru": {
@@ -969,6 +1179,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Значок"
+          }
+        }
+      }
+    },
+    "Image": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изображение"
           }
         }
       }
@@ -1103,6 +1323,26 @@
         }
       }
     },
+    "Light": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Светлое"
+          }
+        }
+      }
+    },
+    "macOS needs Accessibility access to send the play and track keys.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы нажимать клавиши воспроизведения, macOS нужен Универсальный доступ."
+          }
+        }
+      }
+    },
     "Main display": {
       "localizations": {
         "ru": {
@@ -1193,6 +1433,16 @@
         }
       }
     },
+    "Mute": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выключить звук"
+          }
+        }
+      }
+    },
     "Name": {
       "localizations": {
         "ru": {
@@ -1219,6 +1469,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Новая группа"
+          }
+        }
+      }
+    },
+    "New group “%@”": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Новая группа «%@»"
           }
         }
       }
@@ -1273,42 +1533,22 @@
         }
       }
     },
-    "No Safari tab to save": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "В Safari нет вкладки для сохранения"
-          }
-        }
-      }
-    },
-    "No VPN connections found": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VPN-подключения не найдены"
-          }
-        }
-      }
-    },
-    "No VPN set up": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VPN не настроен"
-          }
-        }
-      }
-    },
     "No access to Calendar": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Нет доступа к Календарю"
+          }
+        }
+      }
+    },
+    "No browser is open": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Браузер не открыт"
           }
         }
       }
@@ -1339,6 +1579,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ничего не найдено"
+          }
+        }
+      }
+    },
+    "No tab to save": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет вкладки для сохранения"
+          }
+        }
+      }
+    },
+    "No VPN connections found": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VPN-подключения не найдены"
+          }
+        }
+      }
+    },
+    "No VPN set up": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VPN не настроен"
           }
         }
       }
@@ -1453,6 +1723,16 @@
         }
       }
     },
+    "now": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "сейчас"
+          }
+        }
+      }
+    },
     "Now Playing": {
       "localizations": {
         "ru": {
@@ -1523,52 +1803,22 @@
         }
       }
     },
+    "Open a page in Safari, Chrome or Arc to save it here, or drag a link onto a group.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откройте страницу в Safari, Chrome или Arc, чтобы сохранить её, или перетащите ссылку на группу."
+          }
+        }
+      }
+    },
     "Open All": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Открыть все"
-          }
-        }
-      }
-    },
-    "Open App": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Открыть приложение"
-          }
-        }
-      }
-    },
-    "Open Calendar": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Открыть Календарь"
-          }
-        }
-      }
-    },
-    "Open Settings": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Открыть настройки"
-          }
-        }
-      }
-    },
-    "Open a page in Safari to save it here, or drag a link onto a group.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Откройте страницу в Safari, чтобы сохранить её, или перетащите ссылку на группу."
           }
         }
       }
@@ -1583,6 +1833,26 @@
         }
       }
     },
+    "Open App": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть приложение"
+          }
+        }
+      }
+    },
+    "Open apps": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть приложения"
+          }
+        }
+      }
+    },
     "Open at login": {
       "localizations": {
         "ru": {
@@ -1593,22 +1863,32 @@
         }
       }
     },
+    "Open Calendar": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть Календарь"
+          }
+        }
+      }
+    },
+    "Open in %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыто в %@"
+          }
+        }
+      }
+    },
     "Open in New Window": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Открыть в новом окне"
-          }
-        }
-      }
-    },
-    "Open in Safari": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Открыто в Safari"
           }
         }
       }
@@ -1633,6 +1913,16 @@
         }
       }
     },
+    "Open Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть настройки"
+          }
+        }
+      }
+    },
     "Open tabs": {
       "localizations": {
         "ru": {
@@ -1649,6 +1939,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Открывать, когда курсор у чёлки"
+          }
+        }
+      }
+    },
+    "Open, not connected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыто, не подключено"
           }
         }
       }
@@ -1773,12 +2073,12 @@
         }
       }
     },
-    "Point at the notch to open it, move away to close. ⌥⇧K opens it from the keyboard, ⌥⇧S saves the current Safari tab.": {
+    "Point at the notch to open it, move away to close. ⌥⇧K opens it from the keyboard, ⌥⇧S saves the current browser tab.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Наведите курсор на чёлку, чтобы открыть, уведите — закроется. ⌥⇧K открывает с клавиатуры, ⌥⇧S сохраняет текущую вкладку Safari."
+            "value": "Наведите курсор на чёлку, чтобы открыть, уведите — закроется. ⌥⇧K открывает с клавиатуры, ⌥⇧S сохраняет текущую вкладку браузера."
           }
         }
       }
@@ -1803,22 +2103,12 @@
         }
       }
     },
-    "Polka Settings": {
+    "Polka controls VPNs registered in System Settings › VPN and proxy apps such as FSNT Client. If your client doesn’t appear, connect once in it, or add the app.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Настройки Polka"
-          }
-        }
-      }
-    },
-    "Polka controls VPNs registered in System Settings › VPN. If your client doesn’t appear there, connect once in the client itself so it can add its configuration.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Polka управляет VPN, которые зарегистрированы в Системных настройках › VPN. Если вашего клиента там нет, подключитесь один раз в самом клиенте, чтобы он добавил конфигурацию."
+            "value": "Polka управляет VPN из Системных настроек › VPN и прокси-приложениями вроде FSNT Client. Если вашего клиента нет, подключитесь в нём один раз или добавьте приложение."
           }
         }
       }
@@ -1849,6 +2139,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Polka читает календари, уже подключённые к этому Mac: Google, iCloud, Exchange. Ничего не покидает компьютер."
+          }
+        }
+      }
+    },
+    "Polka Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки Polka"
           }
         }
       }
@@ -1923,6 +2223,36 @@
         }
       }
     },
+    "quick pick": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "быстрый выбор"
+          }
+        }
+      }
+    },
+    "Quit %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрыть %@"
+          }
+        }
+      }
+    },
+    "Quit apps": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрыть приложения"
+          }
+        }
+      }
+    },
     "Quit Polka": {
       "localizations": {
         "ru": {
@@ -1949,16 +2279,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Курсы: ExchangeRate-API"
-          }
-        }
-      }
-    },
-    "Read and open tabs": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Чтение и открытие вкладок"
           }
         }
       }
@@ -2013,12 +2333,12 @@
         }
       }
     },
-    "Remove Scenario": {
+    "Remove": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Удалить сценарий"
+            "value": "Удалить"
           }
         }
       }
@@ -2029,6 +2349,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Убрать с полки"
+          }
+        }
+      }
+    },
+    "Remove Scenario": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить сценарий"
           }
         }
       }
@@ -2083,6 +2413,16 @@
         }
       }
     },
+    "Safari, Chrome, Arc and others: read and open tabs": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Safari, Chrome, Arc и другие: чтение и открытие вкладок"
+          }
+        }
+      }
+    },
     "Save": {
       "localizations": {
         "ru": {
@@ -2093,22 +2433,42 @@
         }
       }
     },
-    "Save the current Safari tab": {
+    "save": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Сохранить текущую вкладку Safari"
+            "value": "сохранить"
           }
         }
       }
     },
-    "Save the open Safari tab, drag links onto this group or press ⌘V to paste a list of links.": {
+    "Save from %@": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Сохраните открытую вкладку Safari, перетащите сюда ссылки или нажмите ⌘V, чтобы вставить список."
+            "value": "Сохранить из %@"
+          }
+        }
+      }
+    },
+    "Save the current browser tab": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранить текущую вкладку браузера"
+          }
+        }
+      }
+    },
+    "Save the open browser tab, drag links onto this group or press ⌘V to paste a list of links.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохраните открытую вкладку браузера, перетащите сюда ссылки или нажмите ⌘V, чтобы вставить список."
           }
         }
       }
@@ -2163,12 +2523,12 @@
         }
       }
     },
-    "Scenarios run several actions at once — connect a VPN, start music, open a group of tabs or run a shortcut from the Shortcuts app.": {
+    "Scenarios run several actions at once — connect a VPN, switch to dark mode, set the volume, open or quit apps, start music, open a group of tabs or run a shortcut.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Сценарий выполняет несколько действий сразу: подключает VPN, включает музыку, открывает группу вкладок или запускает быструю команду."
+            "value": "Сценарий выполняет несколько действий сразу: подключает VPN, включает тёмную тему, задаёт громкость, открывает или закрывает приложения, включает музыку, открывает группу вкладок или запускает быструю команду."
           }
         }
       }
@@ -2209,6 +2569,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выбрать все"
+          }
+        }
+      }
+    },
+    "Set volume": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Задать громкость"
           }
         }
       }
@@ -2283,6 +2653,16 @@
         }
       }
     },
+    "Sound": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Звук"
+          }
+        }
+      }
+    },
     "Source code": {
       "localizations": {
         "ru": {
@@ -2309,6 +2689,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Начинать отсчёт"
+          }
+        }
+      }
+    },
+    "Switch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переключить"
+          }
+        }
+      }
+    },
+    "Switch appearance": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сменить тему"
           }
         }
       }
@@ -2373,22 +2773,22 @@
         }
       }
     },
-    "The VPN client did not respond. Open it to check its settings.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VPN-клиент не ответил. Откройте его и проверьте настройки."
-          }
-        }
-      }
-    },
     "The only network request Polka makes: open.er-api.com, a few times a day, with no personal data.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Единственный сетевой запрос Polka: open.er-api.com несколько раз в день, без личных данных."
+          }
+        }
+      }
+    },
+    "The system proxy still points to this Mac. Turn it off in System Settings › Network › Proxies.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Системный прокси всё ещё указывает на этот Mac. Выключите его в Системных настройках › Сеть › Прокси."
           }
         }
       }
@@ -2413,6 +2813,16 @@
         }
       }
     },
+    "The VPN client did not respond. Open it to check its settings.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VPN-клиент не ответил. Откройте его и проверьте настройки."
+          }
+        }
+      }
+    },
     "There are no events today.": {
       "localizations": {
         "ru": {
@@ -2423,12 +2833,32 @@
         }
       }
     },
+    "This tab": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта вкладка"
+          }
+        }
+      }
+    },
     "Title": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Название"
+          }
+        }
+      }
+    },
+    "To switch a Focus mode, make a shortcut with the “Set Focus” action in the Shortcuts app and pick it above.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы переключать режим фокусирования, создайте в «Быстрых командах» команду с действием «Задать фокусирование» и выберите её выше."
           }
         }
       }
@@ -2473,22 +2903,22 @@
         }
       }
     },
-    "Turn On": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Включить"
-          }
-        }
-      }
-    },
     "Turn off": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Выключить"
+          }
+        }
+      }
+    },
+    "Turn On": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включить"
           }
         }
       }
@@ -2509,6 +2939,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Отменить"
+          }
+        }
+      }
+    },
+    "Unmute": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включить звук"
           }
         }
       }
@@ -2583,6 +3023,36 @@
         }
       }
     },
+    "Version %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Версия %@"
+          }
+        }
+      }
+    },
+    "Volume %lld%%": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Громкость %lld%%"
+          }
+        }
+      }
+    },
+    "VPN apps": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VPN-приложения"
+          }
+        }
+      }
+    },
     "VPN off": {
       "localizations": {
         "ru": {
@@ -2599,16 +3069,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Статус VPN"
-          }
-        }
-      }
-    },
-    "Version %@": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Версия %@"
           }
         }
       }
@@ -2653,12 +3113,22 @@
         }
       }
     },
-    "When on, Polka remembers the last 30 things you copied — in memory only, never on disk. Passwords are skipped.": {
+    "When on, Polka remembers the last 30 things you copied, pictures included — in memory only, never on disk. Passwords are skipped.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Если включить, Polka запомнит 30 последних скопированных фрагментов — только в памяти, не на диске. Пароли пропускаются."
+            "value": "Если включить, Polka запомнит 30 последних скопированных фрагментов, включая картинки, — только в памяти, не на диске. Пароли пропускаются."
+          }
+        }
+      }
+    },
+    "Whole window · %lld": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всё окно · %lld"
           }
         }
       }
@@ -2709,26 +3179,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вкладки сохранены более новой версией Polka. Обновите Polka, чтобы открыть их."
-          }
-        }
-      }
-    },
-    "macOS needs Accessibility access to send the play and track keys.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Чтобы нажимать клавиши воспроизведения, macOS нужен Универсальный доступ."
-          }
-        }
-      }
-    },
-    "now": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "сейчас"
           }
         }
       }

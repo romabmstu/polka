@@ -7,8 +7,8 @@ import PolkaSystem
 @MainActor
 @Observable
 final class TabsModel {
-    enum SafariState: Equatable {
-        case unknown, notRunning, notAuthorized, ready
+    enum BrowserState: Equatable {
+        case unknown, noBrowser, notAuthorized(Browser), ready(Browser)
     }
 
     private(set) var library = Library()
@@ -20,16 +20,42 @@ final class TabsModel {
     var query = ""
 
     private(set) var currentPage: PageReference?
-    private(set) var safariState: SafariState = .unknown
+    private(set) var browserState: BrowserState = .unknown
+    /// Browsers the user can be asked about, most recently used first.
+    @ObservationIgnored private var recentBrowsers: [String] = []
+    @ObservationIgnored private var activationObserver: NSObjectProtocol?
 
     @ObservationIgnored private let store: LibraryStore?
-    @ObservationIgnored private let safari = SafariBridge()
+    @ObservationIgnored private let browsers = BrowserBridge()
     @ObservationIgnored private var pendingSave: Task<Void, Never>?
     @ObservationIgnored private var undoSnapshot: Library?
     @ObservationIgnored private let log = Logger(subsystem: "Polka", category: "tabs")
 
     init() {
         store = (try? LibraryStore.defaultFileURL()).map(LibraryStore.init)
+        activationObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
+        ) { [weak self] note in
+            let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            guard let id = app?.bundleIdentifier, Browser(bundleIdentifier: id) != nil else { return }
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.recentBrowsers.removeAll { $0 == id }
+                self.recentBrowsers.insert(id, at: 0)
+            }
+        }
+    }
+
+    var hasBrowserAccess: Bool {
+        if case .ready = browserState { return true }
+        return false
+    }
+
+    var currentBrowser: Browser? {
+        switch browserState {
+        case .ready(let browser), .notAuthorized(let browser): browser
+        default: nil
+        }
     }
 
     var selectedGroup: TabGroup? {
@@ -101,28 +127,47 @@ final class TabsModel {
         scheduleSave()
     }
 
-    // MARK: Safari
+    // MARK: Browsers
 
-    func refreshCurrentPage() async {
-        guard safari.isRunning else {
-            safariState = .notRunning
-            currentPage = nil
-            return
-        }
-        do {
-            currentPage = try await safari.currentTab()
-            safariState = .ready
-        } catch SafariBridge.Failure.notAuthorized {
-            safariState = .notAuthorized
-            currentPage = nil
-        } catch {
-            log.error("Reading Safari tabs failed: \(error.localizedDescription, privacy: .public)")
-            currentPage = nil
-        }
+    /// Reads the page open in the frontmost (or most recently used) browser.
+    @discardableResult
+    func refreshCurrentPage() async -> PageReference? {
+        await captureFrontWindow()?.current.first
     }
 
-    func openTabs() async throws -> [BrowserTab] {
-        try await safari.tabs()
+    /// The current tab and the rest of the front window of the browser the
+    /// user is most likely talking about.
+    func captureFrontWindow() async -> SaveRequest? {
+        guard let browser = BrowserBridge.preferredBrowser(recent: recentBrowsers) else {
+            browserState = .noBrowser
+            currentPage = nil
+            return nil
+        }
+        do {
+            let front = try await browsers.tabs(in: browser).filter { $0.window == 1 }
+            browserState = .ready(browser)
+            currentPage = front.first(where: \.isCurrent)?.page
+            guard let page = currentPage else { return nil }
+            return SaveRequest(source: browser.name, current: [page], window: front.map(\.page))
+        } catch BrowserBridge.Failure.notAuthorized(let denied) {
+            browserState = .notAuthorized(denied)
+            currentPage = nil
+        } catch {
+            log.error("Reading \(browser.name, privacy: .public) tabs failed: \(error.localizedDescription, privacy: .public)")
+            browserState = .ready(browser)
+            currentPage = nil
+        }
+        return nil
+    }
+
+    /// Group IDs in the order the save picker offers them: the last one used
+    /// first, then the library order.
+    var saveTargets: [TabGroup] {
+        var groups = library.orderedGroups
+        if let last = library.lastUsedGroupID, let index = groups.firstIndex(where: { $0.id == last }) {
+            groups.insert(groups.remove(at: index), at: 0)
+        }
+        return groups
     }
 
     // MARK: Editing
@@ -178,6 +223,15 @@ final class TabsModel {
         NSWorkspace.shared.open(tab.url)
     }
 
+    func openInNewWindow(_ tab: SavedTab) async {
+        mutate { $0.markOpened([tab.id]) }
+        do {
+            try await browsers.open([tab.url], in: currentBrowser ?? .safari, inNewWindow: true)
+        } catch {
+            NSWorkspace.shared.open(tab.url)
+        }
+    }
+
     func openGroup(_ group: TabGroup, inNewWindow: Bool, removeAfterwards: Bool = false) async {
         let tabs = group.sortedTabs
         guard !tabs.isEmpty else { return }
@@ -186,7 +240,7 @@ final class TabsModel {
             if removeAfterwards { library.updateGroup(group.id) { $0.tabs.removeAll() } }
         }
         do {
-            try await safari.open(tabs.map(\.url), inNewWindow: inNewWindow)
+            try await browsers.open(tabs.map(\.url), in: currentBrowser ?? .safari, inNewWindow: inNewWindow)
         } catch {
             for tab in tabs { NSWorkspace.shared.open(tab.url) }
         }

@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var notchController: NotchWindowController?
     private var settingsController: SettingsWindowController?
     private var hotKeys: [GlobalHotKey] = []
+    private var servicesProvider: ServicesProvider?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         replaceOtherInstances()
@@ -21,6 +22,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         model.start()
         registerHotKeys()
+        registerServices()
+    }
+
+    private func registerServices() {
+        let provider = ServicesProvider { [weak self] pages, source in
+            self?.model.saveFromService(pages, sourceApp: source)
+        }
+        servicesProvider = provider
+        NSApp.servicesProvider = provider
+        // Picks up the menu item without logging out after an install or update.
+        NSUpdateDynamicServices()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -55,7 +67,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.notchController?.toggleFromKeyboard()
         }
         let save = GlobalHotKey(keyCode: UInt32(kVK_ANSI_S), modifiers: modifiers) { [weak self] in
-            self?.model.saveCurrentSafariTab()
+            self?.model.saveFromBrowser()
         }
         hotKeys = [toggle, save].compactMap { $0 }
     }

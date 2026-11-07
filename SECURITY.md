@@ -10,13 +10,14 @@ Only the latest release is supported.
 
 Polka runs with your user’s privileges and touches sensitive things (browser tabs, VPN, calendar, clipboard), so it follows a few rules.
 
-**No shell.** External tools (`scutil`, `osascript`, `shortcuts`) are started by absolute path with an argument list. Nothing is passed through `/bin/sh`, and the environment is reduced to a fixed `PATH` and locale.
+**No shell.** External tools (`scutil`, `route`, `osascript`, `shortcuts`) are started by absolute path with an argument list. Nothing is passed through `/bin/sh`, and the environment is reduced to a fixed `PATH` and locale.
 
 **No string-built scripts.** AppleScript sources are constants. URLs and other values reach scripts only as `argv`, so a page address cannot change what runs.
 
 **Validate everything that crosses a boundary.**
 - Only `http`, `https` and `file` URLs are saved or opened; `javascript:`, `data:` and app schemes are rejected.
-- VPN service IDs must be UUIDs before they reach `scutil`; shortcut names are length-limited and may not start with `-`.
+- VPN service IDs must be UUIDs before they reach `scutil`; app bundle identifiers must look like `com.vendor.app`; shortcut names are length-limited and may not start with `-`; volume is clamped to 0–100.
+- Links from the Services menu are taken from the selection's HTML or text and pass the same URL checks; nothing else on the pasteboard is used.
 - The calculator is a small parser over `Decimal`, not an evaluator; input is never executed. Nesting depth and exponent size are capped.
 - Exchange-rate responses are size-limited, schema-checked and sanity-checked before use.
 

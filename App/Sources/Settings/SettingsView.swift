@@ -47,6 +47,7 @@ private struct GeneralSettings: View {
                     Text("Main display").tag(DisplayChoice.main)
                 }
                 Toggle("Close after opening a saved tab", isOn: $preferences.closeAfterOpeningTab)
+                Toggle("Ask where to save with ⌥⇧S", isOn: $preferences.askWhereToSave)
             } footer: {
                 Text("On displays without a notch Polka is a capsule at the top center. Point at it or press ⌥⇧K.")
                     .font(.caption)
@@ -76,8 +77,27 @@ private struct GeneralSettings: View {
 
             Section("Keyboard") {
                 LabeledContent("Open or close Polka") { Text("⌥⇧K").monospaced() }
-                LabeledContent("Save the current Safari tab") { Text("⌥⇧S").monospaced() }
+                LabeledContent("Save the current browser tab") { Text("⌥⇧S").monospaced() }
                 LabeledContent("Switch sections") { Text("⌘1 … ⌘8").monospaced() }
+            }
+
+            Section {
+                ForEach(app.vpn.configuredApps) { vpnApp in
+                    LabeledContent(vpnApp.name) {
+                        if app.preferences.vpnApps.contains(where: { $0.bundleID == vpnApp.bundleID }) {
+                            Button("Remove") { app.vpn.removeApp(vpnApp.bundleID) }
+                        } else {
+                            Text("Found automatically").foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                Button("Add VPN App…") { VPNAppPicker.run(app) }
+            } header: {
+                Text("VPN apps")
+            } footer: {
+                Text("For clients that don’t appear in System Settings › VPN. Polka turns them on by opening the app and off by quitting it, so let the app connect at launch.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Music") {
@@ -216,8 +236,8 @@ private struct PrivacySettings: View {
             }
             Section("Permissions") {
                 PermissionRow(
-                    title: "Safari", detail: "Read and open tabs", granted: app.tabs.safariState == .ready,
-                    pane: .automation)
+                    title: "Browsers", detail: "Safari, Chrome, Arc and others: read and open tabs",
+                    granted: app.tabs.hasBrowserAccess, pane: .automation)
                 PermissionRow(
                     title: "Calendars", detail: "Today’s events", granted: app.agenda.access == .granted, pane: .calendars)
             }

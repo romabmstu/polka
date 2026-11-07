@@ -19,17 +19,33 @@ public enum ClipboardPrivacy {
     }
 }
 
-/// Most-recent-first list of copied text. Lives in memory only.
+/// A copied picture, kept as PNG bytes.
+public struct ClipboardImage: Hashable, Sendable {
+    public let png: Data
+    public let pixelWidth: Int
+    public let pixelHeight: Int
+
+    public init(png: Data, pixelWidth: Int, pixelHeight: Int) {
+        self.png = png
+        self.pixelWidth = pixelWidth
+        self.pixelHeight = pixelHeight
+    }
+}
+
+/// Most-recent-first list of copied text and images. Lives in memory only.
 public struct ClipboardHistory: Sendable, Equatable {
     public struct Entry: Identifiable, Hashable, Sendable {
-        public enum Kind: Sendable { case link, text, code }
+        public enum Kind: Sendable { case link, text, code, image }
 
         public let id: UUID
+        /// Empty for images.
         public let text: String
+        public let image: ClipboardImage?
         public let copiedAt: Date
         public var isPinned: Bool
 
         public var kind: Kind {
+            if image != nil { return .image }
             if let url = URL(string: text), URLNormalizer.isSavable(url), !text.contains(where: \.isWhitespace) {
                 return .link
             }
@@ -39,6 +55,10 @@ public struct ClipboardHistory: Sendable, Equatable {
     }
 
     public static let maximumTextLength = 10_000
+    /// Larger pictures (a 6K screenshot as PNG) are skipped rather than held.
+    public static let maximumImageBytes = 15_000_000
+    /// Images cost far more memory than text, so fewer of them are kept.
+    public static let imageCapacity = 8
 
     public private(set) var entries: [Entry] = []
     public let capacity: Int
@@ -55,15 +75,28 @@ public struct ClipboardHistory: Sendable, Equatable {
             text.count <= Self.maximumTextLength,
             !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         else { return false }
+        insert(text: text, image: nil, at: date) { $0.image == nil && $0.text == text }
+        return true
+    }
 
+    /// Records a picture unless it is empty or too large; the same picture
+    /// copied again moves to the top.
+    @discardableResult
+    public mutating func record(_ image: ClipboardImage, at date: Date = .now) -> Bool {
+        guard !image.png.isEmpty, image.png.count <= Self.maximumImageBytes, image.pixelWidth > 0, image.pixelHeight > 0
+        else { return false }
+        insert(text: "", image: image, at: date) { $0.image == image }
+        return true
+    }
+
+    private mutating func insert(text: String, image: ClipboardImage?, at date: Date, matching same: (Entry) -> Bool) {
         var pinned = false
-        if let existing = entries.firstIndex(where: { $0.text == text }) {
+        if let existing = entries.firstIndex(where: same) {
             pinned = entries[existing].isPinned
             entries.remove(at: existing)
         }
-        entries.insert(Entry(id: UUID(), text: text, copiedAt: date, isPinned: pinned), at: 0)
+        entries.insert(Entry(id: UUID(), text: text, image: image, copiedAt: date, isPinned: pinned), at: 0)
         trim()
-        return true
     }
 
     public mutating func togglePin(_ id: UUID) {
@@ -80,6 +113,11 @@ public struct ClipboardHistory: Sendable, Equatable {
     }
 
     private mutating func trim() {
+        while entries.filter({ $0.image != nil }).count > Self.imageCapacity,
+            let last = entries.lastIndex(where: { $0.image != nil && !$0.isPinned })
+        {
+            entries.remove(at: last)
+        }
         while entries.count > capacity, let last = entries.lastIndex(where: { !$0.isPinned }) {
             entries.remove(at: last)
         }

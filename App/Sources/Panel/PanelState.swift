@@ -31,9 +31,13 @@ final class PanelState {
     /// Set while a text field in the panel is being edited, so the panel does
     /// not close under the user's fingers.
     var isEditingText = false
+    /// Pages waiting for a destination; while set, the panel shows the picker.
+    private(set) var saveRequest: SaveRequest?
 
     @ObservationIgnored var onExpand: () -> Void = {}
     @ObservationIgnored var onCollapse: () -> Void = {}
+    /// Opens the panel on the right display and gives it the keyboard.
+    @ObservationIgnored var openForKeyboard: () -> Void = {}
     @ObservationIgnored private var flashTask: Task<Void, Never>?
 
     var hasNotch: Bool {
@@ -60,7 +64,17 @@ final class PanelState {
         isExpanded = false
         isPinned = false
         isEditingText = false
+        saveRequest = nil
         onCollapse()
+    }
+
+    func presentSavePicker(_ request: SaveRequest) {
+        saveRequest = request
+        openForKeyboard()
+    }
+
+    func dismissSavePicker() {
+        saveRequest = nil
     }
 
     func togglePin() {

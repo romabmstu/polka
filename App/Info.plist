@@ -32,13 +32,35 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Polka reads the address of the open Safari tab so you can save it, and opens saved groups in a new window.</string>
+	<string>Polka reads the address of the open browser tab so you can save it, and opens saved groups in a new window.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Polka shows today’s events and a one-click Join button for your next meeting. Your calendar never leaves this Mac.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 romabmstu. MIT License.</string>
 	<key>PolkaUpdatePublicKey</key>
 	<string>A67o23WFUuqfzES6vEmnPEH003Lknu5m1BOkROlDvUw=</string>
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Save to Polka…</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>saveToPolka</string>
+			<key>NSPortName</key>
+			<string>Polka</string>
+			<key>NSRequiredContext</key>
+			<dict/>
+			<key>NSSendTypes</key>
+			<array>
+				<string>public.html</string>
+				<string>public.url</string>
+				<string>public.utf8-plain-text</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

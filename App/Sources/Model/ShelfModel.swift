@@ -21,6 +21,28 @@ final class ShelfModel {
         if items.count > 40 { items.removeLast(items.count - 40) }
     }
 
+    /// Writes a picture from clipboard history to a private temporary folder
+    /// so it can be dragged out or sent with AirDrop like any file. Only done
+    /// when the user asks; macOS clears the folder on its own.
+    @discardableResult
+    func add(png: Data, copiedAt date: Date) -> Bool {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "Shelf", directoryHint: .isDirectory)
+        do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.dateFormat = "yyyy-MM-dd HH.mm.ss"
+            let stamp = formatter.string(from: date)
+            let url = folder.appending(path: "Image \(stamp).png")
+            try png.write(to: url, options: .atomic)
+            try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path(percentEncoded: false))
+            add([url])
+            return true
+        } catch {
+            return false
+        }
+    }
+
     func remove(_ item: Item) { items.removeAll { $0 == item } }
     func clear() { items.removeAll() }
 
