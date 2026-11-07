@@ -1,0 +1,78 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "CFBundleDisplayName": {
+      "comment": "",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Polka"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polka"
+          }
+        }
+      }
+    },
+    "NSAppleEventsUsageDescription": {
+      "comment": "",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Polka reads the address of the open Safari tab so you can save it, and opens saved groups in a new window."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polka читает адрес открытой вкладки Safari, чтобы её можно было сохранить, и открывает сохранённые группы в новом окне."
+          }
+        }
+      }
+    },
+    "NSCalendarsFullAccessUsageDescription": {
+      "comment": "",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Polka shows today’s events and a one-click Join button for your next meeting. Your calendar never leaves this Mac."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polka показывает события на сегодня и кнопку входа на ближайшую встречу. Календарь не покидает этот Mac."
+          }
+        }
+      }
+    },
+    "NSHumanReadableCopyright": {
+      "comment": "",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "© 2026 romabmstu. MIT License."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "© 2026 romabmstu. Лицензия MIT."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
