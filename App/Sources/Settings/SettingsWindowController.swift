@@ -15,8 +15,10 @@ final class SettingsWindowController {
             let controller = NSHostingController(rootView: SettingsView().environment(model))
             let window = NSWindow(contentViewController: controller)
             window.title = String(localized: "Polka Settings")
-            window.styleMask = [.titled, .closable, .miniaturizable]
+            window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
             window.isReleasedWhenClosed = false
+            window.setContentSize(NSSize(width: 760, height: 620))
+            window.minSize = NSSize(width: 720, height: 560)
             window.center()
             window.setFrameAutosaveName("PolkaSettings")
             self.window = window

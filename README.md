@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/romabmstu/polka/releases/latest"><img src="https://img.shields.io/github/v/release/romabmstu/polka?label=download" alt="Latest release"></a>
+  <a href="https://github.com/romabmstu/polka/releases/tag/nightly"><img src="https://img.shields.io/badge/download-beta-blue" alt="Download beta"></a>
   <a href="https://github.com/romabmstu/polka/actions/workflows/ci.yml"><img src="https://github.com/romabmstu/polka/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/macOS-14%2B-black" alt="macOS 14 or later">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"></a>
@@ -44,7 +44,7 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
 
 ## Install
 
-1. Download `Polka-vX.Y.Z.zip` from [Releases](https://github.com/romabmstu/polka/releases/latest) and move **Polka** to Applications.
+1. Download the ZIP from the [beta build](https://github.com/romabmstu/polka/releases/tag/nightly) (or check all [releases](https://github.com/romabmstu/polka/releases)) and move **Polka** to Applications.
 2. The app is not notarized by Apple yet, so the first launch is blocked. Run once in Terminal:
    ```sh
    xattr -dr com.apple.quarantine /Applications/Polka.app
@@ -52,7 +52,7 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
    or open it, then go to System Settings › Privacy & Security and click **Open Anyway**.
 3. Point at the notch.
 
-Each release lists a SHA-256 checksum and carries a [build provenance attestation](https://github.com/romabmstu/polka/attestations): you can check that the zip was built by this repository’s workflow from the tagged commit:
+The beta build includes a SHA-256 checksum. Tagged releases also carry a [build provenance attestation](https://github.com/romabmstu/polka/attestations), which can be checked with:
 
 ```sh
 gh attestation verify Polka-vX.Y.Z.zip --repo romabmstu/polka
@@ -60,7 +60,7 @@ gh attestation verify Polka-vX.Y.Z.zip --repo romabmstu/polka
 
 ## Updates
 
-Polka updates itself: Settings › Updates › *Check Now*, or wait for the *Update* button in the panel. Choose **Every new build (beta)** to get each change as soon as it is merged, or **Releases** for tagged versions. Updates are verified against a signing key built into the app before anything is replaced.
+Polka updates itself: Settings › Updates › *Check Now*, or wait for the *Update* button in the panel. Choose **Every new build (beta)** to get each change as soon as it is merged, or **Releases** for tagged versions. Updates are verified against a signing key built into the app before anything is replaced. If a beta has no signed update manifest, download and install it manually from its release page.
 
 ## Keyboard
 

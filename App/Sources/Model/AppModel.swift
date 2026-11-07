@@ -21,6 +21,7 @@ final class AppModel {
 
     private(set) var runningScenarioID: Scenario.ID?
 
+    var settingsPage: SettingsPage = .general
     @ObservationIgnored var openSettings: () -> Void = {}
     @ObservationIgnored private let shortcuts = ShortcutsRunner()
     @ObservationIgnored private let system = SystemControls()

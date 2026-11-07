@@ -53,6 +53,7 @@ struct ExpandedPanel: View {
                     .keyboardShortcut(",", modifiers: .command)
                 Button("Check for Updates…") {
                     Task { await app.updates.check(channel: app.preferences.updateChannel) }
+                    app.settingsPage = .updates
                     app.openSettings()
                 }
                 Divider()

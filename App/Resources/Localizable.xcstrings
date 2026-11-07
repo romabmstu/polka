@@ -3592,6 +3592,46 @@
           }
         }
       }
+    },
+    "System volume": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Системная громкость"
+          }
+        }
+      }
+    },
+    "Could not change system volume": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось изменить системную громкость"
+          }
+        }
+      }
+    },
+    "The preferred player opens when nothing is playing. The controls follow the app currently playing.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбранный плеер открывается, когда ничего не воспроизводится. Кнопки управляют приложением, в котором сейчас играет музыка."
+          }
+        }
+      }
+    },
+    "System volume unavailable": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Системная громкость недоступна"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

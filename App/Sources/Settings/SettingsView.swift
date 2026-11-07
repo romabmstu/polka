@@ -4,18 +4,74 @@ import ServiceManagement
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct SettingsView: View {
-    var body: some View {
-        TabView {
-            GeneralSettings().tabItem { Label("General", systemImage: "gearshape") }
-            ThroneSettings().tabItem { Label("FSNT", systemImage: "network") }
-            SectionsSettings().tabItem { Label("Sections", systemImage: "square.grid.2x2") }
-            ScenariosSettings().tabItem { Label("Scenarios", systemImage: "sparkles") }
-            PrivacySettings().tabItem { Label("Privacy", systemImage: "hand.raised") }
-            UpdatesSettings().tabItem { Label("Updates", systemImage: "arrow.down.circle") }
-            AboutSettings().tabItem { Label("About", systemImage: "info.circle") }
+enum SettingsPage: String, CaseIterable, Identifiable {
+    case general, music, fsnt, sections, scenarios, privacy, updates, about
+    var id: String { rawValue }
+    var title: LocalizedStringKey {
+        switch self {
+        case .general: "General"
+        case .music: "Music"
+        case .fsnt: "FSNT / Throne"
+        case .sections: "Sections"
+        case .scenarios: "Scenarios"
+        case .privacy: "Privacy"
+        case .updates: "Updates"
+        case .about: "About"
         }
-        .frame(width: 600, height: 520)
+    }
+    var symbol: String {
+        switch self {
+        case .general: "slider.horizontal.3"
+        case .music: "music.note"
+        case .fsnt: "network"
+        case .sections: "square.grid.2x2"
+        case .scenarios: "sparkles"
+        case .privacy: "hand.raised"
+        case .updates: "arrow.down.circle"
+        case .about: "info.circle"
+        }
+    }
+}
+
+struct SettingsView: View {
+    @Environment(AppModel.self) private var app
+    var body: some View {
+        HStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text("Polka").font(.system(size: 21, weight: .bold)).padding(.horizontal, 14).padding(.vertical, 18)
+                ForEach(SettingsPage.allCases) { page in
+                    Button { app.settingsPage = page } label: {
+                        Label(page.title, systemImage: page.symbol)
+                            .font(.system(size: 13, weight: app.settingsPage == page ? .semibold : .medium))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 12).frame(height: 38)
+                            .background(app.settingsPage == page ? Color.accentColor.opacity(0.20) : .clear, in: .rect(cornerRadius: 10))
+                            .contentShape(.rect)
+                    }.buttonStyle(.plain)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(12).frame(width: 190).background(Color.primary.opacity(0.035))
+            Divider()
+            VStack(alignment: .leading, spacing: 0) {
+                Text(app.settingsPage.title).font(.system(size: 22, weight: .bold))
+                    .padding(.horizontal, 24).padding(.top, 22).padding(.bottom, 10)
+                settingsContent.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .frame(minWidth: 720, minHeight: 560)
+    }
+    @ViewBuilder private var settingsContent: some View {
+        switch app.settingsPage {
+        case .general: GeneralSettings()
+        case .music: MusicSettings()
+        case .fsnt: ThroneSettings()
+        case .sections: SectionsSettings()
+        case .scenarios: ScenariosSettings()
+        case .privacy: PrivacySettings()
+        case .updates: UpdatesSettings()
+        case .about: AboutSettings()
+        }
     }
 }
 
@@ -101,15 +157,7 @@ private struct GeneralSettings: View {
                     .foregroundStyle(.secondary)
             }
 
-            Section("Music") {
-                LabeledContent("Player") {
-                    HStack {
-                        Text(MediaModel.appName(bundleID: preferences.playerBundleID) ?? String(localized: "Not chosen"))
-                            .foregroundStyle(.secondary)
-                        Button("Choose…", action: choosePlayer)
-                    }
-                }
-            }
+
         }
         .formStyle(.grouped)
     }
@@ -124,13 +172,35 @@ private struct GeneralSettings: View {
         }
     }
 
-    private func choosePlayer() {
-        let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.application]
-        panel.directoryURL = URL(filePath: "/Applications")
-        panel.prompt = String(localized: "Choose")
-        guard panel.runModal() == .OK, let url = panel.url, let id = Bundle(url: url)?.bundleIdentifier else { return }
-        app.preferences.playerBundleID = id
+
+}
+
+private struct MusicSettings: View {
+    @Environment(AppModel.self) private var app
+    var body: some View {
+        Form {
+            Section {
+                LabeledContent("Player") {
+                    HStack {
+                        Text(MediaModel.appName(bundleID: app.preferences.playerBundleID) ?? String(localized: "Not chosen"))
+                            .foregroundStyle(.secondary)
+                        Button("Choose…") {
+                            let panel = NSOpenPanel()
+                            panel.allowedContentTypes = [.application]
+                            panel.directoryURL = URL(filePath: "/Applications")
+                            panel.prompt = String(localized: "Choose")
+                            guard panel.runModal() == .OK, let url = panel.url, let id = Bundle(url: url)?.bundleIdentifier else { return }
+                            app.preferences.playerBundleID = id
+                        }
+                        if !app.preferences.playerBundleID.isEmpty {
+                            Button("Clear") { app.preferences.playerBundleID = "" }
+                        }
+                    }
+                }
+            } footer: {
+                Text("The preferred player opens when nothing is playing. The controls follow the app currently playing.")
+            }
+        }.formStyle(.grouped)
     }
 }
 

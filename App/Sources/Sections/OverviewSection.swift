@@ -56,7 +56,7 @@ private struct MediaCard: View {
     var body: some View {
         let media = app.media
         Card {
-            HStack(spacing: 14) {
+            HStack(alignment: .center, spacing: 14) {
                 ArtworkView(size: 92, cornerRadius: 14)
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
@@ -74,10 +74,11 @@ private struct MediaCard: View {
                                 .font(.system(size: 12.5)).foregroundStyle(Theme.secondary).lineLimit(1)
                         }
                     }
-                    Spacer(minLength: 0)
                     TransportControls(size: 30)
                 }
+                .frame(maxHeight: .infinity, alignment: .center)
             }
+            .frame(maxHeight: .infinity, alignment: .center)
         }
     }
 }
@@ -193,6 +194,7 @@ private struct ScenariosRow: View {
         let scenarios = Array(app.preferences.scenarios.prefix(4))
         if scenarios.isEmpty {
             Button {
+                app.settingsPage = .scenarios
                 app.openSettings()
             } label: {
                 HStack(spacing: 12) {

@@ -11,7 +11,9 @@ struct ArtworkView: View {
         let media = app.media
         Group {
             if let artwork = media.artwork {
-                Image(nsImage: artwork).resizable().aspectRatio(contentMode: .fill)
+                Image(nsImage: artwork).resizable().aspectRatio(contentMode: .fit)
+                    .frame(width: size, height: size)
+                    .background(Theme.cardHover)
             } else if let id = media.nowPlaying?.appBundleIdentifier, let icon = MediaModel.appIcon(bundleID: id) {
                 Image(nsImage: icon).resizable().padding(size * 0.14)
                     .background(Theme.cardHover)

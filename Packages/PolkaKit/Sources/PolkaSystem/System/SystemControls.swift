@@ -35,6 +35,14 @@ public struct SystemControls: Sendable {
         try await run(script, [appearance.rawValue])
     }
 
+    public func outputVolume() async throws -> Int {
+        let result = try await runner.runChecked("/usr/bin/osascript", ["-e", "output volume of (get volume settings)"], timeout: .seconds(5))
+        guard let value = Int(result.output.trimmingCharacters(in: .whitespacesAndNewlines)), (0...100).contains(value) else {
+            throw Failure.scriptFailed("Unable to read output volume")
+        }
+        return value
+    }
+
     public func setVolume(percent: Int) async throws {
         let value = Scenario.clampedVolume(percent)
         try await run("on run argv\nset volume output volume ((item 1 of argv) as integer) without output muted\nend run", [String(value)])
