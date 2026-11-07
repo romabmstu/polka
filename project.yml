@@ -27,11 +27,18 @@ targets:
         buildPhase: none
       - path: App/Polka.entitlements
         buildPhase: none
+      - path: Vendor/MediaRemoteAdapter/bin/mediaremote-adapter.pl
+        buildPhase: resources
     dependencies:
       - package: PolkaKit
         product: PolkaCore
       - package: PolkaKit
         product: PolkaSystem
+      # Loaded by /usr/bin/perl at run time, never linked into Polka.
+      - target: MediaRemoteAdapter
+        embed: true
+        link: false
+        codeSign: true
     settings:
       base:
         PRODUCT_NAME: Polka
@@ -40,6 +47,35 @@ targets:
         CODE_SIGN_ENTITLEMENTS: App/Polka.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: NO
+
+  MediaRemoteAdapter:
+    type: framework
+    platform: macOS
+    sources:
+      - path: Vendor/MediaRemoteAdapter/src
+      - path: Vendor/MediaRemoteAdapter/include
+        headerVisibility: public
+    settings:
+      base:
+        PRODUCT_NAME: MediaRemoteAdapter
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.romabmstu.Polka.MediaRemoteAdapter
+        GENERATE_INFOPLIST_FILE: YES
+        CLANG_ENABLE_OBJC_ARC: YES
+        GCC_SYMBOLS_PRIVATE_EXTERN: NO
+        DEFINES_MODULE: NO
+        SKIP_INSTALL: YES
+        USE_HEADERMAP: YES
+        HEADER_SEARCH_PATHS:
+          - $(SRCROOT)/Vendor/MediaRemoteAdapter/src
+          - $(SRCROOT)/Vendor/MediaRemoteAdapter/include
+        OTHER_LDFLAGS:
+          - -framework
+          - Foundation
+          - -framework
+          - AppKit
+          - -framework
+          - UniformTypeIdentifiers
+        GCC_WARN_INHIBIT_ALL_WARNINGS: YES
 
 schemes:
   Polka:

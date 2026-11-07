@@ -11,9 +11,10 @@ struct SettingsView: View {
             SectionsSettings().tabItem { Label("Sections", systemImage: "square.grid.2x2") }
             ScenariosSettings().tabItem { Label("Scenarios", systemImage: "sparkles") }
             PrivacySettings().tabItem { Label("Privacy", systemImage: "hand.raised") }
+            UpdatesSettings().tabItem { Label("Updates", systemImage: "arrow.down.circle") }
             AboutSettings().tabItem { Label("About", systemImage: "info.circle") }
         }
-        .frame(width: 560, height: 460)
+        .frame(width: 600, height: 520)
     }
 }
 
@@ -41,9 +42,28 @@ private struct GeneralSettings: View {
                 }
                 .disabled(!preferences.openOnHover)
                 Picker("Show on", selection: $preferences.display) {
+                    Text("Display with the pointer").tag(DisplayChoice.pointer)
                     Text("Built-in display").tag(DisplayChoice.builtIn)
                     Text("Main display").tag(DisplayChoice.main)
                 }
+                Toggle("Close after opening a saved tab", isOn: $preferences.closeAfterOpeningTab)
+            } footer: {
+                Text("On displays without a notch Polka is a capsule at the top center. Point at it or press ⌥⇧K.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("In the closed notch") {
+                Toggle("What’s playing", isOn: $preferences.showMusicIndicator)
+                Toggle("VPN status", isOn: $preferences.showVPNIndicator)
+                Toggle("Countdown to the next meeting", isOn: $preferences.showMeetingCountdown)
+                Picker("Start the countdown", selection: $preferences.meetingLeadMinutes) {
+                    Text("10 minutes before").tag(10)
+                    Text("15 minutes before").tag(15)
+                    Text("30 minutes before").tag(30)
+                    Text("1 hour before").tag(60)
+                }
+                .disabled(!preferences.showMeetingCountdown)
             }
 
             Section {
@@ -63,7 +83,7 @@ private struct GeneralSettings: View {
             Section("Music") {
                 LabeledContent("Player") {
                     HStack {
-                        Text(MediaModel.playerName(bundleID: preferences.playerBundleID) ?? String(localized: "Not chosen"))
+                        Text(MediaModel.appName(bundleID: preferences.playerBundleID) ?? String(localized: "Not chosen"))
                             .foregroundStyle(.secondary)
                         Button("Choose…", action: choosePlayer)
                     }
@@ -102,23 +122,71 @@ private struct SectionsSettings: View {
         let preferences = app.preferences
         Form {
             Section {
-                ForEach(PanelSection.allCases) { section in
-                    Toggle(isOn: Binding(get: { preferences.isEnabled(section) }, set: { preferences.setEnabled(section, $0) })) {
-                        Label {
-                            Text(section.title)
-                        } icon: {
-                            Image(systemName: section.symbol)
+                List {
+                    ForEach(preferences.sections) { section in
+                        Toggle(isOn: Binding(get: { true }, set: { preferences.setEnabled(section, $0) })) {
+                            Label {
+                                Text(section.title)
+                            } icon: {
+                                Image(systemName: section.symbol)
+                            }
+                        }
+                        .disabled(section == .overview)
+                    }
+                    .onMove { preferences.sections.move(fromOffsets: $0, toOffset: $1) }
+                }
+                .frame(minHeight: 260)
+            } header: {
+                Text("Shown in the panel — drag to reorder")
+            }
+            let hidden = PanelSection.allCases.filter { !preferences.isEnabled($0) }
+            if !hidden.isEmpty {
+                Section("Hidden") {
+                    ForEach(hidden) { section in
+                        Toggle(isOn: Binding(get: { false }, set: { preferences.setEnabled(section, $0) })) {
+                            Label {
+                                Text(section.title)
+                            } icon: {
+                                Image(systemName: section.symbol)
+                            }
                         }
                     }
-                    .disabled(section == .overview)
                 }
-            } footer: {
-                Text("Hidden sections are removed from the panel. Overview is always shown.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            }
+            Section("Calendars") {
+                CalendarChooser()
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+private struct CalendarChooser: View {
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        let calendars = app.agenda.calendars
+        if calendars.isEmpty {
+            Text("Allow Calendar access in the panel to choose calendars.")
+                .foregroundStyle(.secondary)
+        } else {
+            ForEach(calendars) { calendar in
+                Toggle(isOn: Binding(
+                    get: { !app.preferences.hiddenCalendarIDs.contains(calendar.id) },
+                    set: { shown in
+                        if shown { app.preferences.hiddenCalendarIDs.remove(calendar.id) }
+                        else { app.preferences.hiddenCalendarIDs.insert(calendar.id) }
+                        app.agenda.reload()
+                    })
+                ) {
+                    HStack(spacing: 8) {
+                        Circle().fill(Color(hex: calendar.colorHex ?? "") ?? .accentColor).frame(width: 10, height: 10)
+                        Text(calendar.title)
+                        Text(calendar.source).foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -150,13 +218,11 @@ private struct PrivacySettings: View {
                 PermissionRow(
                     title: "Safari", detail: "Read and open tabs", granted: app.tabs.safariState == .ready,
                     pane: .automation)
-                PermissionRow(title: "Accessibility", detail: "Music keys", granted: app.media.isAllowed, pane: .accessibility)
                 PermissionRow(
                     title: "Calendars", detail: "Today’s events", granted: app.agenda.access == .granted, pane: .calendars)
             }
         }
         .formStyle(.grouped)
-        .onAppear { app.media.refreshPermission() }
     }
 }
 
@@ -202,6 +268,70 @@ private struct PermissionRow: View {
             Text(title)
             Text(detail)
         }
+    }
+}
+
+// MARK: - Updates
+
+private struct UpdatesSettings: View {
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        @Bindable var preferences = app.preferences
+        let updates = app.updates
+        Form {
+            Section {
+                LabeledContent("Installed version") { Text(updates.versionDescription).monospacedDigit() }
+                Picker("Get", selection: $preferences.updateChannel) {
+                    Text("Releases").tag(UpdateChannel.stable)
+                    Text("Every new build (beta)").tag(UpdateChannel.beta)
+                }
+                .onChange(of: preferences.updateChannel) { _, channel in
+                    Task { await updates.check(channel: channel) }
+                }
+                Toggle("Check automatically", isOn: $preferences.checkForUpdatesAutomatically)
+                    .onChange(of: preferences.checkForUpdatesAutomatically) { _, _ in
+                        updates.startAutomaticChecks(preferences: preferences)
+                    }
+            } footer: {
+                Text("Updates come only from github.com/romabmstu/polka and are installed only if their signature matches the key built into Polka.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
+                HStack {
+                    switch updates.state {
+                    case .checking:
+                        ProgressView().controlSize(.small)
+                        Text("Checking…")
+                    case .upToDate:
+                        Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                        Text("Polka is up to date")
+                    case .available, .downloading:
+                        Image(systemName: "arrow.down.circle.fill").foregroundStyle(.green)
+                        Text("An update is available")
+                    case .failed:
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                        Text("Update failed")
+                    case .idle:
+                        Text("Not checked yet").foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Button("Check Now") { Task { await updates.check(channel: preferences.updateChannel) } }
+                        .disabled(updates.state == .checking)
+                }
+                if updates.available != nil || updates.hasFailed {
+                    UpdateDetails()
+                }
+                if let last = updates.lastChecked {
+                    Text("Last checked \(last.formatted(.relative(presentation: .named)))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .formStyle(.grouped)
     }
 }
 

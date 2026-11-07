@@ -37,6 +37,8 @@
 	<string>Polka shows today’s events and a one-click Join button for your next meeting. Your calendar never leaves this Mac.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 romabmstu. MIT License.</string>
+	<key>PolkaUpdatePublicKey</key>
+	<string>A67o23WFUuqfzES6vEmnPEH003Lknu5m1BOkROlDvUw=</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

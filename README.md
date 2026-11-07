@@ -20,7 +20,7 @@
 
 ---
 
-Point at the notch and it opens into a panel. Move away and it tucks back in. On displays without a notch Polka sits under the menu bar as a small capsule.
+Point at the notch and it opens into a panel. Move away and it tucks back in. On displays without a notch Polka sits at the top center as a small capsule, and by default it follows the pointer to whichever display you are using.
 
 While closed, the notch shows what matters right now: a shield when your VPN is on and a countdown when a meeting is about to start.
 
@@ -30,7 +30,7 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
 
 **VPN.** Every VPN registered in System Settings — WireGuard, Happ, V2Box, corporate L2TP and others — with a switch. Turning one on turns the others off.
 
-**Music.** Play, pause and skip for whatever is playing: Yandex Music, Music, Spotify, a video in the browser.
+**Music.** Title, artist, artwork and a seekable progress bar for whatever is playing — Yandex Music, Music, Spotify, a video in the browser — and which app that is, so play and pause always act where you expect.
 
 **Calendar.** Today’s events from the calendars already on your Mac (Google, iCloud, Exchange) and a Join button for Google Meet, Zoom, Teams, Telemost, Jitsi and Webex links.
 
@@ -57,6 +57,10 @@ Each release lists a SHA-256 checksum and carries a [build provenance attestatio
 ```sh
 gh attestation verify Polka-vX.Y.Z.zip --repo romabmstu/polka
 ```
+
+## Updates
+
+Polka updates itself: Settings › Updates › *Check Now*, or wait for the *Update* button in the panel. Choose **Every new build (beta)** to get each change as soon as it is merged, or **Releases** for tagged versions. Updates are verified against a signing key built into the app before anything is replaced.
 
 ## Keyboard
 

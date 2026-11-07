@@ -56,53 +56,28 @@ private struct MediaCard: View {
     var body: some View {
         let media = app.media
         Card {
-            VStack(alignment: .leading, spacing: 0) {
-                CardLabel("Music")
-                Spacer(minLength: 8)
-                HStack(spacing: 12) {
-                    Image(systemName: media.assumedPlaying ? "waveform" : "music.note")
-                        .font(.system(size: 22, weight: .semibold))
-                        .symbolEffect(.variableColor.iterative, isActive: media.assumedPlaying)
-                        .frame(width: 52, height: 52)
-                        .background(Theme.cardHover, in: .rect(cornerRadius: 12, style: .continuous))
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(playerName).font(.system(size: 15, weight: .semibold)).lineLimit(1)
-                        (media.isAllowed ? Text("Controls the app that is playing") : Text("Needs Accessibility access"))
-                            .font(.system(size: 12))
-                            .foregroundStyle(Theme.secondary)
-                            .lineLimit(1)
+            HStack(spacing: 14) {
+                ArtworkView(size: 92, cornerRadius: 14)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        CardLabel("Music")
+                        Spacer()
+                        PlayingSource()
                     }
+                    if let item = media.nowPlaying {
+                        Text(item.title).font(.system(size: 15, weight: .semibold)).lineLimit(1)
+                        Text(item.artist ?? "").font(.system(size: 12.5)).foregroundStyle(Theme.secondary).lineLimit(1)
+                    } else {
+                        Text("Nothing is playing").font(.system(size: 15, weight: .semibold)).lineLimit(1)
+                        if let player = MediaModel.appName(bundleID: app.preferences.playerBundleID) {
+                            Text("Press play to open \(player)")
+                                .font(.system(size: 12.5)).foregroundStyle(Theme.secondary).lineLimit(1)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                    TransportControls(size: 30)
                 }
-                Spacer(minLength: 8)
-                TransportControls(size: 36)
             }
-        }
-    }
-
-    private var playerName: String {
-        MediaModel.playerName(bundleID: app.preferences.playerBundleID) ?? String(localized: "Now Playing")
-    }
-}
-
-struct TransportControls: View {
-    @Environment(AppModel.self) private var app
-    var size: CGFloat
-
-    var body: some View {
-        let media = app.media
-        HStack(spacing: size * 0.25) {
-            Button { media.previous() } label: { Image(systemName: "backward.fill") }
-                .buttonStyle(IconButtonStyle(size: size))
-                .accessibilityLabel(Text("Previous track"))
-            Button { media.playPause() } label: {
-                Image(systemName: media.assumedPlaying ? "pause.fill" : "play.fill")
-                    .contentTransition(.symbolEffect(.replace))
-            }
-            .buttonStyle(IconButtonStyle(size: size * 1.2, filled: true))
-            .accessibilityLabel(Text("Play or pause"))
-            Button { media.next() } label: { Image(systemName: "forward.fill") }
-                .buttonStyle(IconButtonStyle(size: size))
-                .accessibilityLabel(Text("Next track"))
         }
     }
 }

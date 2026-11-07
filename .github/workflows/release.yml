@@ -15,11 +15,12 @@ jobs:
     timeout-minutes: 30
     defaults:
       run:
-        # Explicit bash turns on pipefail, so `cmd | tee log` fails when cmd fails.
+        # Explicit bash turns on pipefail.
         shell: bash
     steps:
       - uses: actions/checkout@v7
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Select Xcode
@@ -32,27 +33,28 @@ jobs:
         run: |
           brew install xcodegen
           xcodegen generate
-          version="${GITHUB_REF_NAME#v}"
           xcodebuild -project Polka.xcodeproj -scheme Polka -configuration Release \
             -derivedDataPath build -destination 'generic/platform=macOS' \
-            MARKETING_VERSION="$version" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
-            CODE_SIGN_IDENTITY=- build
+            MARKETING_VERSION="${GITHUB_REF_NAME#v}" CURRENT_PROJECT_VERSION="$(git rev-list --count HEAD)" \
+            CODE_SIGN_IDENTITY=- -quiet build
 
-      - name: Package
-        run: |
-          app="build/Build/Products/Release/Polka.app"
-          ditto -c -k --keepParent "$app" "Polka-${GITHUB_REF_NAME}.zip"
-          shasum -a 256 "Polka-${GITHUB_REF_NAME}.zip" > "Polka-${GITHUB_REF_NAME}.zip.sha256"
+      - name: Sign and package
+        id: package
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+          CODESIGN_P12_BASE64: ${{ secrets.CODESIGN_P12_BASE64 }}
+          CODESIGN_P12_PASSWORD: ${{ secrets.CODESIGN_P12_PASSWORD }}
+        run: scripts/package.sh build/Build/Products/Release/Polka.app stable "$GITHUB_REF_NAME" out
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v4
         with:
-          subject-path: Polka-${{ github.ref_name }}.zip
+          subject-path: out/${{ steps.package.outputs.name }}
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
+          NAME: ${{ steps.package.outputs.name }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            "Polka-${GITHUB_REF_NAME}.zip" "Polka-${GITHUB_REF_NAME}.zip.sha256" \
+          gh release create "$GITHUB_REF_NAME" out/"$NAME" out/"$NAME".sha256 out/update.json \
             --title "Polka ${GITHUB_REF_NAME#v}" --generate-notes --verify-tag

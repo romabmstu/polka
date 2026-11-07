@@ -2,6 +2,13 @@ import AppKit
 import EventKit
 import PolkaCore
 
+public struct CalendarInfo: Identifiable, Hashable, Sendable {
+    public let id: String
+    public let title: String
+    public let source: String
+    public let colorHex: String?
+}
+
 public struct AgendaItem: Identifiable, Hashable, Sendable {
     public let id: String
     public let title: String
@@ -52,11 +59,29 @@ public final class CalendarService {
         }
     }
 
-    public func agenda(on day: Date, calendar: Calendar = .current) -> [AgendaItem] {
+    public func calendars() -> [CalendarInfo] {
+        guard access == .granted else { return [] }
+        return store.calendars(for: .event)
+            .map {
+                CalendarInfo(
+                    id: $0.calendarIdentifier, title: $0.title, source: $0.source?.title ?? "",
+                    colorHex: $0.color.flatMap(AgendaItem.hex))
+            }
+            .sorted { ($0.source, $0.title) < ($1.source, $1.title) }
+    }
+
+    /// `nil` means all calendars; an empty selection would match nothing.
+    private func selection(excluding hidden: Set<String>) -> [EKCalendar]? {
+        guard !hidden.isEmpty else { return nil }
+        let shown = store.calendars(for: .event).filter { !hidden.contains($0.calendarIdentifier) }
+        return shown.isEmpty ? nil : shown
+    }
+
+    public func agenda(on day: Date, excluding hidden: Set<String> = [], calendar: Calendar = .current) -> [AgendaItem] {
         guard access == .granted else { return [] }
         let start = calendar.startOfDay(for: day)
         guard let end = calendar.date(byAdding: .day, value: 1, to: start) else { return [] }
-        let predicate = store.predicateForEvents(withStart: start, end: end, calendars: nil)
+        let predicate = store.predicateForEvents(withStart: start, end: end, calendars: selection(excluding: hidden))
         return store.events(matching: predicate)
             .filter { $0.status != .canceled }
             .sorted { lhs, rhs in
@@ -67,9 +92,12 @@ public final class CalendarService {
     }
 
     /// The first timed event that has not ended yet within the next `horizon`.
-    public func nextEvent(after date: Date = .now, horizon: TimeInterval = 24 * 60 * 60) -> AgendaItem? {
+    public func nextEvent(
+        after date: Date = .now, horizon: TimeInterval = 24 * 60 * 60, excluding hidden: Set<String> = []
+    ) -> AgendaItem? {
         guard access == .granted else { return nil }
-        let predicate = store.predicateForEvents(withStart: date, end: date.addingTimeInterval(horizon), calendars: nil)
+        let predicate = store.predicateForEvents(
+            withStart: date, end: date.addingTimeInterval(horizon), calendars: selection(excluding: hidden))
         return store.events(matching: predicate)
             .filter { !$0.isAllDay && $0.status != .canceled && $0.endDate > date }
             .min { ($0.startDate ?? .distantPast) < ($1.startDate ?? .distantPast) }
@@ -92,7 +120,7 @@ extension AgendaItem {
         )
     }
 
-    private static func hex(_ color: NSColor) -> String? {
+    fileprivate static func hex(_ color: NSColor) -> String? {
         guard let rgb = color.usingColorSpace(.sRGB) else { return nil }
         let r = Int((rgb.redComponent * 255).rounded())
         let g = Int((rgb.greenComponent * 255).rounded())

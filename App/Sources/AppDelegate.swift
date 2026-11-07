@@ -9,6 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var hotKeys: [GlobalHotKey] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        replaceOtherInstances()
         NSApp.mainMenu = MainMenu.make()
         let settings = SettingsWindowController(model: model)
         settingsController = settings
@@ -24,6 +25,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         model.tabs.saveNow()
+        model.media.stop()
+    }
+
+    /// Only one Polka should run: a second copy (an update, or the same app
+    /// started from another folder) takes over from the first.
+    private func replaceOtherInstances() {
+        guard let id = Bundle.main.bundleIdentifier else { return }
+        let others = NSRunningApplication.runningApplications(withBundleIdentifier: id)
+            .filter { $0 != NSRunningApplication.current }
+        guard !others.isEmpty else { return }
+        others.forEach { $0.terminate() }
+        let deadline = Date.now.addingTimeInterval(3)
+        while others.contains(where: { !$0.isTerminated }), Date.now < deadline {
+            RunLoop.current.run(until: .now.addingTimeInterval(0.05))
+        }
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

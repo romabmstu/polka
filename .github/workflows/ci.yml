@@ -21,16 +21,21 @@ jobs:
       run:
         # Explicit bash turns on pipefail, so `cmd | tee log` fails when cmd fails.
         shell: bash
+    outputs:
+      build: ${{ steps.number.outputs.build }}
     steps:
       - uses: actions/checkout@v7
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Select Xcode
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
 
-      - name: Versions
-        run: xcodebuild -version && swift --version
+      - name: Build number
+        id: number
+        # Commit count on main: always increases, so newer builds compare greater.
+        run: echo "build=$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Unit tests
         id: tests
@@ -46,6 +51,7 @@ jobs:
         run: |
           xcodebuild -project Polka.xcodeproj -scheme Polka -configuration Release \
             -derivedDataPath build -destination 'generic/platform=macOS' \
+            CURRENT_PROJECT_VERSION=${{ steps.number.outputs.build }} \
             CODE_SIGN_IDENTITY=- -quiet build 2>&1 | tee build.log
 
       - name: Report errors
@@ -58,51 +64,89 @@ jobs:
           echo "::error title=${count} compiler errors::$(printf '%s\n' "$errors" | head -80 | encode)"
           failed=$(grep -aE '✘|recorded an issue|error: -\[' test.log 2>/dev/null | head -40 | encode)
           if [ -n "$failed" ]; then echo "::warning title=Test failures::$failed"; fi
-          {
-            echo '```'
-            printf '%s\n' "$errors"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
           exit 0
 
       - name: Summary
         if: always()
         run: |
-          tests=$(grep -aE 'Test run with|Executed [0-9]+ tests|error:' test.log 2>/dev/null | tail -3 | tr -d ':' | tr '\n' ' ')
-          [ -n "$tests" ] || tests="last lines: $(tail -n 3 test.log 2>/dev/null | tr -d ':' | tr '\n' ' ')"
-          echo "::notice title=Tests::${tests:-no test summary} (outcome: ${{ steps.tests.outcome }})"
-          echo "::notice title=Build::outcome: ${{ steps.build.outcome }}"
+          tests=$(grep -aE 'Test run with|Executed [0-9]+ tests' test.log 2>/dev/null | tail -2 | tr -d ':' | tr '\n' ' ')
+          echo "::notice title=Tests::${tests:-no summary} (outcome: ${{ steps.tests.outcome }})"
+          echo "::notice title=Build::build ${{ steps.number.outputs.build }}, outcome: ${{ steps.build.outcome }}"
 
       - name: Verify app bundle
-        id: verify
         if: steps.build.outcome == 'success'
         run: |
           app=build/Build/Products/Release/Polka.app
-          ls -la "$app/Contents" "$app/Contents/MacOS" || true
           size=$(du -sh "$app" | cut -f1)
           archs=$(lipo -archs "$app/Contents/MacOS/Polka" 2>/dev/null || echo "no executable")
-          echo "::notice title=App bundle::size $size, archs $archs, Info.plist $(test -f "$app/Contents/Info.plist" && echo present || echo missing)"
+          adapter=$(test -d "$app/Contents/Frameworks/MediaRemoteAdapter.framework" && echo yes || echo missing)
+          echo "::notice title=App bundle::size $size, archs $archs, media adapter $adapter"
           test -x "$app/Contents/MacOS/Polka"
-          test -f "$app/Contents/Info.plist"
+          test -f "$app/Contents/Resources/mediaremote-adapter.pl"
           codesign --verify --deep --strict "$app"
-
-      - name: Package build
-        if: steps.build.outcome == 'success'
-        run: ditto -c -k --keepParent build/Build/Products/Release/Polka.app Polka-${{ github.sha }}.zip
+          ditto -c -k --keepParent "$app" Polka.zip
 
       - name: Upload build
         if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: Polka-${{ github.sha }}
-          path: Polka-${{ github.sha }}.zip
+          name: Polka-app
+          path: Polka.zip
           retention-days: 14
-
-      - name: Style
-        run: swift format lint --recursive App Packages
 
       - name: Result
         if: steps.tests.outcome != 'success' || steps.build.outcome != 'success'
         run: |
           echo "tests: ${{ steps.tests.outcome }}, build: ${{ steps.build.outcome }}"
           exit 1
+
+  beta:
+    name: Publish beta build
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: macos-15
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    concurrency:
+      group: beta-release
+      cancel-in-progress: true
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: Polka-app
+
+      - name: Sign and package
+        id: package
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+          CODESIGN_P12_BASE64: ${{ secrets.CODESIGN_P12_BASE64 }}
+          CODESIGN_P12_PASSWORD: ${{ secrets.CODESIGN_P12_PASSWORD }}
+        run: |
+          if [[ -z "$UPDATE_SIGNING_KEY" ]]; then
+            echo "::warning title=Beta not published::UPDATE_SIGNING_KEY secret is not set"
+            exit 0
+          fi
+          ditto -x -k Polka.zip .
+          scripts/package.sh Polka.app beta nightly out
+
+      - name: Publish
+        if: steps.package.outputs.name != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ steps.package.outputs.name }}
+          VERSION: ${{ steps.package.outputs.version }}
+          BUILD: ${{ steps.package.outputs.build }}
+        run: |
+          gh release delete nightly --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
+          gh release create nightly out/"$NAME" out/"$NAME".sha256 out/update.json \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "Beta $VERSION ($BUILD)" --notes-file out/notes.txt
+          echo "::notice title=Beta published::$VERSION ($BUILD)"

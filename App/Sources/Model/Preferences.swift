@@ -35,8 +35,11 @@ enum PanelSection: String, CaseIterable, Codable, Identifiable {
 }
 
 enum DisplayChoice: String, CaseIterable, Codable {
+    /// Whichever display the pointer is on; the panel follows you.
+    case pointer
     /// The built-in display if there is one (it has the notch), otherwise the main display.
     case builtIn
+    /// The display with the menu bar.
     case main
 }
 
@@ -57,11 +60,21 @@ final class Preferences {
     var scenarios: [Scenario] { didSet { store(scenarios, Key.scenarios) } }
     var hasSeenWelcome: Bool { didSet { defaults.set(hasSeenWelcome, forKey: Key.welcome) } }
 
+    var showMeetingCountdown: Bool { didSet { defaults.set(showMeetingCountdown, forKey: Key.meetingCountdown) } }
+    var meetingLeadMinutes: Int { didSet { defaults.set(meetingLeadMinutes, forKey: Key.meetingLead) } }
+    var showVPNIndicator: Bool { didSet { defaults.set(showVPNIndicator, forKey: Key.vpnIndicator) } }
+    var showMusicIndicator: Bool { didSet { defaults.set(showMusicIndicator, forKey: Key.musicIndicator) } }
+    var closeAfterOpeningTab: Bool { didSet { defaults.set(closeAfterOpeningTab, forKey: Key.closeAfterOpen) } }
+    var hiddenCalendarIDs: Set<String> { didSet { store(hiddenCalendarIDs, Key.hiddenCalendars) } }
+
+    var updateChannel: UpdateChannel { didSet { defaults.set(updateChannel.rawValue, forKey: Key.updateChannel) } }
+    var checkForUpdatesAutomatically: Bool { didSet { defaults.set(checkForUpdatesAutomatically, forKey: Key.autoUpdate) } }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         openOnHover = defaults.object(forKey: Key.openOnHover) as? Bool ?? true
         hoverDelay = defaults.object(forKey: Key.hoverDelay) as? Double ?? 0.12
-        display = defaults.string(forKey: Key.display).flatMap { DisplayChoice(rawValue: $0) } ?? .builtIn
+        display = defaults.string(forKey: Key.display).flatMap { DisplayChoice(rawValue: $0) } ?? .pointer
         sections = Self.load([PanelSection].self, Key.sections, defaults) ?? PanelSection.allCases
         clipboardHistoryEnabled = defaults.object(forKey: Key.clipboard) as? Bool ?? true
         exchangeRatesEnabled = defaults.bool(forKey: Key.rates)
@@ -69,13 +82,21 @@ final class Preferences {
         playerBundleID = defaults.string(forKey: Key.player) ?? ""
         scenarios = Self.load([Scenario].self, Key.scenarios, defaults) ?? []
         hasSeenWelcome = defaults.bool(forKey: Key.welcome)
+        showMeetingCountdown = defaults.object(forKey: Key.meetingCountdown) as? Bool ?? true
+        meetingLeadMinutes = defaults.object(forKey: Key.meetingLead) as? Int ?? 30
+        showVPNIndicator = defaults.object(forKey: Key.vpnIndicator) as? Bool ?? true
+        showMusicIndicator = defaults.object(forKey: Key.musicIndicator) as? Bool ?? true
+        closeAfterOpeningTab = defaults.object(forKey: Key.closeAfterOpen) as? Bool ?? true
+        hiddenCalendarIDs = Self.load(Set<String>.self, Key.hiddenCalendars, defaults) ?? []
+        updateChannel = defaults.string(forKey: Key.updateChannel).flatMap { UpdateChannel(rawValue: $0) } ?? .stable
+        checkForUpdatesAutomatically = defaults.object(forKey: Key.autoUpdate) as? Bool ?? true
     }
 
     func isEnabled(_ section: PanelSection) -> Bool { sections.contains(section) }
 
     func setEnabled(_ section: PanelSection, _ enabled: Bool) {
         if enabled, !sections.contains(section) {
-            sections = PanelSection.allCases.filter { $0 == section || sections.contains($0) }
+            sections.append(section)
         } else if !enabled, section != .overview {
             sections.removeAll { $0 == section }
         }
@@ -107,5 +128,13 @@ final class Preferences {
         static let player = "playerBundleID"
         static let scenarios = "scenarios"
         static let welcome = "hasSeenWelcome"
+        static let meetingCountdown = "showMeetingCountdown"
+        static let meetingLead = "meetingLeadMinutes"
+        static let vpnIndicator = "showVPNIndicator"
+        static let musicIndicator = "showMusicIndicator"
+        static let closeAfterOpen = "closeAfterOpeningTab"
+        static let hiddenCalendars = "hiddenCalendarIDs"
+        static let updateChannel = "updateChannel"
+        static let autoUpdate = "checkForUpdatesAutomatically"
     }
 }

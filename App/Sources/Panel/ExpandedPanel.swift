@@ -30,6 +30,9 @@ struct ExpandedPanel: View {
                 }
             }
             Spacer(minLength: 0)
+            if app.updates.available != nil {
+                UpdateBadge()
+            }
             Button {
                 panel.togglePin()
             } label: {
@@ -42,6 +45,10 @@ struct ExpandedPanel: View {
             Menu {
                 Button("Settings…") { app.openSettings() }
                     .keyboardShortcut(",", modifiers: .command)
+                Button("Check for Updates…") {
+                    Task { await app.updates.check(channel: app.preferences.updateChannel) }
+                    app.openSettings()
+                }
                 Divider()
                 Button("Quit Polka") { NSApp.terminate(nil) }
                     .keyboardShortcut("q", modifiers: .command)
@@ -132,5 +139,60 @@ private struct SectionTab: View {
         .help(Text(section.title))
         .accessibilityLabel(Text(section.title))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+private struct UpdateBadge: View {
+    @Environment(AppModel.self) private var app
+    @State private var isShowingDetails = false
+
+    var body: some View {
+        Button {
+            isShowingDetails = true
+        } label: {
+            Label("Update", systemImage: "arrow.down.circle.fill")
+        }
+        .buttonStyle(CapsuleButtonStyle(prominent: true, tint: Theme.active))
+        .popover(isPresented: $isShowingDetails, arrowEdge: .bottom) {
+            UpdateDetails()
+                .padding(16)
+                .frame(width: 300)
+        }
+    }
+}
+
+/// Version, release notes and the install button; shared with Settings.
+struct UpdateDetails: View {
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        let updates = app.updates
+        VStack(alignment: .leading, spacing: 10) {
+            if let manifest = updates.available {
+                Text("Polka \(manifest.version) (\(manifest.build))").font(.headline)
+                Text("You have \(updates.versionDescription).").font(.caption).foregroundStyle(.secondary)
+                if !manifest.notes.isEmpty {
+                    ScrollView {
+                        Text(manifest.notes)
+                            .font(.callout)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                    }
+                    .frame(maxHeight: 140)
+                }
+                if case .downloading = updates.state {
+                    HStack(spacing: 8) {
+                        ProgressView().controlSize(.small)
+                        Text("Downloading and checking the signature…").font(.caption)
+                    }
+                } else {
+                    Button("Install and Restart") { Task { await updates.install() } }
+                        .keyboardShortcut(.defaultAction)
+                }
+            }
+            if case .failed(let message) = updates.state {
+                Text(message).font(.caption).foregroundStyle(.red)
+            }
+        }
     }
 }

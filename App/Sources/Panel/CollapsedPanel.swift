@@ -7,17 +7,23 @@ import SwiftUI
 struct CollapsedPanel: View {
     @Environment(AppModel.self) private var app
 
-    /// Meetings starting within this window get a countdown in the notch.
-    static let meetingLeadTime: TimeInterval = 30 * 60
-
     static func hasActivity(_ app: AppModel) -> Bool {
-        upcomingMeeting(app) != nil || app.vpn.active != nil
+        upcomingMeeting(app) != nil || showsVPN(app) || showsMusic(app)
     }
 
     static func upcomingMeeting(_ app: AppModel) -> AgendaItem? {
-        guard let next = app.agenda.next else { return nil }
+        guard app.preferences.showMeetingCountdown, let next = app.agenda.next else { return nil }
         let lead = next.start.timeIntervalSince(app.agenda.now)
-        return lead <= meetingLeadTime && next.end > app.agenda.now ? next : nil
+        let window = TimeInterval(app.preferences.meetingLeadMinutes * 60)
+        return lead <= window && next.end > app.agenda.now ? next : nil
+    }
+
+    static func showsVPN(_ app: AppModel) -> Bool {
+        app.preferences.showVPNIndicator && app.vpn.active != nil
+    }
+
+    static func showsMusic(_ app: AppModel) -> Bool {
+        app.preferences.showMusicIndicator && app.media.isPlaying
     }
 
     var body: some View {
@@ -82,27 +88,50 @@ struct CollapsedPanel: View {
 
     @ViewBuilder
     private var leadingStatus: some View {
-        if let meeting = Self.upcomingMeeting(app) {
-            let minutes = max(0, Int(meeting.start.timeIntervalSince(app.agenda.now) / 60))
-            HStack(spacing: 5) {
-                Image(systemName: meeting.isHappening(at: app.agenda.now) ? "video.fill" : "calendar")
-                    .foregroundStyle(Theme.accent)
-                Text(meeting.isHappening(at: app.agenda.now) ? String(localized: "now") : String(localized: "\(minutes) min"))
-                    .monospacedDigit()
-            }
-            .font(.system(size: 11.5, weight: .semibold))
-            .foregroundStyle(.white)
+        if Self.showsMusic(app) {
+            ArtworkView(size: 20, cornerRadius: 5)
+        } else if let meeting = Self.upcomingMeeting(app) {
+            MeetingBadge(meeting: meeting, now: app.agenda.now)
         }
     }
 
     @ViewBuilder
     private var trailingStatus: some View {
-        if let active = app.vpn.active {
-            Image(systemName: active.status == .connected ? "lock.shield.fill" : "lock.shield")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Theme.active)
-                .symbolEffect(.pulse, isActive: active.status == .connecting)
-                .help(Text(active.name))
+        HStack(spacing: 7) {
+            if Self.showsMusic(app), let meeting = Self.upcomingMeeting(app) {
+                MeetingBadge(meeting: meeting, now: app.agenda.now)
+            }
+            if Self.showsVPN(app), let active = app.vpn.active {
+                Image(systemName: active.status == .connected ? "lock.shield.fill" : "lock.shield")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.active)
+                    .symbolEffect(.pulse, isActive: active.status == .connecting)
+                    .help(Text(active.name))
+            }
+            if Self.showsMusic(app) {
+                Image(systemName: "waveform")
+                    .font(.system(size: 13, weight: .semibold))
+                    .symbolEffect(.variableColor.iterative, isActive: true)
+                    .foregroundStyle(.white)
+            }
         }
+    }
+}
+
+private struct MeetingBadge: View {
+    let meeting: AgendaItem
+    let now: Date
+
+    var body: some View {
+        let minutes = max(0, Int(meeting.start.timeIntervalSince(now) / 60))
+        let happening = meeting.isHappening(at: now)
+        HStack(spacing: 5) {
+            Image(systemName: happening ? "video.fill" : "calendar")
+                .foregroundStyle(Theme.accent)
+            Text(happening ? String(localized: "now") : String(localized: "\(minutes) min"))
+                .monospacedDigit()
+        }
+        .font(.system(size: 11.5, weight: .semibold))
+        .foregroundStyle(.white)
     }
 }

@@ -13,10 +13,11 @@ final class AppModel {
     let tabs = TabsModel()
     let vpn = VPNModel()
     let media = MediaModel()
-    let agenda = AgendaModel()
+    let agenda: AgendaModel
     let calculator: CalculatorModel
     let clipboard = ClipboardModel()
     let shelf = ShelfModel()
+    let updates = UpdateModel()
 
     private(set) var runningScenarioID: Scenario.ID?
 
@@ -27,14 +28,20 @@ final class AppModel {
     init() {
         let preferences = Preferences()
         self.preferences = preferences
+        agenda = AgendaModel(preferences: preferences)
         calculator = CalculatorModel(defaultCurrency: preferences.favoriteCurrencies.first ?? "USD")
     }
 
     func start() {
         Task { await tabs.load() }
         vpn.startPolling(fast: false)
+        media.start()
         agenda.start()
         clipboard.setEnabled(preferences.clipboardHistoryEnabled)
+        updates.onNewUpdate = { [weak self] manifest in
+            self?.panel.flash(.init(symbol: "arrow.down.circle", text: String(localized: "Polka \(manifest.version) is available")))
+        }
+        updates.startAutomaticChecks(preferences: preferences)
         if !preferences.hasSeenWelcome {
             panel.section = .overview
             panel.expand(pinned: true)
@@ -44,7 +51,6 @@ final class AppModel {
     /// Called whenever the panel opens, so what it shows is fresh.
     func panelDidExpand() {
         vpn.startPolling(fast: true)
-        media.refreshPermission()
         agenda.reload()
         Task { await tabs.refreshCurrentPage() }
         Task { await calculator.refreshRatesIfNeeded(enabled: preferences.exchangeRatesEnabled) }

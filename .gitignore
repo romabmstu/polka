@@ -16,3 +16,6 @@ Config/Local.xcconfig
 
 # macOS
 .DS_Store
+
+# Local secrets (update signing key)
+.secrets/

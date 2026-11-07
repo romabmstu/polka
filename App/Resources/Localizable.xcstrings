@@ -31,6 +31,46 @@
         }
       }
     },
+    "1 hour before": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "За 1 час"
+          }
+        }
+      }
+    },
+    "10 minutes before": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "За 10 минут"
+          }
+        }
+      }
+    },
+    "15 minutes before": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "За 15 минут"
+          }
+        }
+      }
+    },
+    "30 minutes before": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "За 30 минут"
+          }
+        }
+      }
+    },
     "A control center that lives in your MacBook’s notch.": {
       "localizations": {
         "ru": {
@@ -183,6 +223,16 @@
         }
       }
     },
+    "Allow Calendar access in the panel to choose calendars.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешите доступ к Календарю в панели, чтобы выбрать календари."
+          }
+        }
+      }
+    },
     "Allow Polka to control Safari to save the open tab.": {
       "localizations": {
         "ru": {
@@ -209,6 +259,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Уже есть в «%@»"
+          }
+        }
+      }
+    },
+    "An update is available": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступно обновление"
           }
         }
       }
@@ -293,6 +353,46 @@
         }
       }
     },
+    "Check Now": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить"
+          }
+        }
+      }
+    },
+    "Check automatically": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверять автоматически"
+          }
+        }
+      }
+    },
+    "Check for Updates…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить обновления…"
+          }
+        }
+      }
+    },
+    "Checking…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверка…"
+          }
+        }
+      }
+    },
     "Choose": {
       "localizations": {
         "ru": {
@@ -309,6 +409,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выбрать плеер в настройках…"
+          }
+        }
+      }
+    },
+    "Choose your player…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать плеер…"
           }
         }
       }
@@ -359,6 +469,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "История буфера выключена"
+          }
+        }
+      }
+    },
+    "Close after opening a saved tab": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрывать после открытия сохранённой вкладки"
           }
         }
       }
@@ -513,12 +633,32 @@
         }
       }
     },
+    "Couldn’t check for updates. Check your connection and try again.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось проверить обновления. Проверьте подключение и попробуйте снова."
+          }
+        }
+      }
+    },
     "Couldn’t update rates. Showing the last saved ones.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Не удалось обновить курсы. Показаны последние сохранённые."
+          }
+        }
+      }
+    },
+    "Countdown to the next meeting": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отсчёт до ближайшей встречи"
           }
         }
       }
@@ -623,6 +763,16 @@
         }
       }
     },
+    "Display with the pointer": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дисплей с курсором"
+          }
+        }
+      }
+    },
     "Don’t change": {
       "localizations": {
         "ru": {
@@ -639,6 +789,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Загружать курсы валют"
+          }
+        }
+      }
+    },
+    "Downloading and checking the signature…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скачивание и проверка подписи…"
           }
         }
       }
@@ -683,6 +843,16 @@
         }
       }
     },
+    "Every new build (beta)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каждая новая сборка (бета)"
+          }
+        }
+      }
+    },
     "Files": {
       "localizations": {
         "ru": {
@@ -709,6 +879,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Основные"
+          }
+        }
+      }
+    },
+    "Get": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Получать"
           }
         }
       }
@@ -759,6 +939,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Параметры группы"
+          }
+        }
+      }
+    },
+    "Hidden": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скрытые"
           }
         }
       }
@@ -823,6 +1013,36 @@
         }
       }
     },
+    "In the closed notch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В закрытой чёлке"
+          }
+        }
+      }
+    },
+    "Install and Restart": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установить и перезапустить"
+          }
+        }
+      }
+    },
+    "Installed version": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установленная версия"
+          }
+        }
+      }
+    },
     "Join": {
       "localizations": {
         "ru": {
@@ -873,6 +1093,16 @@
         }
       }
     },
+    "Last checked %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последняя проверка: %@"
+          }
+        }
+      }
+    },
     "Main display": {
       "localizations": {
         "ru": {
@@ -899,6 +1129,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ещё"
+          }
+        }
+      }
+    },
+    "Move Polka to the Applications folder, open it from there and try again.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перенесите Polka в папку «Программы», откройте её оттуда и попробуйте снова."
           }
         }
       }
@@ -1003,12 +1243,32 @@
         }
       }
     },
+    "Next day": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Следующий день"
+          }
+        }
+      }
+    },
     "Next track": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Следующий трек"
+          }
+        }
+      }
+    },
+    "Next week": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Следующая неделя"
           }
         }
       }
@@ -1053,6 +1313,16 @@
         }
       }
     },
+    "No events": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет событий"
+          }
+        }
+      }
+    },
     "No links on the clipboard": {
       "localizations": {
         "ru": {
@@ -1079,6 +1349,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Нет"
+          }
+        }
+      }
+    },
+    "Not checked yet": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ещё не проверялось"
           }
         }
       }
@@ -1143,6 +1423,26 @@
         }
       }
     },
+    "Nothing is playing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ничего не играет"
+          }
+        }
+      }
+    },
+    "Nothing is scheduled on this day.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На этот день ничего не запланировано."
+          }
+        }
+      }
+    },
     "Now": {
       "localizations": {
         "ru": {
@@ -1169,6 +1469,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выключено"
+          }
+        }
+      }
+    },
+    "On displays without a notch Polka is a capsule at the top center. Point at it or press ⌥⇧K.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На дисплеях без чёлки Polka — капсула вверху по центру. Наведите на неё курсор или нажмите ⌥⇧K."
           }
         }
       }
@@ -1473,6 +1783,26 @@
         }
       }
     },
+    "Polka %@ (%lld)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polka %@ (%lld)"
+          }
+        }
+      }
+    },
+    "Polka %@ is available": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступна Polka %@"
+          }
+        }
+      }
+    },
     "Polka Settings": {
       "localizations": {
         "ru": {
@@ -1489,6 +1819,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Polka управляет VPN, которые зарегистрированы в Системных настройках › VPN. Если вашего клиента там нет, подключитесь один раз в самом клиенте, чтобы он добавил конфигурацию."
+          }
+        }
+      }
+    },
+    "Polka is up to date": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установлена последняя версия"
           }
         }
       }
@@ -1513,12 +1853,42 @@
         }
       }
     },
+    "Press play to open %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите ▶, чтобы открыть %@"
+          }
+        }
+      }
+    },
+    "Previous day": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предыдущий день"
+          }
+        }
+      }
+    },
     "Previous track": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Предыдущий трек"
+          }
+        }
+      }
+    },
+    "Previous week": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предыдущая неделя"
           }
         }
       }
@@ -1619,6 +1989,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Повторить"
+          }
+        }
+      }
+    },
+    "Releases": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Релизы"
           }
         }
       }
@@ -1873,6 +2253,26 @@
         }
       }
     },
+    "Show the app that is playing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать приложение, которое играет"
+          }
+        }
+      }
+    },
+    "Shown in the panel — drag to reorder": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В панели — перетащите, чтобы изменить порядок"
+          }
+        }
+      }
+    },
     "Sort Tabs": {
       "localizations": {
         "ru": {
@@ -1889,6 +2289,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Исходный код"
+          }
+        }
+      }
+    },
+    "Start music in any app — Polka shows it here and controls it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включите музыку в любом приложении — Polka покажет её здесь и даст ей управлять."
+          }
+        }
+      }
+    },
+    "Start the countdown": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начинать отсчёт"
           }
         }
       }
@@ -1979,6 +2399,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Файл с вкладками был повреждён. Его копия сохранена рядом, начат новый."
+          }
+        }
+      }
+    },
+    "The update couldn’t be installed. Nothing was changed.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление не установилось. Ничего не изменено."
           }
         }
       }
@@ -2103,6 +2533,26 @@
         }
       }
     },
+    "Update": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновить"
+          }
+        }
+      }
+    },
+    "Update failed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление не удалось"
+          }
+        }
+      }
+    },
     "Update rates": {
       "localizations": {
         "ru": {
@@ -2113,12 +2563,42 @@
         }
       }
     },
+    "Updates": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновления"
+          }
+        }
+      }
+    },
+    "Updates come only from github.com/romabmstu/polka and are installed only if their signature matches the key built into Polka.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновления берутся только с github.com/romabmstu/polka и устанавливаются, только если их подпись совпадает с ключом, встроенным в Polka."
+          }
+        }
+      }
+    },
     "VPN off": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "VPN выкл."
+          }
+        }
+      }
+    },
+    "VPN status": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Статус VPN"
           }
         }
       }
@@ -2153,6 +2633,16 @@
         }
       }
     },
+    "What’s playing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что играет"
+          }
+        }
+      }
+    },
     "When it runs": {
       "localizations": {
         "ru": {
@@ -2183,6 +2673,16 @@
         }
       }
     },
+    "You have %@.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "У вас %@."
+          }
+        }
+      }
+    },
     "Your connection is not protected by a VPN": {
       "localizations": {
         "ru": {
@@ -2209,6 +2709,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вкладки сохранены более новой версией Polka. Обновите Polka, чтобы открыть их."
+          }
+        }
+      }
+    },
+    "macOS needs Accessibility access to send the play and track keys.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы нажимать клавиши воспроизведения, macOS нужен Универсальный доступ."
           }
         }
       }

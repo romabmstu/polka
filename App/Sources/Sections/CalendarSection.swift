@@ -39,22 +39,13 @@ struct CalendarSection: View {
     private var timeline: some View {
         let agenda = app.agenda
         return VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("Today").font(.system(size: 19, weight: .bold))
-                Text(agenda.now, format: .dateTime.weekday(.wide).day().month(.wide))
-                    .font(.system(size: 13))
-                    .foregroundStyle(Theme.secondary)
-                Spacer()
-                Button {
-                    agenda.openCalendarApp()
-                } label: {
-                    Image(systemName: "arrow.up.forward.app")
-                }
-                .buttonStyle(IconButtonStyle(size: 26))
-                .help(Text("Open Calendar"))
-            }
+            DayHeader()
+            WeekStrip()
             if agenda.items.isEmpty {
-                Placeholder(symbol: "sun.max", title: "A free day", message: "There are no events today.")
+                Placeholder(
+                    symbol: agenda.isShowingToday ? "sun.max" : "calendar",
+                    title: agenda.isShowingToday ? "A free day" : "No events",
+                    message: "Nothing is scheduled on this day.")
             } else {
                 ScrollViewReader { proxy in
                     ScrollView {
@@ -70,7 +61,7 @@ struct CalendarSection: View {
                         }
                     }
                     .scrollIndicators(.never)
-                    .onAppear { proxy.scrollTo("now", anchor: .center) }
+                    .onAppear { if agenda.isShowingToday { proxy.scrollTo("now", anchor: .center) } }
                 }
             }
         }
@@ -91,7 +82,8 @@ struct CalendarSection: View {
     private var rows: [Row] {
         let agenda = app.agenda
         var result: [Row] = []
-        var placedNow = false
+        // The red "now" line only belongs on today.
+        var placedNow = !agenda.isShowingToday
         for item in agenda.items {
             if !placedNow, !item.isAllDay, item.start > agenda.now {
                 result.append(.now(agenda.now))
@@ -101,6 +93,79 @@ struct CalendarSection: View {
         }
         if !placedNow { result.append(.now(agenda.now)) }
         return result
+    }
+}
+
+private struct DayHeader: View {
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        let agenda = app.agenda
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(agenda.day, format: .dateTime.weekday(.wide))
+                .font(.system(size: 19, weight: .bold))
+                .textCase(nil)
+            Text(agenda.day, format: .dateTime.day().month(.wide))
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.secondary)
+            Spacer()
+            if !agenda.isShowingToday {
+                Button("Today") { agenda.showToday() }
+                    .buttonStyle(CapsuleButtonStyle())
+                    .keyboardShortcut("t", modifiers: .command)
+            }
+            Button { agenda.show(dayOffset: -1) } label: { Image(systemName: "chevron.left") }
+                .buttonStyle(IconButtonStyle(size: 26))
+                .keyboardShortcut(.leftArrow, modifiers: .command)
+                .help(Text("Previous day"))
+            Button { agenda.show(dayOffset: 1) } label: { Image(systemName: "chevron.right") }
+                .buttonStyle(IconButtonStyle(size: 26))
+                .keyboardShortcut(.rightArrow, modifiers: .command)
+                .help(Text("Next day"))
+            Button { agenda.openCalendarApp() } label: { Image(systemName: "arrow.up.forward.app") }
+                .buttonStyle(IconButtonStyle(size: 26))
+                .help(Text("Open Calendar"))
+        }
+    }
+}
+
+private struct WeekStrip: View {
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        let agenda = app.agenda
+        let calendar = Calendar.current
+        HStack(spacing: 4) {
+            Button { agenda.show(dayOffset: -7) } label: { Image(systemName: "chevron.left.2") }
+                .buttonStyle(IconButtonStyle(size: 24))
+                .help(Text("Previous week"))
+            ForEach(agenda.week, id: \.self) { date in
+                let selected = calendar.isDate(date, inSameDayAs: agenda.day)
+                let today = calendar.isDateInToday(date)
+                Button {
+                    agenda.show(date)
+                } label: {
+                    VStack(spacing: 2) {
+                        Text(date, format: .dateTime.weekday(.abbreviated))
+                            .font(.system(size: 10.5, weight: .semibold))
+                            .textCase(.uppercase)
+                            .foregroundStyle(selected ? Color.black.opacity(0.6) : Theme.tertiary)
+                        Text(date, format: .dateTime.day())
+                            .font(.system(size: 14, weight: .semibold).monospacedDigit())
+                            .foregroundStyle(selected ? Color.black : (today ? Theme.accent : Color.white))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 42)
+                    .background(selected ? Color.white : Color.clear, in: .rect(cornerRadius: 10, style: .continuous))
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .hoverHighlight(cornerRadius: 10)
+            }
+            Button { agenda.show(dayOffset: 7) } label: { Image(systemName: "chevron.right.2") }
+                .buttonStyle(IconButtonStyle(size: 24))
+                .help(Text("Next week"))
+        }
     }
 }
 

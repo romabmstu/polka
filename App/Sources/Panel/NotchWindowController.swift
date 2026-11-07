@@ -76,6 +76,7 @@ final class NotchWindowController {
         if model.panel.isExpanded {
             model.panel.collapse()
         } else {
+            layout()
             model.panel.expand(pinned: true)
             panel.makeKey()
         }
@@ -85,6 +86,8 @@ final class NotchWindowController {
 
     private func targetScreen() -> NSScreen? {
         switch model.preferences.display {
+        case .pointer:
+            Self.screen(at: NSEvent.mouseLocation) ?? screen ?? NSScreen.screens.first
         case .builtIn:
             NSScreen.screens.first { $0.safeAreaInsets.top > 0 } ?? NSScreen.screens.first
         case .main:
@@ -119,6 +122,10 @@ final class NotchWindowController {
                 self?.observeDisplayPreference()
             }
         }
+    }
+
+    static func screen(at point: NSPoint) -> NSScreen? {
+        NSScreen.screens.first { NSMouseInRect(point, $0.frame, false) }
     }
 
     static func style(for screen: NSScreen) -> PanelState.Style {
@@ -204,6 +211,12 @@ final class NotchWindowController {
                 }
             }
             return
+        }
+
+        // Follow the pointer to another display while closed.
+        if model.preferences.display == .pointer, let pointerScreen = Self.screen(at: point), pointerScreen != screen {
+            cancelHover()
+            layout()
         }
 
         guard model.preferences.openOnHover else { return }

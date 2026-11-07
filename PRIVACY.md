@@ -14,7 +14,12 @@ Polka is built to work entirely on your Mac.
 
 ## Network
 
-Polka makes one kind of request: when you turn on currency conversion, it downloads public exchange rates from `https://open.er-api.com` (operated by ExchangeRate-API) a few times a day. The request carries no identifiers, cookies or personal data. Nothing else goes over the network. Polka does not download site icons, so the sites you save never see a request from it.
+Polka makes two kinds of requests, both without cookies, identifiers or personal data:
+
+- **Updates.** Every six hours (and when you click *Check Now*) it reads a small `update.json` from this project's GitHub releases. Turn this off in Settings › Updates.
+- **Exchange rates.** Only if you turn on currency conversion: public rates from `https://open.er-api.com` (ExchangeRate-API), a few times a day.
+
+Nothing else goes over the network. Polka does not download site icons, so the sites you save never see a request from it.
 
 ## Permissions
 
@@ -24,7 +29,9 @@ Polka asks for each permission only when you use the feature that needs it.
 | --- | --- |
 | Automation › Safari | Read the address and title of open tabs to save them; open a group in a new window. |
 | Calendars | Show today’s events and the next meeting. Read-only. |
-| Accessibility | Send the media play/pause and track keys. Polka does not read the screen or other apps’ content. |
+| Accessibility | Only as a fallback for the media keys if the Now Playing helper cannot run. Polka does not read the screen or other apps’ content. |
+
+Now Playing information (title, artist, artwork) is read on your Mac through the bundled MediaRemote adapter and never leaves it.
 
 VPN switching uses the system `scutil` tool and needs no permission. Global shortcuts use the Carbon hot key API, which sees only Polka’s own key combinations — Polka does not monitor your typing.
 

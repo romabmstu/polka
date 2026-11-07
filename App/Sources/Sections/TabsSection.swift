@@ -319,7 +319,7 @@ private struct TabTile: View {
     var body: some View {
         Button {
             app.tabs.open(tab)
-            if !app.panel.isPinned { app.panel.collapse() }
+            if app.preferences.closeAfterOpeningTab, !app.panel.isPinned { app.panel.collapse() }
         } label: {
             HStack(spacing: 10) {
                 SiteBadge(site: tab.site, size: 30)
