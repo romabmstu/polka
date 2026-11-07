@@ -21,10 +21,12 @@ public struct UpdateManifest: Codable, Equatable, Sendable {
     public var minimumSystemVersion: String
     public var notes: String
     public var publishedAt: Date
+    /// Signature of the update metadata; the archive has its own signature.
+    public var metadataSignature: String?
 
     public init(
         version: String, build: Int, channel: UpdateChannel, url: URL, size: Int, sha256: String,
-        signature: String, minimumSystemVersion: String, notes: String, publishedAt: Date
+        signature: String, minimumSystemVersion: String, notes: String, publishedAt: Date, metadataSignature: String? = nil
     ) {
         self.version = version
         self.build = build
@@ -36,6 +38,7 @@ public struct UpdateManifest: Codable, Equatable, Sendable {
         self.minimumSystemVersion = minimumSystemVersion
         self.notes = notes
         self.publishedAt = publishedAt
+        self.metadataSignature = metadataSignature
     }
 
     public static func decode(_ data: Data) throws -> UpdateManifest {
@@ -49,6 +52,14 @@ public struct UpdateManifest: Codable, Equatable, Sendable {
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         return try encoder.encode(self)
+    }
+
+    /// Length-prefixing makes the signed representation unambiguous, even for multiline notes.
+    public func metadataPayload() -> Data {
+        let fields = ["polka-update-v1", version, String(build), channel.rawValue, url.absoluteString,
+                      String(size), sha256, signature, minimumSystemVersion, notes,
+                      ISO8601DateFormatter().string(from: publishedAt)]
+        return Data(fields.map { "\($0.utf8.count):\($0)" }.joined().utf8)
     }
 
     /// Builds are numbered by the commit count of `main`, so a higher number is
@@ -74,6 +85,7 @@ public enum UpdateVerifier {
         case badSignature
         case invalidKey
         case untrustedLocation
+        case badMetadataSignature
     }
 
     /// Updates are only ever fetched from this repository's releases.
@@ -82,6 +94,13 @@ public enum UpdateVerifier {
     public static func checkLocation(_ manifest: UpdateManifest) throws(Failure) {
         guard manifest.url.absoluteString.hasPrefix(allowedURLPrefix), !manifest.url.absoluteString.contains("..")
         else { throw .untrustedLocation }
+    }
+
+    public static func verifyMetadata(_ manifest: UpdateManifest, publicKey: String) throws(Failure) {
+        guard let keyData = Data(base64Encoded: publicKey),
+              let key = try? Curve25519.Signing.PublicKey(rawRepresentation: keyData) else { throw .invalidKey }
+        guard let encoded = manifest.metadataSignature, let signature = Data(base64Encoded: encoded),
+              key.isValidSignature(signature, for: manifest.metadataPayload()) else { throw .badMetadataSignature }
     }
 
     public static func verify(_ archive: Data, against manifest: UpdateManifest, publicKey: String) throws(Failure) {

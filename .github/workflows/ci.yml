@@ -153,13 +153,18 @@ jobs:
           VERSION: ${{ steps.package.outputs.version }}
           BUILD: ${{ steps.package.outputs.build }}
         run: |
-          gh release delete nightly --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
-          files=(out/"$NAME" out/"$NAME".sha256 out/update.json)
-          if ! gh release create nightly "${files[@]}" \
-            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
-            --title "Beta $VERSION ($BUILD)" --notes-file out/notes.txt > publish.log 2>&1; then
-            cat publish.log
-            echo "::error title=Publishing failed::$(tail -n 20 publish.log | awk '{ gsub(/%/, "%25"); printf "%s%%0A", $0 }')"
-            exit 1
+          # Keep previous archives available for clients that already fetched
+          # their manifest. Publish the new manifest only after its archive.
+          if ! gh release view nightly --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create nightly --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" --prerelease \
+              --title "Beta $VERSION ($BUILD)" --notes-file out/notes.txt
           fi
+          gh release upload nightly out/"$NAME" out/"$NAME".sha256 \
+            --repo "$GITHUB_REPOSITORY" --clobber
+          gh release upload nightly out/update.json --repo "$GITHUB_REPOSITORY" --clobber
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/nightly" \
+            -f sha="$GITHUB_SHA" -F force=true >/dev/null
+          gh release edit nightly --repo "$GITHUB_REPOSITORY" \
+            --title "Beta $VERSION ($BUILD)" --notes-file out/notes.txt --prerelease
           echo "::notice title=Beta published::$VERSION ($BUILD)"

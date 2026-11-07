@@ -53,6 +53,30 @@ import Testing
 
     private var publicKey: String { key.publicKey.rawRepresentation.base64EncodedString() }
 
+    @Test func verifiesMetadataAndRejectsChanges() throws {
+        var m = try manifest(for: Data("archive".utf8))
+        m.metadataSignature = try key.signature(for: m.metadataPayload()).base64EncodedString()
+        try UpdateVerifier.verifyMetadata(m, publicKey: publicKey)
+        let decoded = try UpdateManifest.decode(m.encoded())
+        try UpdateVerifier.verifyMetadata(decoded, publicKey: publicKey)
+        m.build += 1
+        #expect(throws: UpdateVerifier.Failure.badMetadataSignature) {
+            try UpdateVerifier.verifyMetadata(m, publicKey: publicKey)
+        }
+        m = decoded
+        m.notes = "different notes"
+        #expect(throws: UpdateVerifier.Failure.badMetadataSignature) {
+            try UpdateVerifier.verifyMetadata(m, publicKey: publicKey)
+        }
+    }
+
+    @Test func rejectsUnsignedMetadata() throws {
+        let m = try manifest(for: Data("archive".utf8))
+        #expect(throws: UpdateVerifier.Failure.badMetadataSignature) {
+            try UpdateVerifier.verifyMetadata(m, publicKey: publicKey)
+        }
+    }
+
     @Test func acceptsSignedArchive() throws {
         let archive = Data("polka".utf8)
         try UpdateVerifier.verify(archive, against: try manifest(for: archive), publicKey: publicKey)

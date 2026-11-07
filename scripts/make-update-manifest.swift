@@ -38,6 +38,13 @@ guard key.publicKey.isValidSignature(signature, for: archive) else { exit(1) }
 let digest = SHA256.hash(data: archive).map { String(format: "%02x", $0) }.joined()
 let notes = (try? String(contentsOfFile: args[7], encoding: .utf8))?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
+let timestamp = ISO8601DateFormatter().string(from: Date())
+let shortNotes = String(notes.prefix(4000))
+let signatureText = signature.base64EncodedString()
+let fields = ["polka-update-v1", args[2], String(build), args[4], args[5], String(archive.count), digest, signatureText, args[6], shortNotes, timestamp]
+let metadata = Data(fields.map { "\($0.utf8.count):\($0)" }.joined().utf8)
+let metadataSignature = try key.signature(for: metadata).base64EncodedString()
+
 let manifest: [String: Any] = [
     "version": args[2],
     "build": build,
@@ -45,10 +52,11 @@ let manifest: [String: Any] = [
     "url": args[5],
     "size": archive.count,
     "sha256": digest,
-    "signature": signature.base64EncodedString(),
+    "signature": signatureText,
+    "metadataSignature": metadataSignature,
     "minimumSystemVersion": args[6],
-    "notes": String(notes.prefix(4000)),
-    "publishedAt": ISO8601DateFormatter().string(from: Date()),
+    "notes": shortNotes,
+    "publishedAt": timestamp,
 ]
 let json = try JSONSerialization.data(withJSONObject: manifest, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
 FileHandle.standardOutput.write(json)

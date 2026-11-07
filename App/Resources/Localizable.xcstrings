@@ -3732,6 +3732,26 @@
           }
         }
       }
+    },
+    "The update couldn’t be completed. Check Polka in Applications and try again.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось завершить обновление. Проверьте Polka в «Программах» и попробуйте ещё раз."
+          }
+        }
+      }
+    },
+    "The update information could not be verified. Check the official release page.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось проверить данные обновления. Откройте официальную страницу релизов."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

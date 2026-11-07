@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Polka — a control center in your MacBook’s notch</title>
-<meta name="description" content="Tabs from any browser, every VPN you use, music, calendar, calculator, clipboard history and a file shelf — in your MacBook’s notch. Free and open source for macOS.">
+<meta name="description" content="Browser tabs, supported VPN clients, music, calendar, calculator, clipboard history and a file shelf in your Mac’s menu bar. Free and open source for macOS.">
 <meta property="og:title" content="Polka">
 <meta property="og:description" content="A control center that lives in your MacBook’s notch.">
 <meta property="og:image" content="https://romabmstu.github.io/polka/assets/icon.png">
@@ -93,12 +93,12 @@ header.nav { display: flex; align-items: center; justify-content: space-between;
 }
 .np.wide { width: 380px; }
 .np.open { width: 800px; height: 468px; border-radius: 0 0 34px 34px; box-shadow: 0 34px 90px rgba(0,0,0,.65); cursor: default; }
-.pill .np { top: 0; width: 180px; height: 30px; border-radius: 15px; background: rgba(0,0,0,.9); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
-.pill .np.open { top: 0; width: 800px; height: 440px; border-radius: 26px; box-shadow: 0 34px 90px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.12); }
+.pill .np { top: 3px; width: 150px; height: 24px; border-radius: 12px; background: rgba(0,0,0,.9); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+.pill .np.open { top: 36px; width: 800px; height: 440px; border-radius: 26px; box-shadow: 0 34px 90px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.12); }
 
 .wing { position: absolute; top: 0; height: 32px; display: flex; align-items: center; gap: 7px; transition: opacity .2s; }
 .wing.l { left: 14px; } .wing.r { right: 14px; }
-.pill .wing { height: 30px; }
+.pill .wing { height: 24px; }
 .np.open .wing, .np:not(.wide) .wing { opacity: 0; pointer-events: none; }
 .pill .np:not(.open) .wing { opacity: 1; }
 .mini-art { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(135deg, #ff6b9a, #6a5cff); }
@@ -359,8 +359,8 @@ footer a { color: var(--muted); }
   <div class="hero">
     <h1><span class="en">Your notch,<br>finally useful.</span><span class="ru">Чёлка, которая<br>наконец полезна.</span></h1>
     <p>
-      <span class="en">Tabs from any browser, every VPN you use, music, your calendar, a calculator, clipboard history and a file shelf — one hover away. Free and open source.</span>
-      <span class="ru">Вкладки из любого браузера, все ваши VPN, музыка, календарь, калькулятор, история буфера и полка для файлов — на расстоянии одного движения мыши. Бесплатно и с открытым кодом.</span>
+      <span class="en">Browser tabs, supported VPN connections, music, your calendar, a calculator, clipboard history and a file shelf — one hover away. Free and open source.</span>
+      <span class="ru">Вкладки браузера, поддерживаемые VPN, музыка, календарь, калькулятор, история буфера и полка для файлов — на расстоянии одного движения мыши. Бесплатно и с открытым кодом.</span>
     </p>
     <div class="cta">
       <a class="btn primary" id="download" href="https://github.com/romabmstu/polka/releases">
@@ -369,7 +369,7 @@ footer a { color: var(--muted); }
       </a>
       <a class="btn ghost" href="https://github.com/romabmstu/polka"><span class="en">View source</span><span class="ru">Исходный код</span></a>
     </div>
-    <div class="small"><span class="en">macOS 14 Sonoma or later · Apple silicon and Intel · updates itself</span><span class="ru">macOS 14 Sonoma или новее · Apple silicon и Intel · обновляется сама</span></div>
+    <div class="small"><span class="en">macOS 14 Sonoma or later · Apple silicon and Intel · signed updates</span><span class="ru">macOS 14 Sonoma или новее · Apple silicon и Intel · подписанные обновления</span></div>
     <div class="dl-meta" id="dl-meta"></div>
 
     <div class="demo">
@@ -393,7 +393,7 @@ footer a { color: var(--muted); }
         <p><span class="en">Control system VPNs and Tunnelblick independently. FSNT / Throne requires its local API to be configured. Multiple VPNs can conflict over routes and DNS.</span><span class="ru">Управляйте системными VPN и Tunnelblick независимо. Для FSNT / Throne нужно настроить локальный API. Несколько VPN могут конфликтовать из-за маршрутов и DNS.</span></p></div>
       <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#ff6b9a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="15" r="2.3"/><circle cx="15" cy="13" r="2.3"/><path d="M8.3 15V5l9-2v10"/></svg></div>
         <h3><span class="en">Music</span><span class="ru">Музыка</span></h3>
-        <p><span class="en">Artwork, progress and controls for whatever is actually playing — Yandex Music, Spotify, Music or a video in the browser. Polka shows which app it controls, so pause never hits the wrong one.</span><span class="ru">Обложка, прогресс и управление тем, что реально играет: Яндекс Музыка, Spotify, Музыка или видео в браузере. Polka показывает, каким приложением управляет, так что пауза не попадёт не туда.</span></p></div>
+        <p><span class="en">Artwork, progress and controls for whatever is actually playing — Yandex Music, Spotify, Music or a video in the browser. Polka shows which app it controls, and lets you open that app.</span><span class="ru">Обложка, прогресс и управление тем, что реально играет: Яндекс Музыка, Spotify, Музыка или видео в браузере. Polka показывает, каким приложением управляет, и позволяет открыть его.</span></p></div>
       <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#6aa3ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2.5"/><path d="M3 8h14M7 2.5v3M13 2.5v3"/></svg></div>
         <h3><span class="en">Calendar</span><span class="ru">Календарь</span></h3>
         <p><span class="en">Browse your week, see the day’s agenda and join Meet, Zoom, Teams or Telemost in one click. The closed notch counts down to your next call.</span><span class="ru">Листайте неделю, смотрите дела на день и входите в Meet, Zoom, Teams или Телемост в один клик. Закрытая чёлка ведёт обратный отсчёт до ближайшего созвона.</span></p></div>
@@ -411,7 +411,7 @@ footer a { color: var(--muted); }
         <p><span class="en">“Focus” quits Telegram, switches on dark mode and the VPN. “Call” pauses music and sets the volume. Open or quit apps, open tabs, links and Shortcuts — in one click.</span><span class="ru">«Фокус» закрывает Telegram, включает тёмную тему и VPN. «Созвон» ставит музыку на паузу и задаёт громкость. Открыть или закрыть приложения, вкладки, ссылки и быстрые команды — в один клик.</span></p></div>
       <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#30d158" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 10a6.5 6.5 0 1 1-2-4.7"/><path d="M16.5 3v3.5H13"/></svg></div>
         <h3><span class="en">Updates itself</span><span class="ru">Обновляется сама</span></h3>
-        <p><span class="en">Polka checks this project’s releases and installs new versions in place. Each update is verified with an Ed25519 signature before it replaces anything.</span><span class="ru">Polka проверяет релизы проекта и ставит новые версии сама. Каждое обновление проверяется подписью Ed25519, прежде чем что-либо заменить.</span></p></div>
+        <p><span class="en">Polka checks for signed updates and lets you install and restart. Beta builds are published after checks pass; verification uses the public key built into the app.</span><span class="ru">Polka проверяет наличие подписанных обновлений и предлагает установить их с перезапуском. Бета-сборки публикуются после проверок; подпись сверяется со встроенным ключом.</span></p></div>
     </div>
   </section>
 
@@ -419,9 +419,9 @@ footer a { color: var(--muted); }
     <h2><span class="en">Stays on your Mac</span><span class="ru">Всё остаётся на вашем Mac</span></h2>
     <p class="lead"><span class="en">No account, no analytics, no telemetry. The code is open, so you don’t have to take our word for it.</span><span class="ru">Ни аккаунта, ни аналитики, ни телеметрии. Код открыт — можно не верить на слово, а проверить.</span></p>
     <div class="privacy">
-      <div><b><span class="en">Two small requests</span><span class="ru">Два небольших запроса</span></b><span><span class="en">An update check against this project’s GitHub releases, and exchange rates if you turn them on. Both can be switched off; nothing else touches the network.</span><span class="ru">Проверка обновлений в релизах проекта на GitHub и курсы валют, если вы их включите. Оба можно выключить, больше ничего не идёт в сеть.</span></span></div>
-      <div><b><span class="en">Passwords skipped</span><span class="ru">Пароли пропускаются</span></b><span><span class="en">Clipboard history lives in memory and ignores anything a password manager marks as concealed.</span><span class="ru">История буфера живёт в памяти и не трогает то, что менеджер паролей пометил как скрытое.</span></span></div>
-      <div><b><span class="en">Verifiable builds</span><span class="ru">Проверяемые сборки</span></b><span><span class="en">Every build comes from GitHub Actions, straight from the public source. Stable releases carry a signed provenance attestation.</span><span class="ru">Каждая сборка делается в GitHub Actions прямо из открытого кода. Стабильные релизы сопровождаются подписанной аттестацией происхождения.</span></span></div>
+      <div><b><span class="en">Network access</span><span class="ru">Сетевые подключения</span></b><span><span class="en">Update checks and optional exchange rates use the internet. The optional FSNT integration connects to the same Mac over a local address.</span><span class="ru">Проверки обновлений и, при включении, курсы валют используют интернет. Интеграция с FSNT при настройке подключается к локальному адресу этого Mac.</span></span></div>
+      <div><b><span class="en">Marked content skipped</span><span class="ru">Защита буфера</span></b><span><span class="en">Clipboard history lives in memory and skips marked concealed content. Unmarked passwords can still be recorded.</span><span class="ru">История буфера хранится в памяти и пропускает данные с пометкой о конфиденциальности. Пароли без пометки могут попасть в историю.</span></span></div>
+      <div><b><span class="en">Verifiable builds</span><span class="ru">Проверяемые сборки</span></b><span><span class="en">Published builds are made in GitHub Actions. Tagged releases carry a provenance attestation.</span><span class="ru">Публикуемые сборки создаются в GitHub Actions. Релизы по тегам сопровождаются аттестацией происхождения.</span></span></div>
     </div>
   </section>
 
@@ -429,7 +429,7 @@ footer a { color: var(--muted); }
     <h2><span class="en">Install</span><span class="ru">Установка</span></h2>
     <p class="lead"><span class="en">Download, unzip, move Polka to Applications and run this once in Terminal:</span><span class="ru">Скачайте, распакуйте, перенесите Polka в «Программы» и один раз выполните в Терминале:</span></p>
     <pre>xattr -dr com.apple.quarantine /Applications/Polka.app</pre>
-    <p class="small"><span class="en">Needed only for the first install: Polka is not notarized by Apple, which requires a paid developer account. After that it updates itself — pick the channel in Settings › Updates. Prefer to build it yourself? See the README.</span><span class="ru">Нужно только при первой установке: Polka не нотаризована Apple, для этого нужен платный аккаунт разработчика. Дальше она обновляется сама — канал выбирается в Настройках › Обновления. Хотите собрать сами? Инструкция в README.</span></p>
+    <p class="small"><span class="en">Needed only for the first install: Polka is not notarized by Apple, which requires a paid developer account. Updates can be checked and installed from Settings › Updates. Prefer to build it yourself? See the README.</span><span class="ru">Нужно только при первой установке: Polka не нотаризована Apple, для этого нужен платный аккаунт разработчика. Обновления можно проверить и установить в Настройках › Обновления. Хотите собрать сами? Инструкция в README.</span></p>
   </section>
 
   <section id="support">
@@ -724,7 +724,7 @@ footer a { color: var(--muted); }
       <div class="ci"><div class="k">${ic('text')}</div><div class="tx">${L('The design review moved to 11:30, the link is in the invite', 'Обсуждение макетов перенесли на 11:30, ссылка во встрече')}</div><time>${L('25 min', '25 мин')}</time></div>
       <div class="ci"><div class="k">${ic('text')}</div><div class="tx">${L('Moscow, Leningradsky Prospekt 39, entrance 2', 'Москва, Ленинградский проспект, 39, подъезд 2')}</div><span class="pin">${ic('pinf')}</span><time>${L('yesterday', 'вчера')}</time></div>
       <div class="ci"><div class="k">${ic('link')}</div><div class="tx">https://www.figma.com/design/polka-notch</div><time>${L('yesterday', 'вчера')}</time></div>
-      <div class="dim" style="font-size:11.5px;margin:8px 10px 0">🔒 ${L('In memory only. Passwords and one-time codes are skipped.', 'Только в памяти. Пароли и одноразовые коды пропускаются.')}</div>
+      <div class="dim" style="font-size:11.5px;margin:8px 10px 0">🔒 ${L('In memory only. Marked confidential content is skipped.', 'Только в памяти. Данные с пометкой о конфиденциальности пропускаются.')}</div>
     </div>`;
 
   const file = (ext, bg, name, size) => `<div class="file"><div class="doc" style="background:${bg}">${ext}</div><b>${name}</b><small>${size}</small></div>`;

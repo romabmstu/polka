@@ -74,6 +74,8 @@ final class UpdateModel {
             } else if !quietly || state == .checking {
                 state = .upToDate
             }
+        } catch UpdateVerifier.Failure.badMetadataSignature {
+            if !quietly { state = .failed(String(localized: "The update information could not be verified. Check the official release page.")) }
         } catch Updater.Failure.badResponse(404) {
             lastChecked = .now
             if !quietly { state = .failed(String(localized: "No signed update is available for this channel. Check the release page or choose another channel.")) }
@@ -93,7 +95,7 @@ final class UpdateModel {
             state = .failed(String(localized: "Move Polka to the Applications folder, open it from there and try again."))
         } catch {
             log.error("Update failed: \(error.localizedDescription, privacy: .public)")
-            state = .failed(String(localized: "The update couldn’t be installed. Nothing was changed."))
+            state = .failed(String(localized: "The update couldn’t be completed. Check Polka in Applications and try again."))
         }
     }
 

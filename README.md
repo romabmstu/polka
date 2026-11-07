@@ -30,7 +30,9 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
 
 **VPN.** Every VPN registered in System Settings — WireGuard, Happ, V2Box, corporate L2TP and others — with a switch, plus every Tunnelblick (OpenVPN) configuration and FSNT Client / Throne through its local API. In Polka’s FSNT settings, enter the port and key of the enabled API; the key is stored in Keychain. Some FSNT versions expose the API only in advanced mode. Other apps without a supported integration have unknown connection status. Connections are controlled independently; whether they work together depends on the clients and their routes.
 
-**Music.** Title, artist, artwork and a seekable progress bar for whatever is playing — Yandex Music, Music, Spotify, a video in the browser — and which app that is, so play and pause always act where you expect.
+**Music.** Title, artist, artwork and a seekable progress bar for whatever is playing — Yandex Music, Music, Spotify, a video in the browser — and which app is playing.
+
+**Translator.** Translate text on macOS 15 or newer using Apple’s on-device translation; language packs may need to be downloaded in System Settings.
 
 **Calendar.** Today’s events from the calendars already on your Mac (Google, iCloud, Exchange) and a Join button for Google Meet, Zoom, Teams, Telemost, Jitsi and Webex links.
 
@@ -60,7 +62,7 @@ gh attestation verify Polka-vX.Y.Z.zip --repo romabmstu/polka
 
 ## Updates
 
-Polka updates itself: Settings › Updates › *Check Now*, or wait for the *Update* button in the panel. Choose **Every new build (beta)** to receive successful builds after they are published (checked every 15 minutes by default), or **Releases** for tagged versions. Updates are verified against a signing key built into the app before anything is replaced. If a beta has no signed update manifest, download and install it manually from its release page.
+Polka checks for updates: use Settings › Updates › *Check Now*, or the *Update* button in the panel, then choose *Install and Restart*. Choose **Every new build (beta)** to receive successful builds after they are published (checked every 15 minutes by default), or **Releases** for tagged versions. Updates are verified against a signing key built into the app before anything is replaced. If a beta has no signed update manifest, download and install it manually from its release page.
 
 ## Keyboard
 

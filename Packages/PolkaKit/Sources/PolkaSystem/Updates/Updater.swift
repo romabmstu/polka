@@ -52,12 +52,15 @@ public actor Updater {
         guard data.count <= 64 * 1024 else { throw Failure.tooLarge }
         let manifest = try UpdateManifest.decode(data)
         try UpdateVerifier.checkLocation(manifest)
+        try UpdateVerifier.verifyMetadata(manifest, publicKey: publicKey)
+        guard manifest.channel == channel else { throw UpdateVerifier.Failure.badMetadataSignature }
         return manifest
     }
 
     /// Downloads, verifies and unpacks an update; returns the new app bundle.
     public func prepare(_ manifest: UpdateManifest, bundleIdentifier: String) async throws -> URL {
         try UpdateVerifier.checkLocation(manifest)
+        try UpdateVerifier.verifyMetadata(manifest, publicKey: publicKey)
         guard manifest.size > 0, manifest.size <= Self.maximumArchiveSize else { throw Failure.tooLarge }
 
         let (download, response) = try await session.download(from: manifest.url)
