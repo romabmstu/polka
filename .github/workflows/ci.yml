@@ -84,6 +84,12 @@ jobs:
           test -x "$app/Contents/MacOS/Polka"
           test -f "$app/Contents/Resources/mediaremote-adapter.pl"
           codesign --verify --deep --strict "$app"
+          # Frameworks newer than the deployment target must be weak, or Polka
+          # would not even launch on the oldest supported macOS.
+          if otool -l "$app/Contents/MacOS/Polka" | grep -A2 'LC_LOAD_DYLIB$' | grep -q 'Translation.framework'; then
+            echo "::error title=Strong link::Translation.framework must be weak-linked for macOS 14"
+            exit 1
+          fi
           ditto -c -k --keepParent "$app" Polka.zip
 
       - name: Upload build

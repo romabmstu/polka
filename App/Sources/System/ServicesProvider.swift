@@ -7,9 +7,16 @@ import PolkaCore
 @MainActor
 final class ServicesProvider: NSObject {
     private let onPages: ([PageReference], String?) -> Void
+    private let onText: (String?) -> Void
 
-    init(onPages: @escaping ([PageReference], String?) -> Void) {
+    init(onPages: @escaping ([PageReference], String?) -> Void, onText: @escaping (String?) -> Void) {
         self.onPages = onPages
+        self.onText = onText
+    }
+
+    /// "Translate with Polka": the selected text goes to the Translator.
+    @objc func translateWithPolka(_ pasteboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString>) {
+        onText(pasteboard.string(forType: .string).flatMap(TranslationRoute.prepare))
     }
 
     /// Selector name matches `NSMessage` in Info.plist.

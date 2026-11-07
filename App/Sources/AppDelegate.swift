@@ -26,9 +26,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func registerServices() {
-        let provider = ServicesProvider { [weak self] pages, source in
-            self?.model.saveFromService(pages, sourceApp: source)
-        }
+        let provider = ServicesProvider(
+            onPages: { [weak self] pages, source in self?.model.saveFromService(pages, sourceApp: source) },
+            onText: { [weak self] text in self?.openTranslator(with: text) }
+        )
         servicesProvider = provider
         NSApp.servicesProvider = provider
         // Picks up the menu item without logging out after an install or update.
@@ -69,7 +70,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let save = GlobalHotKey(keyCode: UInt32(kVK_ANSI_S), modifiers: modifiers) { [weak self] in
             self?.model.saveFromBrowser()
         }
-        hotKeys = [toggle, save].compactMap { $0 }
+        let translate = GlobalHotKey(keyCode: UInt32(kVK_ANSI_T), modifiers: modifiers) { [weak self] in
+            self?.openTranslator(with: SelectedText.read())
+        }
+        hotKeys = [toggle, save, translate].compactMap { $0 }
+    }
+
+    /// ⌥⇧T and "Translate with Polka": opens the Translator with the text, or
+    /// empty and ready for typing when there is none.
+    private func openTranslator(with text: String?) {
+        TranslatorModel.shared.load(text)
+        model.panel.section = .translator
+        model.panel.openForKeyboard()
     }
 }
 

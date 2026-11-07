@@ -83,6 +83,7 @@ struct ExpandedPanel: View {
         case .calculator: CalculatorSection()
         case .clipboard: ClipboardSection()
         case .shelf: ShelfSection()
+        case .translator: TranslatorSection()
         }
     }
 

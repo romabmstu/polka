@@ -3,7 +3,11 @@ import Observation
 import PolkaCore
 
 enum PanelSection: String, CaseIterable, Codable, Identifiable {
-    case overview, tabs, vpn, media, calendar, calculator, clipboard, shelf
+    case overview, tabs, vpn, media, calendar, calculator, translator, clipboard, shelf
+
+    /// Sections that existed before the list could grow; anything newer is
+    /// added to a saved layout once, so updates don't hide new features.
+    static let original: [PanelSection] = [.overview, .tabs, .vpn, .media, .calendar, .calculator, .clipboard, .shelf]
 
     var id: String { rawValue }
 
@@ -15,6 +19,7 @@ enum PanelSection: String, CaseIterable, Codable, Identifiable {
         case .media: "Music"
         case .calendar: "Calendar"
         case .calculator: "Calculator"
+        case .translator: LocalizedStringResource("Translator", table: "Translator")
         case .clipboard: "Clipboard"
         case .shelf: "Files"
         }
@@ -28,6 +33,7 @@ enum PanelSection: String, CaseIterable, Codable, Identifiable {
         case .media: "music.note"
         case .calendar: "calendar"
         case .calculator: "plus.forwardslash.minus"
+        case .translator: "character.bubble"
         case .clipboard: "doc.on.clipboard"
         case .shelf: "tray.and.arrow.down"
         }
@@ -78,7 +84,13 @@ final class Preferences {
         openOnHover = defaults.object(forKey: Key.openOnHover) as? Bool ?? true
         hoverDelay = defaults.object(forKey: Key.hoverDelay) as? Double ?? 0.12
         display = defaults.string(forKey: Key.display).flatMap { DisplayChoice(rawValue: $0) } ?? .pointer
-        sections = Self.load([PanelSection].self, Key.sections, defaults) ?? PanelSection.allCases
+        var sections = Self.load([PanelSection].self, Key.sections, defaults) ?? PanelSection.allCases
+        let known = Set(defaults.stringArray(forKey: Key.knownSections) ?? PanelSection.original.map(\.rawValue))
+        for section in PanelSection.allCases where !known.contains(section.rawValue) && !sections.contains(section) {
+            sections.append(section)
+        }
+        self.sections = sections
+        defaults.set(PanelSection.allCases.map(\.rawValue), forKey: Key.knownSections)
         clipboardHistoryEnabled = defaults.object(forKey: Key.clipboard) as? Bool ?? true
         exchangeRatesEnabled = defaults.bool(forKey: Key.rates)
         favoriteCurrencies = Self.load([String].self, Key.currencies, defaults) ?? Self.defaultCurrencies()
@@ -127,6 +139,7 @@ final class Preferences {
         static let hoverDelay = "hoverDelay"
         static let display = "display"
         static let sections = "sections"
+        static let knownSections = "knownSections"
         static let clipboard = "clipboardHistoryEnabled"
         static let rates = "exchangeRatesEnabled"
         static let currencies = "favoriteCurrencies"

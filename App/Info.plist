@@ -60,6 +60,23 @@
 				<string>public.utf8-plain-text</string>
 			</array>
 		</dict>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Translate with Polka</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>translateWithPolka</string>
+			<key>NSPortName</key>
+			<string>Polka</string>
+			<key>NSRequiredContext</key>
+			<dict/>
+			<key>NSSendTypes</key>
+			<array>
+				<string>public.utf8-plain-text</string>
+			</array>
+		</dict>
 	</array>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>

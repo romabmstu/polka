@@ -1,0 +1,156 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Clear": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить"
+          }
+        }
+      }
+    },
+    "Copy": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировать"
+          }
+        }
+      }
+    },
+    "If the languages aren’t downloaded yet, add them in System Settings › General › Language & Region › Translation Languages.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если языки ещё не загружены, добавьте их в Системных настройках › Основные › Язык и регион › Языки перевода."
+          }
+        }
+      }
+    },
+    "It uses the translation built into newer versions of macOS.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Он использует перевод, встроенный в новые версии macOS."
+          }
+        }
+      }
+    },
+    "Polka needs Accessibility access to read the text you select in other apps.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы читать текст, выделенный в других приложениях, Polka нужен доступ к Универсальному доступу."
+          }
+        }
+      }
+    },
+    "Swap languages": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поменять языки местами"
+          }
+        }
+      }
+    },
+    "Text": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Текст"
+          }
+        }
+      }
+    },
+    "Translate back": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перевести обратно"
+          }
+        }
+      }
+    },
+    "Translate selection with ⌥⇧T": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перевод выделенного по ⌥⇧T"
+          }
+        }
+      }
+    },
+    "Translation": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перевод"
+          }
+        }
+      }
+    },
+    "Translation copied": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перевод скопирован"
+          }
+        }
+      }
+    },
+    "Translator": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переводчик"
+          }
+        }
+      }
+    },
+    "Translator needs macOS 15": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переводчику нужна macOS 15"
+          }
+        }
+      }
+    },
+    "Type or paste text": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Введите или вставьте текст"
+          }
+        }
+      }
+    },
+    "⌥⇧T translates the selection": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥⇧T переводит выделенное"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
