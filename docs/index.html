@@ -99,6 +99,22 @@ h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -.02em; margin: 0 0 12px
 pre { background: var(--card); border-radius: 14px; padding: 16px 18px; overflow-x: auto; font: 13.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; box-shadow: inset 0 0 0 1px var(--line); }
 footer { padding: 80px 0 50px; color: var(--dim); font-size: 13.5px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 footer a { color: var(--muted); }
+/* Support */
+.support { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+.coin { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: inset 0 0 0 1px var(--line); display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.coin-head { display: flex; align-items: center; gap: 12px; }
+.coin-mark { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 750; font-size: 17px; color: #fff; flex: none; }
+.coin-name { font-weight: 650; font-size: 16px; }
+.coin-net { display: inline-block; margin-top: 2px; font-size: 11.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; }
+.addr { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); word-break: break-all; background: rgba(255,255,255,.04); border-radius: 12px; padding: 10px 12px; margin: 0; user-select: all; }
+.copy { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; border-radius: 17px; border: 0; background: rgba(255,255,255,.08); color: var(--fg); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .15s, transform .12s; }
+.copy:hover { background: rgba(255,255,255,.14); }
+.copy:active { transform: scale(.97); }
+.copy.done { background: rgba(48,209,88,.18); color: var(--green); }
+.copy svg { width: 14px; height: 14px; }
+.note { display: flex; gap: 10px; align-items: flex-start; margin-top: 18px; padding: 14px 16px; border-radius: 14px; background: rgba(255,159,10,.08); box-shadow: inset 0 0 0 1px rgba(255,159,10,.2); color: #ffcf85; font-size: 14px; }
+.note svg { flex: none; width: 18px; height: 18px; margin-top: 2px; }
+.thanks { color: var(--dim); font-size: 14px; margin-top: 18px; }
 [data-lang="ru"] .en, [data-lang="en"] .ru { display: none; }
 @media (max-width: 720px) {
   .nav-links a.hide-sm { display: none; }
@@ -115,6 +131,7 @@ footer a { color: var(--muted); }
     <nav class="nav-links">
       <a class="hide-sm" href="#features"><span class="en">Features</span><span class="ru">Возможности</span></a>
       <a class="hide-sm" href="#privacy"><span class="en">Privacy</span><span class="ru">Приватность</span></a>
+      <a class="hide-sm" href="#support"><span class="en">Support</span><span class="ru">Поддержать</span></a>
       <a href="https://github.com/romabmstu/polka">GitHub</a>
       <button class="lang" id="lang" type="button">RU</button>
     </nav>
@@ -187,7 +204,7 @@ footer a { color: var(--muted); }
     <h2><span class="en">Stays on your Mac</span><span class="ru">Всё остаётся на вашем Mac</span></h2>
     <p class="lead"><span class="en">No account, no analytics, no telemetry. The code is open, so you don’t have to take our word for it.</span><span class="ru">Ни аккаунта, ни аналитики, ни телеметрии. Код открыт — можно не верить на слово, а проверить.</span></p>
     <div class="privacy">
-      <div><b><span class="en">One optional request</span><span class="ru">Один необязательный запрос</span></b><span><span class="en">Exchange rates, only if you turn them on. Nothing else touches the network.</span><span class="ru">Курсы валют, и только если вы их включите. Больше ничего не идёт в сеть.</span></span></div>
+      <div><b><span class="en">Two small requests</span><span class="ru">Два небольших запроса</span></b><span><span class="en">An update check against this project’s GitHub releases, and exchange rates if you turn them on. Both can be switched off; nothing else touches the network.</span><span class="ru">Проверка обновлений в релизах проекта на GitHub и курсы валют, если вы их включите. Оба можно выключить, больше ничего не идёт в сеть.</span></span></div>
       <div><b><span class="en">Passwords skipped</span><span class="ru">Пароли пропускаются</span></b><span><span class="en">Clipboard history lives in memory and ignores anything a password manager marks as concealed.</span><span class="ru">История буфера живёт в памяти и не трогает то, что менеджер паролей пометил как скрытое.</span></span></div>
       <div><b><span class="en">Verifiable builds</span><span class="ru">Проверяемые сборки</span></b><span><span class="en">Every release is built by GitHub Actions and carries a signed provenance attestation.</span><span class="ru">Каждый релиз собирается в GitHub Actions и сопровождается подписанной аттестацией происхождения.</span></span></div>
     </div>
@@ -198,6 +215,39 @@ footer a { color: var(--muted); }
     <p class="lead"><span class="en">Download the latest release, move Polka to Applications and run once:</span><span class="ru">Скачайте последний релиз, перенесите Polka в «Программы» и один раз выполните:</span></p>
     <pre>xattr -dr com.apple.quarantine /Applications/Polka.app</pre>
     <p class="small"><span class="en">Needed because the app is not notarized yet. Prefer to build it yourself? See the README.</span><span class="ru">Нужно, потому что приложение пока не нотаризовано. Хотите собрать сами? Инструкция в README.</span></p>
+  </section>
+
+  <section id="support">
+    <h2><span class="en">Support Polka</span><span class="ru">Поддержать Polka</span></h2>
+    <p class="lead"><span class="en">Polka is free and will stay free — no ads, no subscriptions, no paid tier. If it saves you a few minutes a day, you can buy me a coffee.</span><span class="ru">Polka бесплатна и такой останется — без рекламы, подписок и платных версий. Если она экономит вам пару минут в день, можно угостить автора кофе.</span></p>
+    <div class="support">
+      <div class="coin">
+        <div class="coin-head">
+          <div class="coin-mark" style="background:#26a17b">₮</div>
+          <div><div class="coin-name">USDT</div><span class="coin-net" style="background:#26a17b22;color:#26a17b">Tron · TRC-20</span></div>
+        </div>
+        <p class="addr">TNxyTAuSRBcLpCbfTURjDiJHdhFjQHwBnd</p>
+        <button class="copy" type="button" data-copy="TNxyTAuSRBcLpCbfTURjDiJHdhFjQHwBnd"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M10.5 5V3.5a1.5 1.5 0 0 0-1.5-1.5H3.5A1.5 1.5 0 0 0 2 3.5V9a1.5 1.5 0 0 0 1.5 1.5H5"/></svg><span class="label"><span class="en">Copy address</span><span class="ru">Скопировать адрес</span></span></button>
+      </div>
+      <div class="coin">
+        <div class="coin-head">
+          <div class="coin-mark" style="background:#627eea">₮</div>
+          <div><div class="coin-name">USDT</div><span class="coin-net" style="background:#627eea22;color:#627eea">Ethereum · ERC-20</span></div>
+        </div>
+        <p class="addr">0xf080C9113c0D2Ba28b1cF23adbbEc7Aafe907D35</p>
+        <button class="copy" type="button" data-copy="0xf080C9113c0D2Ba28b1cF23adbbEc7Aafe907D35"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M10.5 5V3.5a1.5 1.5 0 0 0-1.5-1.5H3.5A1.5 1.5 0 0 0 2 3.5V9a1.5 1.5 0 0 0 1.5 1.5H5"/></svg><span class="label"><span class="en">Copy address</span><span class="ru">Скопировать адрес</span></span></button>
+      </div>
+      <div class="coin">
+        <div class="coin-head">
+          <div class="coin-mark" style="background:#f7931a">₿</div>
+          <div><div class="coin-name">Bitcoin</div><span class="coin-net" style="background:#f7931a22;color:#f7931a"><span class="en">Bitcoin network</span><span class="ru">Сеть Bitcoin</span></span></div>
+        </div>
+        <p class="addr">bc1q6exu9tgl2d29z9t3eczksjj4e4jrqwnd7zt22l</p>
+        <button class="copy" type="button" data-copy="bc1q6exu9tgl2d29z9t3eczksjj4e4jrqwnd7zt22l"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M10.5 5V3.5a1.5 1.5 0 0 0-1.5-1.5H3.5A1.5 1.5 0 0 0 2 3.5V9a1.5 1.5 0 0 0 1.5 1.5H5"/></svg><span class="label"><span class="en">Copy address</span><span class="ru">Скопировать адрес</span></span></button>
+      </div>
+    </div>
+    <div class="note"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 1.8 15 14H1z" stroke-linejoin="round"/><path d="M8 6.2v3.6M8 11.9v.1"/></svg><span><span class="en">Send only on the network shown on the card. Coins sent on another network cannot be recovered.</span><span class="ru">Отправляйте только в сети, указанной на карточке. Монеты, отправленные в другой сети, вернуть невозможно.</span></span></div>
+    <p class="thanks"><span class="en">Not into crypto? A <a href="https://github.com/romabmstu/polka">star on GitHub</a>, a bug report or telling a friend helps just as much. Thank you!</span><span class="ru">Нет криптовалюты? <a href="https://github.com/romabmstu/polka">Звезда на GitHub</a>, сообщение об ошибке или рассказ другу помогают не меньше. Спасибо!</span></p>
   </section>
 
   <footer>
@@ -222,6 +272,30 @@ footer a { color: var(--muted); }
     const next = body.dataset.lang === 'ru' ? 'en' : 'ru';
     try { localStorage.setItem('polka-lang', next); } catch (e) {}
     apply(next);
+  });
+
+  document.querySelectorAll('.copy').forEach(button => {
+    const label = button.querySelector('.label');
+    const original = label.innerHTML;
+    button.addEventListener('click', async () => {
+      const text = button.dataset.copy;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const field = document.createElement('textarea');
+        field.value = text;
+        field.setAttribute('readonly', '');
+        field.style.position = 'fixed';
+        field.style.opacity = '0';
+        document.body.appendChild(field);
+        field.select();
+        try { document.execCommand('copy'); } catch (err) {}
+        field.remove();
+      }
+      button.classList.add('done');
+      label.innerHTML = '<span class="en">Copied</span><span class="ru">Скопировано</span>';
+      setTimeout(() => { button.classList.remove('done'); label.innerHTML = original; }, 1800);
+    });
   });
 
   const notch = document.getElementById('notch');

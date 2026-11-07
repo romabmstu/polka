@@ -101,6 +101,21 @@ The code is split in two:
 
 Bug reports and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security problems privately as described in [SECURITY.md](SECURITY.md).
 
+## Support
+
+Polka is free and will stay free — no ads, no subscriptions, no paid tier. If it saves you a few minutes a day and you’d like to say thanks, you can buy me a coffee:
+
+| Currency | Network | Address |
+| --- | --- | --- |
+| USDT | Tron (TRC-20) | `TNxyTAuSRBcLpCbfTURjDiJHdhFjQHwBnd` |
+| USDT | Ethereum (ERC-20) | `0xf080C9113c0D2Ba28b1cF23adbbEc7Aafe907D35` |
+| Bitcoin | Bitcoin | `bc1q6exu9tgl2d29z9t3eczksjj4e4jrqwnd7zt22l` |
+
+> [!IMPORTANT]
+> Send only on the network shown next to the address. Coins sent on another network cannot be recovered.
+
+Not into crypto? A ⭐ on GitHub, a bug report or telling a friend helps just as much.
+
 ## License
 
 [MIT](LICENSE)

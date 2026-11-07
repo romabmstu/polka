@@ -379,6 +379,11 @@ private struct AboutSettings: View {
                 Link("Source code", destination: URL(string: "https://github.com/romabmstu/polka")!)
                 Link("Report a problem", destination: URL(string: "https://github.com/romabmstu/polka/issues/new/choose")!)
             }
+            Link(destination: URL(string: "https://romabmstu.github.io/polka/#support")!) {
+                Label("Support Polka", systemImage: "heart.fill")
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.pink)
             Text("Free and open source under the MIT License.")
                 .font(.caption)
                 .foregroundStyle(.secondary)

@@ -2703,6 +2703,16 @@
         }
       }
     },
+    "Support Polka": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поддержать Polka"
+          }
+        }
+      }
+    },
     "Switch": {
       "localizations": {
         "ru": {
