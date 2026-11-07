@@ -8,6 +8,7 @@ struct SettingsView: View {
     var body: some View {
         TabView {
             GeneralSettings().tabItem { Label("General", systemImage: "gearshape") }
+            ThroneSettings().tabItem { Label("FSNT", systemImage: "network") }
             SectionsSettings().tabItem { Label("Sections", systemImage: "square.grid.2x2") }
             ScenariosSettings().tabItem { Label("Scenarios", systemImage: "sparkles") }
             PrivacySettings().tabItem { Label("Privacy", systemImage: "hand.raised") }
@@ -95,7 +96,7 @@ private struct GeneralSettings: View {
             } header: {
                 Text("VPN apps")
             } footer: {
-                Text("For clients that don’t appear in System Settings › VPN. Polka turns them on by opening the app and off by quitting it, so let the app connect at launch.")
+                Text("For clients that don’t appear in System Settings › VPN. Polka can open the app, but its connection must be controlled in the app.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -390,5 +391,55 @@ private struct AboutSettings: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
+    }
+}
+
+
+private struct ThroneSettings: View {
+    @Environment(AppModel.self) private var app
+    @State private var key = ""
+    @State private var message: String?
+    @State private var testing = false
+    @State private var portText = "9095"
+
+    var body: some View {
+        Form {
+            Section {
+                Text("In Throne advanced settings, enable the Throne API on 127.0.0.1, then enter its port and key. Some FSNT versions may not expose these settings. The key gives full control of the client.")
+                TextField("Port", text: $portText)
+                SecureField("API key", text: $key)
+                    .textContentType(.password)
+                HStack {
+                    Button("Connect") {
+                        testing = true
+                        Task {
+                            do {
+                                guard let port = UInt16(portText), port > 0 else { throw ThroneClient.Failure.connection }
+                                try await app.vpn.configureThrone(key: key, port: port)
+                                key = ""
+                                message = String(localized: "FSNT integration connected.")
+                            } catch {
+                                message = String(localized: "Could not connect. Check the API, key, and local address in FSNT.")
+                            }
+                            testing = false
+                        }
+                    }.disabled(key.isEmpty || testing)
+                    if app.vpn.throneConfigured {
+                        Button("Remove integration") {
+                            do { try app.vpn.removeThrone(); message = nil }
+                            catch { message = String(localized: "Could not remove the key from Keychain.") }
+                        }.disabled(testing)
+                    }
+                    if testing { ProgressView().controlSize(.small) }
+                }
+                if let message { Text(message).font(.caption) }
+            } header: {
+                Text("FSNT / Throne")
+            } footer: {
+                Text("The key is stored in macOS Keychain. Polka only connects to this Mac. Other VPN apps need their own integration.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }.formStyle(.grouped)
+        .onAppear { portText = String(app.vpn.thronePort) }
     }
 }

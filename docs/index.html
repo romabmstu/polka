@@ -389,8 +389,8 @@ footer a { color: var(--muted); }
         <h3><span class="en">Tab groups</span><span class="ru">Группы вкладок</span></h3>
         <p><span class="en">Press ⌥⇧S in Safari, Chrome, Arc, Brave, Edge or Yandex Browser and choose the group right in the notch — or save the whole window. “Save to Polka…” in the right-click menu works from any app.</span><span class="ru">Нажмите ⌥⇧S в Safari, Chrome, Arc, Brave, Edge или Яндекс Браузере и выберите группу прямо в чёлке — или сохраните всё окно. «Сохранить в Polka…» в контекстном меню работает из любого приложения.</span></p></div>
       <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#30d158" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5 16 5v4.5c0 3.6-2.6 6.2-6 7.5-3.4-1.3-6-3.9-6-7.5V5z"/></svg></div>
-        <h3><span class="en">Every VPN, one switch each</span><span class="ru">Все VPN, у каждого свой переключатель</span></h3>
-        <p><span class="en">Happ, V2Box, WireGuard and anything else in System Settings, every Tunnelblick profile, and proxy clients like FSNT Client. Turning one on turns the others off.</span><span class="ru">Happ, V2Box, WireGuard и всё, что есть в Системных настройках, каждый профиль Tunnelblick и прокси-клиенты вроде FSNT Client. Включаете один — остальные выключаются.</span></p></div>
+        <h3><span class="en">VPN connections</span><span class="ru">VPN-подключения</span></h3>
+        <p><span class="en">Control system VPNs and Tunnelblick independently. FSNT / Throne requires its local API to be configured. Multiple VPNs can conflict over routes and DNS.</span><span class="ru">Управляйте системными VPN и Tunnelblick независимо. Для FSNT / Throne нужно настроить локальный API. Несколько VPN могут конфликтовать из-за маршрутов и DNS.</span></p></div>
       <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#ff6b9a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="15" r="2.3"/><circle cx="15" cy="13" r="2.3"/><path d="M8.3 15V5l9-2v10"/></svg></div>
         <h3><span class="en">Music</span><span class="ru">Музыка</span></h3>
         <p><span class="en">Artwork, progress and controls for whatever is actually playing — Yandex Music, Spotify, Music or a video in the browser. Polka shows which app it controls, so pause never hits the wrong one.</span><span class="ru">Обложка, прогресс и управление тем, что реально играет: Яндекс Музыка, Spotify, Музыка или видео в браузере. Polka показывает, каким приложением управляет, так что пауза не попадёт не туда.</span></p></div>
@@ -666,10 +666,10 @@ footer a { color: var(--muted); }
     <div class="vg">
       ${VPNS.map((v, i) => `<div class="card vt ${v[3] ? 'on' : ''}" data-vpn="${i}">
         <div class="top"><div class="ico2" style="background:${v[1]}">${v[0]}</div><div class="sw ${v[3] ? 'on' : ''}" role="switch" aria-checked="${v[3]}" aria-label="${v[2]}"></div></div>
-        <div><b>${v[2]}</b><br><small data-vs>${v[3] ? L('Connected · 1:24:07', 'Подключено · 1:24:07') : L('Off', 'Выкл.')}</small></div>
+        <div><b>${v[2]}</b><br><small data-vs>${i === 2 ? L('Status unavailable', 'Статус недоступен') : (v[3] ? L('Connected · 1:24:07', 'Подключено · 1:24:07') : L('Off', 'Выкл.'))}</small></div>
       </div>`).join('')}
     </div>
-    <div class="vfoot"><i data-dot></i><span data-vtext>${L('Traffic goes through Happ', 'Трафик идёт через Happ')}</span><span class="sp"></span><span class="dim">${L('Only one VPN stays on', 'Включён только один VPN')}</span><span class="cap">${L('Disconnect', 'Отключить')}</span></div>`;
+    <div class="vfoot"><i data-dot></i><span data-vtext>${L('Active VPNs: 1', 'Активных VPN: 1')}</span><span class="sp"></span><span class="dim">${L('Connections are independent', 'Подключения независимы')}</span><span class="cap">${L('Disconnect known VPNs', 'Отключить известные VPN')}</span></div>`;
 
   const mediaScene = `
     <div class="mu playing">
@@ -846,26 +846,21 @@ footer a { color: var(--muted); }
   };
 
   // ---- VPN ----
-  const setVPN = index => {
+  const setVPN = (index, enabled = true) => {
     $$('[data-vpn]').forEach((tileEl, i) => {
-      const on = i === index;
+      if (i === 2 || (index !== -1 && i !== index)) return;
+      const on = index !== -1 && enabled;
       tileEl.classList.toggle('on', on);
       const sw = tileEl.querySelector('.sw');
       sw.classList.toggle('on', on);
       sw.setAttribute('aria-checked', String(on));
-      tileEl.querySelector('[data-vs]').innerHTML = on ? L('Connecting…', 'Подключение…') : L('Off', 'Выкл.');
+      tileEl.querySelector('[data-vs]').textContent = on ? L('Connected', 'Подключено') : L('Off', 'Выкл.');
     });
-    if (index >= 0) {
-      seconds = 0;
-      const name = VPNS[index][2];
-      $('[data-vtext]').innerHTML = L(`Traffic goes through ${name}`, `Трафик идёт через ${name}`);
-      $('[data-dot]').style.background = 'var(--green)';
-    } else {
-      $('[data-vtext]').innerHTML = L('Your connection is not protected by a VPN', 'Соединение не защищено VPN');
-      $('[data-dot]').style.background = 'var(--orange)';
-    }
+    const count = $$('[data-vpn].on').length;
+    $('[data-vtext]').textContent = count ? L(`Active VPNs: ${count}`, `Активных VPN: ${count}`) : L('No active VPN detected', 'Активных VPN не обнаружено');
+    $('[data-dot]').style.background = count ? 'var(--green)' : 'var(--orange)';
   };
-  $$('[data-vpn] .sw').forEach((sw, i) => sw.addEventListener('click', () => { stopAuto(); setVPN(sw.classList.contains('on') ? -1 : i); }));
+  $$('[data-vpn] .sw').forEach((sw, i) => sw.addEventListener('click', () => { stopAuto(); if (i !== 2) setVPN(i, !sw.classList.contains('on')); }));
   $('.vfoot .cap').addEventListener('click', () => { stopAuto(); setVPN(-1); });
 
   // ---- Calculator typing ----

@@ -150,7 +150,7 @@ final class AppModel {
         switch action {
         case .vpn(let serviceID):
             if vpn.connections.isEmpty { await vpn.refresh() }
-            await vpn.setActive(serviceID)
+            guard await vpn.setActive(serviceID) else { throw ScenarioFailure.vpn }
         case .media(.play):
             media.play()
         case .media(.pause):
@@ -187,3 +187,5 @@ final class AppModel {
         (try? await shortcuts.names()) ?? []
     }
 }
+
+private enum ScenarioFailure: Error { case vpn }

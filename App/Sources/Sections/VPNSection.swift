@@ -11,7 +11,7 @@ struct VPNSection: View {
         let vpn = app.vpn
         if !vpn.hasLoaded {
             ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if vpn.connections.isEmpty {
+        } else if vpn.connections.isEmpty && !vpn.systemStatusUnavailable {
             VStack(spacing: 14) {
                 Placeholder(
                     symbol: "lock.shield",
@@ -33,6 +33,9 @@ struct VPNSection: View {
                 }
                 .scrollIndicators(.never)
                 footer
+                Text("Multiple VPNs may conflict. Their routes and DNS settings determine which traffic uses each connection.")
+                    .font(.caption)
+                    .foregroundStyle(Theme.tertiary)
             }
         }
     }
@@ -45,13 +48,15 @@ struct VPNSection: View {
                 .frame(width: 8, height: 8)
             if let error = vpn.lastError {
                 Text(error).foregroundStyle(Theme.warning)
-            } else if let active = vpn.active {
-                Text("Traffic goes through \(active.name)")
+            } else if !vpn.activeConnections.isEmpty {
+                Text("Active VPNs: \(vpn.activeConnections.count)")
+            } else if vpn.hasUnknownStatus {
+                Text("VPN status is unknown")
             } else {
-                Text("Your connection is not protected by a VPN")
+                Text("No active VPN detected")
             }
             Spacer()
-            Text("Only one VPN stays on at a time").foregroundStyle(Theme.tertiary)
+
             Button {
                 VPNAppPicker.run(app)
             } label: {
@@ -60,8 +65,9 @@ struct VPNSection: View {
             .buttonStyle(IconButtonStyle(size: 26))
             .help(Text("Add a VPN app that is not listed, such as a proxy client"))
             if vpn.active != nil {
-                Button("Disconnect") { Task { await vpn.setActive(nil) } }
+                Button("Disconnect known VPNs") { Task { await vpn.setActive(nil) } }
                     .buttonStyle(CapsuleButtonStyle())
+                    .disabled(vpn.switching)
             }
         }
         .font(.system(size: 12.5))
@@ -88,6 +94,11 @@ private struct ConnectionTile: View {
                     Spacer()
                     if isBusy {
                         ProgressView().controlSize(.small)
+                    } else if connection.isAppManaged, connection.status == .unknown {
+                        if let appURL {
+                            Button("Open App") { NSWorkspace.shared.open(appURL) }
+                                .buttonStyle(.plain)
+                        }
                     } else {
                         Toggle(isOn: Binding(get: { isOn }, set: { _ in Task { await vpn.toggle(connection) } })) {
                             Text(connection.name)
@@ -95,6 +106,7 @@ private struct ConnectionTile: View {
                         .toggleStyle(.switch)
                         .labelsHidden()
                         .tint(Theme.active)
+                        .disabled(vpn.switching || connection.status == .unknown || connection.status == .disconnecting)
                     }
                 }
                 Text(connection.name).font(.system(size: 15, weight: .semibold)).lineLimit(1)
@@ -128,7 +140,8 @@ private struct ConnectionTile: View {
             case .connecting: Text("Connecting…")
             case .disconnecting: Text("Disconnecting…")
             case .invalid: Text("Configuration is invalid")
-            case .disconnected, .unknown:
+            case .unknown: Text("Status unavailable")
+            case .disconnected:
                 if connection.isAppManaged, let id = connection.providerBundleID, vpn.runningApps.contains(id) {
                     Text("Open, not connected")
                 } else {
@@ -170,7 +183,7 @@ enum VPNAppPicker {
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
         panel.prompt = String(localized: "Add")
-        panel.message = String(localized: "Choose a VPN app. Polka turns it on by opening it and off by quitting it.")
+        panel.message = String(localized: "Choose a VPN app. Its connection must be controlled in the app.")
         NSApp.activate()
         guard panel.runModal() == .OK, let url = panel.url else { return }
         if !app.vpn.addApp(at: url) {

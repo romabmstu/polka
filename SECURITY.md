@@ -21,7 +21,7 @@ Polka runs with your user’s privileges and touches sensitive things (browser t
 - The calculator is a small parser over `Decimal`, not an evaluator; input is never executed. Nesting depth and exponent size are capped.
 - Exchange-rate responses are size-limited, schema-checked and sanity-checked before use.
 
-**Minimal network surface.** HTTPS requests for update checks and optional exchange rates, using an ephemeral `URLSession` with no cookies, cache or credentials, TLS 1.2 or later.
+**Minimal network surface.** HTTPS requests for update checks and optional exchange rates, using an ephemeral `URLSession` with no cookies, cache or credentials, TLS 1.2 or later. The optional Throne integration uses an authenticated encrypted TCP connection restricted to loopback; its control key is stored in Keychain.
 
 **Careful storage.** The library is written atomically with `0600` permissions in a `0700` folder. A file that fails to parse is moved aside instead of being overwritten, and a file written by a newer version is left untouched.
 

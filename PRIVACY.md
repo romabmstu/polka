@@ -35,7 +35,7 @@ Polka asks for each permission only when you use the feature that needs it.
 
 Now Playing information (title, artist, artwork) is read on your Mac through the bundled MediaRemote adapter and never leaves it.
 
-VPN switching uses the system `scutil` tool and needs no permission. For proxy clients such as FSNT Client, Polka opens and quits the app and reads the proxy settings (`scutil --proxy`) and the default route to show whether it is connected; it never changes network settings itself. Global shortcuts use the Carbon hot key API, which sees only Polka’s own key combinations — Polka does not monitor your typing.
+VPN switching uses the system `scutil` tool and needs no permission. For FSNT / Throne, an optional local API integration connects only to 127.0.0.1 using the API key you provide; the key is stored in macOS Keychain. The key grants control of the client. For other apps without an integration, Polka cannot determine or control their connection. Global shortcuts use the Carbon hot key API, which sees only Polka’s own key combinations — Polka does not monitor your typing.
 
 ## Clipboard
 

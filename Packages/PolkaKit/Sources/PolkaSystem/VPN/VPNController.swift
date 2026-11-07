@@ -37,14 +37,4 @@ public struct VPNController: Sendable {
         try await runner.runChecked(Self.scutil, ["--nc", "stop", serviceID], timeout: .seconds(10))
     }
 
-    /// Connects `serviceID` and disconnects every other active tunnel, because
-    /// two clients fighting over routes is never what the user wants.
-    public func switchExclusively(to serviceID: String?, among connections: [VPNConnection]) async throws {
-        for connection in connections where connection.status.isActive && connection.id != serviceID {
-            try await disconnect(connection.id)
-        }
-        if let serviceID {
-            try await connect(serviceID)
-        }
-    }
 }

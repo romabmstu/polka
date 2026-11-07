@@ -93,21 +93,21 @@ private struct VPNCard: View {
                 HStack {
                     CardLabel("VPN")
                     Spacer()
-                    if let first = active ?? vpn.connections.first {
+                    if let first = vpn.activeConnections.count <= 1 ? (active ?? vpn.connections.first) : nil {
                         Toggle(isOn: Binding(get: { active != nil }, set: { _ in Task { await vpn.toggle(first) } })) {
                             Text("VPN")
                         }
                         .toggleStyle(.switch)
                         .labelsHidden()
                         .tint(Theme.active)
-                        .disabled(vpn.busy.contains(first.id))
+                        .disabled(vpn.switching || first.status == .unknown)
                     }
                 }
                 Spacer(minLength: 8)
-                (active == nil ? Text("Not protected") : Text("Protected"))
+                (active != nil ? Text("VPN active") : (vpn.hasUnknownStatus ? Text("Status unknown") : Text("No active VPN")))
                     .font(.system(size: 19, weight: .semibold))
                     .foregroundStyle(active == nil ? Theme.warning : Theme.active)
-                Text(active?.name ?? (vpn.connections.isEmpty ? String(localized: "No VPN set up") : String(localized: "All off")))
+                Text(active?.name ?? (vpn.connections.isEmpty ? String(localized: "No VPN set up") : String(localized: "No active VPN detected")))
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)

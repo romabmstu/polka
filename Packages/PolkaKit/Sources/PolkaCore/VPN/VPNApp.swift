@@ -1,9 +1,8 @@
 import Foundation
 
 /// A VPN client that does not register its tunnel with the system, so
-/// `scutil` cannot see it: proxy-based clients such as FSNT Client (built on
-/// sing-box). Polka turns these on by launching the app and off by quitting it,
-/// and reads their state from the network settings.
+/// `scutil` cannot see it: proxy-based clients such as FSNT Client. State and
+/// control require a supported integration; launching an app is not a connection.
 public struct VPNApp: Identifiable, Hashable, Codable, Sendable {
     public var bundleID: String
     public var name: String

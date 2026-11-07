@@ -3222,6 +3222,286 @@
           }
         }
       }
+    },
+    "VPN status is unknown": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Состояние VPN неизвестно"
+          }
+        }
+      }
+    },
+    "No active VPN detected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Активных VPN не обнаружено"
+          }
+        }
+      }
+    },
+    "Status unavailable": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Состояние недоступно"
+          }
+        }
+      }
+    },
+    "VPN active": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VPN активен"
+          }
+        }
+      }
+    },
+    "Status unknown": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Статус неизвестен"
+          }
+        }
+      }
+    },
+    "No active VPN": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет активного VPN"
+          }
+        }
+      }
+    },
+    "%@ is open, but its connection status is unavailable. Check the app.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ запущен, но состояние подключения недоступно. Проверьте его в приложении."
+          }
+        }
+      }
+    },
+    "VPN active: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VPN активен: %@"
+          }
+        }
+      }
+    },
+    "Open the VPN app to control its connection.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Управляйте подключением в самом VPN-приложении."
+          }
+        }
+      }
+    },
+    "Active VPNs: %lld": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Активных VPN: %lld"
+          }
+        }
+      }
+    },
+    "Disconnect all": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключить все"
+          }
+        }
+      }
+    },
+    "For clients that don’t appear in System Settings › VPN. Polka can open the app, but its connection must be controlled in the app.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для клиентов, которых нет в Системных настройках › VPN. Polka может открыть приложение, но управлять подключением нужно в нём."
+          }
+        }
+      }
+    },
+    "Choose a VPN app. Its connection must be controlled in the app.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите VPN-приложение. Управлять подключением нужно в самом приложении."
+          }
+        }
+      }
+    },
+    "Disconnect known VPNs": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключить известные VPN"
+          }
+        }
+      }
+    },
+    "Some VPN states are unknown. Check their apps.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Состояние некоторых VPN неизвестно. Проверьте их в приложениях."
+          }
+        }
+      }
+    },
+    "VPN state did not change in time. Check the VPN app.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Состояние VPN не изменилось вовремя. Проверьте VPN-приложение."
+          }
+        }
+      }
+    },
+    "In Throne advanced settings, enable the Throne API on 127.0.0.1, then enter its port and key. Some FSNT versions may not expose these settings. The key gives full control of the client.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В расширенных настройках Throne включите Throne API на адресе 127.0.0.1, затем введите его порт и ключ. В некоторых версиях FSNT эти настройки могут отсутствовать. Ключ даёт полный доступ к управлению клиентом."
+          }
+        }
+      }
+    },
+    "API key": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ключ API"
+          }
+        }
+      }
+    },
+    "Port": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Порт"
+          }
+        }
+      }
+    },
+    "Connect": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключить"
+          }
+        }
+      }
+    },
+    "Remove integration": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить интеграцию"
+          }
+        }
+      }
+    },
+    "FSNT integration connected.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Интеграция с FSNT подключена."
+          }
+        }
+      }
+    },
+    "Could not connect. Check the API, key, and local address in FSNT.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось подключиться. Проверьте API, ключ и локальный адрес в FSNT."
+          }
+        }
+      }
+    },
+    "Could not remove the key from Keychain.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось удалить ключ из Связки ключей."
+          }
+        }
+      }
+    },
+    "The key is stored in macOS Keychain. Polka only connects to this Mac. Other VPN apps need their own integration.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ключ хранится в Связке ключей macOS. Polka подключается только к этому Mac. Для других VPN-приложений нужна отдельная интеграция."
+          }
+        }
+      }
+    },
+    "Multiple VPNs may conflict. Their routes and DNS settings determine which traffic uses each connection.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VPN могут конфликтовать. Маршруты и настройки DNS определяют, через какое соединение идёт трафик."
+          }
+        }
+      }
+    },
+    "VPN status is unknown or changing. Check the VPN app.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Состояние VPN неизвестно или меняется. Проверьте VPN-приложение."
+          }
+        }
+      }
+    },
+    "Some VPNs could not be disconnected. Check their apps.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось отключить некоторые VPN. Проверьте их в приложениях."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
