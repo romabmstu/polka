@@ -16,32 +16,65 @@ version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$info"
 build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$info")
 minimum=$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$info")
 
-if [[ -n "${CODESIGN_P12_BASE64:-}" ]]; then
-  keychain="$RUNNER_TEMP/polka-signing.keychain-db"
+# Re-signs with the project certificate so every build keeps the same code
+# identity and macOS remembers its permissions across updates. Returns
+# non-zero instead of exiting, so a broken secret cannot block a release.
+sign_with_certificate() {
+  local p12="$RUNNER_TEMP/polka.p12"
+  local keychain="$RUNNER_TEMP/polka-signing.keychain-db"
+  local keychain_password p12_password item
   keychain_password=$(uuidgen)
-  security create-keychain -p "$keychain_password" "$keychain"
-  security set-keychain-settings -lut 900 "$keychain"
-  security unlock-keychain -p "$keychain_password" "$keychain"
-  # Secrets pasted from a text file often keep its trailing newline.
-  p12_password=$(printf '%s' "${CODESIGN_P12_PASSWORD:-}" | tr -d '\r\n')
-  printf '%s' "$CODESIGN_P12_BASE64" | tr -d '\r\n ' | base64 --decode > "$RUNNER_TEMP/polka.p12"
-  if ! security import "$RUNNER_TEMP/polka.p12" -k "$keychain" -P "$p12_password" -T /usr/bin/codesign; then
-    rm -f "$RUNNER_TEMP/polka.p12"
-    security delete-keychain "$keychain"
-    echo "Could not import the signing certificate: check CODESIGN_P12_BASE64 and CODESIGN_P12_PASSWORD" >&2
-    exit 1
+  # Secrets pasted from a text file may carry line breaks, spaces, quotes or
+  # a URL-safe alphabet; keep only what base64 allows and pad it.
+  if ! printf '%s' "$CODESIGN_P12_BASE64" | python3 -c '
+import base64, re, sys
+text = sys.stdin.read().replace("-", "+").replace("_", "/")
+data = re.sub(r"[^A-Za-z0-9+/]", "", text)
+sys.stdout.buffer.write(base64.b64decode(data + "=" * (-len(data) % 4)))
+' > "$p12" || [[ ! -s "$p12" ]]; then
+    echo "CODESIGN_P12_BASE64 could not be decoded (${#CODESIGN_P12_BASE64} characters)"
+    rm -f "$p12"
+    return 1
   fi
-  rm -f "$RUNNER_TEMP/polka.p12"
+  p12_password=$(printf '%s' "${CODESIGN_P12_PASSWORD:-}" | tr -d '\r\n')
+
+  security create-keychain -p "$keychain_password" "$keychain" || return 1
+  security set-keychain-settings -lut 900 "$keychain"
+  security unlock-keychain -p "$keychain_password" "$keychain" || return 1
+  if ! security import "$p12" -k "$keychain" -P "$p12_password" -T /usr/bin/codesign; then
+    echo "The certificate did not import: CODESIGN_P12_PASSWORD may not match ($(wc -c < "$p12" | tr -d ' ') bytes decoded)"
+    rm -f "$p12"
+    security delete-keychain "$keychain"
+    return 1
+  fi
+  rm -f "$p12"
   security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain" >/dev/null
   security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
-  identity="Polka Code Signing"
+
+  local identity="Polka Code Signing" status=0
   # Inside out: the embedded framework first, then the app.
   for item in "$app"/Contents/Frameworks/*.framework; do
-    [[ -e "$item" ]] && codesign --force --options runtime --timestamp=none --keychain "$keychain" --sign "$identity" "$item"
+    if [[ -e "$item" ]]; then
+      codesign --force --options runtime --timestamp=none --keychain "$keychain" --sign "$identity" "$item" || status=1
+    fi
   done
-  codesign --force --options runtime --timestamp=none --keychain "$keychain" \
-    --entitlements App/Polka.entitlements --sign "$identity" "$app"
+  if [[ $status -eq 0 ]]; then
+    codesign --force --options runtime --timestamp=none --keychain "$keychain" \
+      --entitlements App/Polka.entitlements --sign "$identity" "$app" || status=1
+  fi
   security delete-keychain "$keychain"
+  return $status
+}
+
+if [[ -n "${CODESIGN_P12_BASE64:-}" ]]; then
+  if sign_with_certificate; then
+    echo "Signed with the project certificate"
+  else
+    # The ad hoc signature from the build is still valid; updates install,
+    # but macOS may ask for permissions again after this one.
+    echo "::warning title=Signed ad hoc::The project certificate could not be used, see the log above. Fix the CODESIGN_P12_* secrets to keep a stable code identity."
+    codesign --force --deep --sign - --options runtime --entitlements App/Polka.entitlements "$app"
+  fi
 fi
 codesign --verify --deep --strict "$app"
 

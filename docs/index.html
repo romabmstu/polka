@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Polka — a control center in your MacBook’s notch</title>
-<meta name="description" content="Saved tabs, VPN, music, your next meeting, a calculator and a clipboard — one hover away. Free and open source for macOS.">
+<meta name="description" content="Tabs from any browser, every VPN you use, music, calendar, calculator, clipboard history and a file shelf — in your MacBook’s notch. Free and open source for macOS.">
 <meta property="og:title" content="Polka">
 <meta property="og:description" content="A control center that lives in your MacBook’s notch.">
 <meta property="og:image" content="https://romabmstu.github.io/polka/assets/icon.png">
@@ -52,41 +52,261 @@ header.nav { display: flex; align-items: center; justify-content: space-between;
 .btn.ghost:hover { background: rgba(255,255,255,.14); }
 .small { color: var(--dim); font-size: 13px; margin-top: 14px; }
 
-/* Demo */
+/* Demo: a scaled 1120×700 stage, so it looks the same on every screen */
+.demo { margin: 56px auto 0; max-width: 1040px; }
 .screen {
-  position: relative; margin: 56px auto 0; max-width: 980px; aspect-ratio: 16 / 9.4; border-radius: 22px; overflow: hidden;
-  background: radial-gradient(900px 500px at 80% 120%, #233766 0%, transparent 60%), radial-gradient(700px 500px at 0% -20%, #3a2a55 0%, transparent 55%), #0c0e14;
+  position: relative; width: 100%; aspect-ratio: 1120 / 700; border-radius: 22px; overflow: hidden;
   box-shadow: 0 50px 120px rgba(0,0,0,.6), inset 0 0 0 1px var(--line);
+  text-align: left;
 }
-.menubar { position: absolute; inset: 0 0 auto; height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 12.5px; color: #e8e8ed; background: rgba(0,0,0,.35); }
-.menubar span + span { margin-left: 16px; }
-.notch {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 200px; height: 30px; background: #000; border-radius: 0 0 12px 12px;
-  transition: width .5s cubic-bezier(.3,1.3,.45,1), height .5s cubic-bezier(.3,1.3,.45,1), border-radius .4s;
-  overflow: hidden; cursor: pointer;
+.stage {
+  position: absolute; top: 0; left: 0; width: 1120px; height: 700px; transform-origin: 0 0;
+  background:
+    radial-gradient(700px 480px at 85% 110%, #2b4a8a 0%, transparent 60%),
+    radial-gradient(640px 460px at 5% -10%, #4a2f6b 0%, transparent 58%),
+    radial-gradient(500px 380px at 60% 40%, #16223d 0%, transparent 70%),
+    #0b0d14;
+  font-size: 13px; color: #fff; user-select: none;
 }
-.notch::before, .notch::after { content: ""; position: absolute; top: 0; width: 10px; height: 10px; }
-.notch.open { width: min(720px, 86%); height: 62%; border-radius: 0 0 30px 30px; box-shadow: 0 30px 70px rgba(0,0,0,.55); }
-.wings { position: absolute; inset: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; font-size: 11px; font-weight: 600; transition: opacity .2s; }
-.notch.open .wings { opacity: 0; }
-.panel { position: absolute; inset: 0; padding: 40px 20px 20px; opacity: 0; transition: opacity .25s .12s; display: grid; grid-template-columns: 1.4fr 1fr 1fr; grid-template-rows: 1fr auto; gap: 12px; }
-.notch.open .panel { opacity: 1; }
-.pc { background: #121215; border-radius: 16px; padding: 14px; box-shadow: inset 0 0 0 1px var(--line); text-align: left; }
-.pc .lbl { font-size: 10px; color: var(--dim); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-.pc .big { font-size: 17px; font-weight: 650; margin-top: 8px; }
-.pc .sub { font-size: 12px; color: var(--muted); }
-.scen { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.scen div { background: #121215; border-radius: 14px; padding: 12px; font-size: 13px; font-weight: 600; box-shadow: inset 0 0 0 1px var(--line); text-align: left; }
-.hint { position: absolute; top: 46px; left: 50%; transform: translateX(-50%); background: rgba(245,245,247,.95); color: #000; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 14px; animation: bob 2s ease-in-out infinite; transition: opacity .2s; }
-.screen.touched .hint { opacity: 0; }
-@keyframes bob { 50% { transform: translate(-50%, 4px); } }
+.mb { position: absolute; inset: 0 0 auto; height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 18px; font-size: 13px; color: #ececf1; background: rgba(10,10,14,.45); backdrop-filter: blur(20px); }
+.mb .l b { font-weight: 700; margin-right: 18px; }
+.mb .l span { margin-right: 16px; opacity: .92; }
+.mb .r { display: flex; gap: 16px; align-items: center; opacity: .92; }
+.mb .r svg { width: 15px; height: 15px; }
+
+/* A browser window behind the panel, for context */
+.win { position: absolute; left: 120px; top: 74px; width: 880px; height: 580px; border-radius: 14px; background: #17181d; box-shadow: 0 30px 80px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.07); overflow: hidden; }
+.win-bar { height: 46px; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: #1f2026; border-bottom: 1px solid rgba(255,255,255,.06); }
+.dots { display: flex; gap: 8px; }
+.dots i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
+.dots i:nth-child(2) { background: #febc2e; } .dots i:nth-child(3) { background: #28c840; }
+.url { flex: 1; max-width: 420px; margin: 0 auto; height: 28px; border-radius: 8px; background: rgba(255,255,255,.07); color: #a1a1aa; display: grid; place-items: center; font-size: 12.5px; }
+.win-body { padding: 26px 30px; display: grid; grid-template-columns: 200px 1fr; gap: 24px; opacity: .55; }
+.ph { background: rgba(255,255,255,.06); border-radius: 8px; height: 14px; margin-bottom: 12px; }
+.ph.big { height: 220px; border-radius: 12px; background: linear-gradient(135deg, rgba(106,163,255,.25), rgba(191,90,242,.2)); }
+
+/* Notch and capsule */
+.np {
+  position: absolute; left: 50%; top: 0; z-index: 5; transform: translateX(-50%);
+  width: 206px; height: 32px; background: #000; border-radius: 0 0 12px 12px; overflow: hidden; cursor: pointer;
+  transition: width .5s cubic-bezier(.3,1.25,.45,1), height .5s cubic-bezier(.3,1.25,.45,1), border-radius .4s, top .4s, box-shadow .4s;
+}
+.np.wide { width: 380px; }
+.np.open { width: 800px; height: 468px; border-radius: 0 0 34px 34px; box-shadow: 0 34px 90px rgba(0,0,0,.65); cursor: default; }
+.pill .np { top: 36px; width: 236px; height: 36px; border-radius: 18px; background: rgba(0,0,0,.9); box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.12); }
+.pill .np.open { top: 36px; width: 800px; height: 440px; border-radius: 26px; box-shadow: 0 34px 90px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.12); }
+
+.wing { position: absolute; top: 0; height: 32px; display: flex; align-items: center; gap: 7px; transition: opacity .2s; }
+.wing.l { left: 14px; } .wing.r { right: 14px; }
+.pill .wing { height: 36px; }
+.np.open .wing, .np:not(.wide) .wing { opacity: 0; pointer-events: none; }
+.pill .np:not(.open) .wing { opacity: 1; }
+.mini-art { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(135deg, #ff6b9a, #6a5cff); }
+.eq { display: flex; gap: 2px; align-items: flex-end; height: 12px; }
+.eq i { width: 3px; border-radius: 2px; background: #ff7aa8; animation: eq 1s ease-in-out infinite; }
+.eq i:nth-child(1) { height: 6px; } .eq i:nth-child(2) { height: 11px; animation-delay: -.3s; } .eq i:nth-child(3) { height: 8px; animation-delay: -.6s; } .eq i:nth-child(4) { height: 10px; animation-delay: -.15s; }
+@keyframes eq { 50% { transform: scaleY(.35); } }
+.wing .shield { width: 14px; height: 14px; color: var(--green); }
+.wing .cd { color: var(--blue); font-weight: 650; font-size: 12px; font-variant-numeric: tabular-nums; }
+
+/* Open panel */
+.pn { position: absolute; inset: 0; padding: 42px 22px 18px; opacity: 0; transition: opacity .22s; pointer-events: none; display: flex; flex-direction: column; gap: 14px; }
+.pill .pn { padding-top: 16px; }
+.np.open .pn { opacity: 1; transition-delay: .12s; pointer-events: auto; }
+.ph-row { display: flex; align-items: center; gap: 6px; height: 32px; }
+.tabsbar { display: flex; gap: 2px; flex: 1; }
+.st { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 15px; border: 0; background: none; color: rgba(255,255,255,.64); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .2s, color .2s; }
+.st svg { width: 14px; height: 14px; flex: none; }
+.st .tl { display: none; white-space: nowrap; }
+.st:hover { background: rgba(255,255,255,.1); color: #fff; }
+.st.on { background: #fff; color: #000; }
+.st.on .tl { display: inline; }
+.ib { width: 28px; height: 28px; display: grid; place-items: center; color: rgba(255,255,255,.64); }
+.ib svg { width: 14px; height: 14px; }
+.view { position: relative; flex: 1; min-height: 0; }
+.scene { position: absolute; inset: 0; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; pointer-events: none; }
+.scene.on { opacity: 1; transform: none; pointer-events: auto; }
+
+.card { background: rgba(255,255,255,.065); border-radius: 16px; padding: 14px; position: relative; }
+.lab { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: rgba(255,255,255,.46); }
+.muted { color: rgba(255,255,255,.64); }
+.dim { color: rgba(255,255,255,.46); }
+.g { color: var(--green); } .b { color: var(--blue); }
+.cap { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: 14px; font-size: 12px; font-weight: 650; background: rgba(255,255,255,.1); color: #fff; white-space: nowrap; }
+.cap.w { background: #fff; color: #000; }
+.cap.bl { background: var(--blue); color: #000; }
+.cap svg { width: 13px; height: 13px; }
+.badge { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-weight: 750; font-size: 12.5px; flex: none; }
+.art { border-radius: 12px; background: radial-gradient(circle at 30% 25%, #ffb36b 0%, transparent 45%), linear-gradient(135deg, #ff5e8a, #6a5cff 70%, #2a2a8f); box-shadow: 0 10px 30px rgba(106,92,255,.35); flex: none; }
+.bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,.14); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 38%; background: #fff; border-radius: 2px; }
+.playing .bar i { animation: prog 40s linear infinite; }
+@keyframes prog { from { width: 34%; } to { width: 100%; } }
+.ctl { display: flex; align-items: center; gap: 14px; }
+.ctl svg { width: 16px; height: 16px; }
+.ctl .pp { width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000; display: grid; place-items: center; }
+.ctl .pp svg { width: 14px; height: 14px; }
+.sw { width: 34px; height: 20px; border-radius: 10px; background: rgba(255,255,255,.18); position: relative; transition: background .2s; cursor: pointer; flex: none; }
+.sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .25s cubic-bezier(.3,1.3,.5,1); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+.sw.on { background: var(--green); }
+.sw.on::after { transform: translateX(14px); }
+
+/* Overview */
+.ov { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr); grid-template-rows: 1fr 88px; gap: 12px; height: 100%; }
+.ov .music { display: flex; flex-direction: column; justify-content: space-between; }
+.ov .mrow { display: flex; gap: 14px; align-items: center; }
+.ttl { font-size: 16px; font-weight: 700; }
+.big { font-size: 20px; font-weight: 700; margin-top: 8px; }
+.scs { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+.sc { min-width: 0; background: rgba(255,255,255,.065); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
+.sc svg { width: 16px; height: 16px; }
+.sc b { font-size: 13.5px; }
+.sc small { font-size: 11.5px; color: rgba(255,255,255,.64); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.sc.run { box-shadow: inset 0 0 0 1.5px var(--green); }
+
+/* Tabs */
+.tb { display: grid; grid-template-columns: 196px 1fr; gap: 14px; height: 100%; }
+.groups { display: flex; flex-direction: column; gap: 2px; }
+.grp { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: 10px; font-weight: 600; }
+.grp.on { background: rgba(255,255,255,.12); }
+.grp i { width: 9px; height: 9px; border-radius: 50%; }
+.grp span { flex: 1; }
+.grp em { font-style: normal; color: rgba(255,255,255,.46); font-variant-numeric: tabular-nums; font-size: 12px; }
+.tright { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.cur { display: flex; align-items: center; gap: 12px; height: 50px; padding: 0 12px; border-radius: 14px; background: rgba(255,255,255,.065); }
+.cur .t { flex: 1; min-width: 0; }
+.cur .t div:last-child { font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.tile { background: rgba(255,255,255,.065); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.tile b, .tile small { display: block; }
+.tile > div { min-width: 0; }
+.tile b { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile small { color: rgba(255,255,255,.46); font-size: 11.5px; }
+.tile.new { animation: pop .5s cubic-bezier(.3,1.4,.5,1); box-shadow: inset 0 0 0 1.5px var(--green); }
+@keyframes pop { from { transform: scale(.85); opacity: 0; } }
+
+/* Save picker */
+.picker { position: absolute; inset: 0; background: #000; display: grid; grid-template-columns: 270px 1fr; gap: 18px; opacity: 0; transform: scale(.98); transition: opacity .25s, transform .25s; pointer-events: none; }
+.picker.on { opacity: 1; transform: none; }
+.picker .left { display: flex; flex-direction: column; gap: 10px; padding-right: 18px; border-right: 1px solid rgba(255,255,255,.08); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: rgba(255,255,255,.08); border-radius: 8px; padding: 2px; font-size: 12px; font-weight: 600; }
+.seg span { text-align: center; padding: 4px 0; border-radius: 6px; color: rgba(255,255,255,.7); }
+.seg span.on { background: rgba(255,255,255,.2); color: #fff; }
+.pl { display: flex; gap: 10px; align-items: center; }
+.pl b { display: block; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.pl small { color: rgba(255,255,255,.46); font-size: 11px; }
+.search { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: 12px; background: rgba(255,255,255,.065); font-size: 14px; }
+.search svg { width: 14px; height: 14px; color: rgba(255,255,255,.46); }
+.caret { display: inline-block; width: 1.5px; height: 17px; background: var(--blue); vertical-align: middle; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.row { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: 10px; font-weight: 600; }
+.row.hl { background: rgba(255,255,255,.13); }
+.row i { width: 9px; height: 9px; border-radius: 50%; }
+.row > span:not(.b) { flex: 1; }
+.row .b { display: grid; place-items: center; width: 9px; }
+.row kbd { font: 500 11px/1 inherit; color: rgba(255,255,255,.46); }
+.row .ok { color: var(--green); font-size: 11.5px; font-weight: 500; }
+.hints { display: flex; gap: 14px; font-size: 11px; color: rgba(255,255,255,.46); margin-top: auto; }
+.hints b { font-weight: 650; }
+.hotkey { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%) scale(.9); display: flex; gap: 6px; opacity: 0; transition: opacity .2s, transform .3s cubic-bezier(.3,1.4,.5,1); pointer-events: none; z-index: 2; }
+.hotkey.on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.hotkey kbd { min-width: 48px; height: 48px; padding: 0 12px; border-radius: 12px; background: #fff; color: #000; font: 650 22px/48px -apple-system, system-ui, sans-serif; text-align: center; box-shadow: 0 8px 0 #b9b9c3, 0 20px 40px rgba(0,0,0,.5); }
+
+/* VPN */
+.vg { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.vt { height: 132px; display: flex; flex-direction: column; justify-content: space-between; transition: box-shadow .25s; }
+.vt.on { box-shadow: inset 0 0 0 1.5px var(--green); }
+.vt .top { display: flex; justify-content: space-between; align-items: flex-start; }
+.vt .ico2 { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 15px; }
+.vt b { font-size: 14.5px; }
+.vt small { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.64); font-variant-numeric: tabular-nums; }
+.vt.on small { color: var(--green); }
+.vfoot { position: absolute; left: 0; right: 0; bottom: 0; height: 44px; border-radius: 14px; background: rgba(255,255,255,.065); display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 12.5px; }
+.vfoot i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+.vfoot .sp { flex: 1; }
+
+/* Music */
+.mu { display: flex; gap: 26px; align-items: center; height: 100%; padding: 0 20px; }
+.mu .info { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.mu .ttl { font-size: 24px; }
+.src { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,.64); }
+.src i { width: 14px; height: 14px; border-radius: 4px; background: linear-gradient(135deg, #ffcc00, #ff3d00); }
+.times { display: flex; justify-content: space-between; font-size: 11.5px; color: rgba(255,255,255,.46); font-variant-numeric: tabular-nums; margin-top: 6px; }
+.mu .ctl { gap: 26px; }
+.mu .ctl svg { width: 22px; height: 22px; }
+.mu .ctl .pp { width: 52px; height: 52px; }
+.mu .ctl .pp svg { width: 20px; height: 20px; }
+
+/* Calendar */
+.cal { display: flex; flex-direction: column; gap: 12px; height: 100%; }
+.cal-h { display: flex; align-items: center; justify-content: space-between; }
+.cal-h b { font-size: 15px; }
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.day { border-radius: 12px; padding: 7px 0; text-align: center; background: rgba(255,255,255,.04); }
+.day small { display: block; font-size: 10.5px; color: rgba(255,255,255,.46); font-weight: 600; text-transform: uppercase; }
+.day b { font-size: 15px; }
+.day.on { background: #fff; color: #000; } .day.on small { color: rgba(0,0,0,.55); }
+.day.ev b::after { content: ""; display: block; width: 4px; height: 4px; border-radius: 50%; background: var(--blue); margin: 3px auto 0; }
+.ag { display: flex; flex-direction: column; gap: 6px; }
+.ev { display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 12px; background: rgba(255,255,255,.05); }
+.ev > i { width: 3px; height: 26px; border-radius: 2px; }
+.ev time { width: 92px; font-variant-numeric: tabular-nums; color: rgba(255,255,255,.64); font-size: 12px; }
+.ev span { flex: 1; font-weight: 600; }
+.ev.past { opacity: .45; }
+.ev.next { background: rgba(106,163,255,.12); }
+
+/* Calculator */
+.calc { display: grid; grid-template-columns: 1.25fr 1fr; gap: 12px; height: 100%; }
+.expr { display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 22px; }
+.expr .in { font-size: 26px; font-weight: 500; color: rgba(255,255,255,.75); font-variant-numeric: tabular-nums; min-height: 34px; }
+.expr .out { font-size: 46px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.cur-list { display: flex; flex-direction: column; gap: 8px; }
+.cr { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 12px; background: rgba(255,255,255,.05); font-variant-numeric: tabular-nums; }
+.cr span { flex: 1; color: rgba(255,255,255,.64); }
+.cr b { font-size: 15px; }
+.flag { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 750; font-size: 12px; background: rgba(255,255,255,.1); }
+
+/* Clipboard */
+.cl { display: flex; flex-direction: column; gap: 2px; }
+.ci { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 10px; border-radius: 12px; }
+.ci:hover, .ci.hl { background: rgba(255,255,255,.07); }
+.ci .k { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,.065); display: grid; place-items: center; flex: none; }
+.ci .k svg { width: 13px; height: 13px; }
+.ci .thumb { width: 44px; height: 32px; border-radius: 6px; flex: none; background: linear-gradient(135deg, #1f3b73, #6aa3ff 60%, #c7e0ff); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); position: relative; overflow: hidden; }
+.ci .thumb::after { content: ""; position: absolute; left: 6px; right: 14px; top: 7px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.7); box-shadow: 0 7px 0 rgba(255,255,255,.4), 0 14px 0 rgba(255,255,255,.3); }
+.ci .tx { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ci code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.ci time { font-size: 11.5px; color: rgba(255,255,255,.46); }
+.ci .pin { width: 13px; height: 13px; color: var(--green); }
+
+/* Shelf */
+.sh { display: flex; flex-direction: column; gap: 12px; height: 100%; }
+.files { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.file { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 18px 10px 14px; border-radius: 16px; background: rgba(255,255,255,.065); text-align: center; }
+.file .doc { width: 46px; height: 56px; border-radius: 6px 14px 6px 6px; display: grid; place-items: end center; padding-bottom: 8px; font-size: 10px; font-weight: 800; color: #fff; }
+.file b { font-size: 12.5px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file small { font-size: 11px; color: rgba(255,255,255,.46); }
+.drop { flex: 1; border-radius: 16px; border: 1.5px dashed rgba(255,255,255,.18); display: grid; place-items: center; color: rgba(255,255,255,.46); font-size: 13px; }
+.sh-f { display: flex; justify-content: space-between; align-items: center; }
+
+/* Toast */
+.toast { position: absolute; left: 50%; bottom: 16px; transform: translate(-50%, 12px); display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 16px; border-radius: 17px; background: #fff; color: #000; font-weight: 650; font-size: 12.5px; opacity: 0; transition: opacity .2s, transform .3s cubic-bezier(.3,1.4,.5,1); pointer-events: none; z-index: 3; white-space: nowrap; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+.toast svg { width: 14px; height: 14px; color: #1a9e48; }
+
+.demo-bar { display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+.mode { display: inline-grid; grid-template-columns: 1fr 1fr; background: rgba(255,255,255,.07); border-radius: 10px; padding: 3px; }
+.mode button { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 8px; cursor: pointer; }
+.mode button[aria-pressed="true"] { background: rgba(255,255,255,.14); color: var(--fg); }
+.demo-hint { color: var(--dim); font-size: 13px; }
 
 /* Features */
+.dl-meta { color: var(--dim); font-size: 13px; margin-top: 14px; min-height: 20px; }
+
 section { padding: 90px 0 0; }
 h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -.02em; margin: 0 0 12px; }
 .lead { color: var(--muted); font-size: 18px; max-width: 620px; margin: 0 0 40px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
 .feature { background: var(--card); border-radius: 20px; padding: 22px; box-shadow: inset 0 0 0 1px var(--line); }
 .feature h3 { margin: 12px 0 6px; font-size: 17px; }
 .feature p { margin: 0; color: var(--muted); font-size: 14.5px; }
@@ -118,8 +338,7 @@ footer a { color: var(--muted); }
 [data-lang="ru"] .en, [data-lang="en"] .ru { display: none; }
 @media (max-width: 720px) {
   .nav-links a.hide-sm { display: none; }
-  .panel { grid-template-columns: 1fr; padding-top: 36px; }
-  .panel .pc:nth-child(n+2), .scen { display: none; }
+  .demo-hint { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
@@ -140,63 +359,59 @@ footer a { color: var(--muted); }
   <div class="hero">
     <h1><span class="en">Your notch,<br>finally useful.</span><span class="ru">Чёлка, которая<br>наконец полезна.</span></h1>
     <p>
-      <span class="en">Saved tabs, VPN, music, your next meeting, a calculator and a clipboard — one hover away. Free and open source.</span>
-      <span class="ru">Сохранённые вкладки, VPN, музыка, ближайшая встреча, калькулятор и буфер — на расстоянии одного движения мыши. Бесплатно и с открытым кодом.</span>
+      <span class="en">Tabs from any browser, every VPN you use, music, your calendar, a calculator, clipboard history and a file shelf — one hover away. Free and open source.</span>
+      <span class="ru">Вкладки из любого браузера, все ваши VPN, музыка, календарь, калькулятор, история буфера и полка для файлов — на расстоянии одного движения мыши. Бесплатно и с открытым кодом.</span>
     </p>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/romabmstu/polka/releases/latest">
+      <a class="btn primary" id="download" href="https://github.com/romabmstu/polka/releases">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10"/></svg>
         <span class="en">Download for macOS</span><span class="ru">Скачать для macOS</span>
       </a>
       <a class="btn ghost" href="https://github.com/romabmstu/polka"><span class="en">View source</span><span class="ru">Исходный код</span></a>
     </div>
-    <div class="small"><span class="en">macOS 14 Sonoma or later · Apple silicon and Intel</span><span class="ru">macOS 14 Sonoma или новее · Apple silicon и Intel</span></div>
+    <div class="small"><span class="en">macOS 14 Sonoma or later · Apple silicon and Intel · updates itself</span><span class="ru">macOS 14 Sonoma или новее · Apple silicon и Intel · обновляется сама</span></div>
+    <div class="dl-meta" id="dl-meta"></div>
 
-    <div class="screen" id="screen">
-      <div class="menubar"><div><b>Safari</b><span class="en">&nbsp; File &nbsp; Edit &nbsp; View</span><span class="ru">&nbsp; Файл &nbsp; Правка &nbsp; Вид</span></div><div id="clock"></div></div>
-      <div class="notch" id="notch" role="button" tabindex="0" aria-label="Open the demo panel">
-        <div class="wings">
-          <span style="color:var(--blue)">● 12 <span class="en">min</span><span class="ru">мин</span></span>
-          <span style="color:var(--green)">◆</span>
-        </div>
-        <div class="panel">
-          <div class="pc"><div class="lbl"><span class="en">Music</span><span class="ru">Музыка</span></div><div class="big">Yandex Music</div><div class="sub">◀◀ &nbsp; ❚❚ &nbsp; ▶▶</div></div>
-          <div class="pc" style="box-shadow: inset 0 0 0 1.5px var(--green)"><div class="lbl">VPN</div><div class="big" style="color:var(--green)"><span class="en">Protected</span><span class="ru">Защищено</span></div><div class="sub">Happ</div></div>
-          <div class="pc"><div class="lbl"><span class="en">Up next</span><span class="ru">Следующее</span></div><div class="big" style="color:var(--blue)"><span class="en">In 12 min</span><span class="ru">Через 12 мин</span></div><div class="sub"><span class="en">Design review</span><span class="ru">Обсуждение макетов</span></div></div>
-          <div class="scen">
-            <div><span class="en">Work</span><span class="ru">Работа</span></div>
-            <div><span class="en">Call</span><span class="ru">Созвон</span></div>
-            <div><span class="en">Focus</span><span class="ru">Фокус</span></div>
-            <div><span class="en">Evening</span><span class="ru">Вечер</span></div>
-          </div>
-        </div>
+    <div class="demo">
+      <div class="screen" id="screen"><div class="stage" id="stage"></div></div>
+      <div class="demo-bar">
+        <div class="mode" role="group" aria-label="Display"><button type="button" data-mode="notch" aria-pressed="true">MacBook</button><button type="button" data-mode="pill" aria-pressed="false"><span class="en">External display</span><span class="ru">Внешний монитор</span></button></div>
+        <span class="demo-hint"><span class="en">Point at the notch, pick a section, flip the switches.</span><span class="ru">Наведите на чёлку, выберите раздел, пощёлкайте переключатели.</span></span>
       </div>
-      <div class="hint"><span class="en">Point here ↑</span><span class="ru">Наведите сюда ↑</span></div>
     </div>
   </div>
 
   <section id="features">
     <h2><span class="en">Everything you reach for, in one place</span><span class="ru">Всё, за чем вы тянетесь, — в одном месте</span></h2>
-    <p class="lead"><span class="en">Open the panel by pointing at the notch or pressing ⌥⇧K. On displays without a notch, Polka is a small capsule under the menu bar.</span><span class="ru">Панель открывается наведением на чёлку или по ⌥⇧K. На мониторах без чёлки Polka — небольшая капсула под строкой меню.</span></p>
+    <p class="lead"><span class="en">Point at the notch or press ⌥⇧K. On displays without a notch Polka becomes a capsule under the menu bar and follows your pointer from screen to screen.</span><span class="ru">Наведите на чёлку или нажмите ⌥⇧K. На мониторах без чёлки Polka становится капсулой под строкой меню и переходит за курсором с экрана на экран.</span></p>
     <div class="grid">
-      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#6aa3ff" stroke-width="1.6"><rect x="3" y="6" width="11" height="11" rx="2.5"/><path d="M6 3.5h8.5A2.5 2.5 0 0 1 17 6v8.5"/></svg></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#6aa3ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="11" height="11" rx="2.5"/><path d="M6 3.5h8.5A2.5 2.5 0 0 1 17 6v8.5"/></svg></div>
         <h3><span class="en">Tab groups</span><span class="ru">Группы вкладок</span></h3>
-        <p><span class="en">Save a tab from Safari, Chrome or Arc with ⌥⇧S and pick the group right in the notch. Drag links in, paste whole lists, search, open a group in a new window.</span><span class="ru">Сохраняйте вкладку из Safari, Chrome или Arc по ⌥⇧S и выбирайте группу прямо в чёлке. Перетаскивайте ссылки, вставляйте списки, ищите, открывайте группу в новом окне.</span></p></div>
-      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#30d158" stroke-width="1.6"><path d="M10 2.5 16 5v4.5c0 3.6-2.6 6.2-6 7.5-3.4-1.3-6-3.9-6-7.5V5z"/></svg></div>
-        <h3>VPN</h3>
-        <p><span class="en">Every VPN registered with macOS — WireGuard, Happ, V2Box, L2TP — plus Tunnelblick and proxy clients like FSNT Client, each with a switch. One on, the rest off.</span><span class="ru">Все VPN, зарегистрированные в macOS — WireGuard, Happ, V2Box, L2TP, — а также Tunnelblick и прокси-клиенты вроде FSNT Client, у каждого свой переключатель. Один включён, остальные выключены.</span></p></div>
-      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#ff6b9a" stroke-width="1.6"><circle cx="6" cy="15" r="2.3"/><circle cx="15" cy="13" r="2.3"/><path d="M8.3 15V5l9-2v10"/></svg></div>
+        <p><span class="en">Press ⌥⇧S in Safari, Chrome, Arc, Brave, Edge or Yandex Browser and choose the group right in the notch — or save the whole window. “Save to Polka…” in the right-click menu works from any app.</span><span class="ru">Нажмите ⌥⇧S в Safari, Chrome, Arc, Brave, Edge или Яндекс Браузере и выберите группу прямо в чёлке — или сохраните всё окно. «Сохранить в Polka…» в контекстном меню работает из любого приложения.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#30d158" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5 16 5v4.5c0 3.6-2.6 6.2-6 7.5-3.4-1.3-6-3.9-6-7.5V5z"/></svg></div>
+        <h3><span class="en">Every VPN, one switch each</span><span class="ru">Все VPN, у каждого свой переключатель</span></h3>
+        <p><span class="en">Happ, V2Box, WireGuard and anything else in System Settings, every Tunnelblick profile, and proxy clients like FSNT Client. Turning one on turns the others off.</span><span class="ru">Happ, V2Box, WireGuard и всё, что есть в Системных настройках, каждый профиль Tunnelblick и прокси-клиенты вроде FSNT Client. Включаете один — остальные выключаются.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#ff6b9a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="15" r="2.3"/><circle cx="15" cy="13" r="2.3"/><path d="M8.3 15V5l9-2v10"/></svg></div>
         <h3><span class="en">Music</span><span class="ru">Музыка</span></h3>
-        <p><span class="en">Play, pause and skip for whatever is playing — Yandex Music, Music, Spotify or a video in the browser.</span><span class="ru">Пауза и переключение треков для того, что играет: Яндекс Музыка, Музыка, Spotify или видео в браузере.</span></p></div>
-      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#6aa3ff" stroke-width="1.6"><rect x="3" y="4" width="14" height="13" rx="2.5"/><path d="M3 8h14M7 2.5v3M13 2.5v3"/></svg></div>
-        <h3><span class="en">Next meeting</span><span class="ru">Ближайшая встреча</span></h3>
-        <p><span class="en">A countdown in the closed notch and a Join button for Meet, Zoom, Teams, Telemost and more.</span><span class="ru">Обратный отсчёт прямо в чёлке и кнопка входа для Meet, Zoom, Teams, Телемоста и других.</span></p></div>
-      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#ff9f0a" stroke-width="1.6"><rect x="4" y="2.5" width="12" height="15" rx="2.5"/><path d="M7 6h6M7 10h.01M10 10h.01M13 10h.01M7 13.5h.01M10 13.5h.01M13 13.5h.01"/></svg></div>
+        <p><span class="en">Artwork, progress and controls for whatever is actually playing — Yandex Music, Spotify, Music or a video in the browser. Polka shows which app it controls, so pause never hits the wrong one.</span><span class="ru">Обложка, прогресс и управление тем, что реально играет: Яндекс Музыка, Spotify, Музыка или видео в браузере. Polka показывает, каким приложением управляет, так что пауза не попадёт не туда.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#6aa3ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2.5"/><path d="M3 8h14M7 2.5v3M13 2.5v3"/></svg></div>
+        <h3><span class="en">Calendar</span><span class="ru">Календарь</span></h3>
+        <p><span class="en">Browse your week, see the day’s agenda and join Meet, Zoom, Teams or Telemost in one click. The closed notch counts down to your next call.</span><span class="ru">Листайте неделю, смотрите дела на день и входите в Meet, Zoom, Teams или Телемост в один клик. Закрытая чёлка ведёт обратный отсчёт до ближайшего созвона.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#ff9f0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="12" height="15" rx="2.5"/><path d="M7 6h6M7 10h.01M10 10h.01M13 10h.01M7 13.5h.01M10 13.5h.01M13 13.5h.01"/></svg></div>
         <h3><span class="en">Calculator and currencies</span><span class="ru">Калькулятор и валюты</span></h3>
-        <p><span class="en">Type 1250 × 1.2 + 15% and see the answer as you type. Convert between your currencies.</span><span class="ru">Пишете 1250 × 1,2 + 15% — ответ появляется сразу. Пересчёт между вашими валютами.</span></p></div>
-      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#bf5af2" stroke-width="1.6"><path d="M10 3v14M3 10h14" stroke-linecap="round"/><circle cx="10" cy="10" r="7.5"/></svg></div>
+        <p><span class="en">Type (1250 + 340) × 1.2 and the answer appears as you type, already converted into the currencies you pick.</span><span class="ru">Пишете (1250 + 340) × 1,2 — ответ появляется сразу и тут же пересчитывается в выбранные вами валюты.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#64d2ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4" width="11" height="13.5" rx="2.5"/><path d="M7.5 2.5h5v3h-5z"/></svg></div>
+        <h3><span class="en">Clipboard history</span><span class="ru">История буфера</span></h3>
+        <p><span class="en">The last 30 things you copied, screenshots and pictures included. Pin what you reuse. Passwords and one-time codes are never recorded.</span><span class="ru">30 последних скопированных фрагментов, включая скриншоты и картинки. Нужное можно закрепить. Пароли и одноразовые коды не записываются.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#a1a1aa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 11.5h4l1.2 2.3h4.6l1.2-2.3h4"/><path d="M4.5 4.5h11l2 7V16a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-4.5z"/></svg></div>
+        <h3><span class="en">File shelf</span><span class="ru">Полка для файлов</span></h3>
+        <p><span class="en">Drop files on the shelf in the notch, drag them into another app later or send them with AirDrop. Only references are kept — nothing is copied or moved.</span><span class="ru">Бросьте файлы на полку в чёлке, а потом перетащите в другое приложение или отправьте по AirDrop. Хранятся только ссылки — ничего не копируется и не перемещается.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#bf5af2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5 4.5 11H10l-1 6.5L15.5 9H10z"/></svg></div>
         <h3><span class="en">Scenarios</span><span class="ru">Сценарии</span></h3>
-        <p><span class="en">“Work” connects the VPN, opens your work tabs and starts music. One click, any combination.</span><span class="ru">«Работа» подключает VPN, открывает рабочие вкладки и включает музыку. Один клик, любые сочетания.</span></p></div>
+        <p><span class="en">“Focus” quits Telegram, switches on dark mode and the VPN. “Call” pauses music and sets the volume. Open or quit apps, open tabs, links and Shortcuts — in one click.</span><span class="ru">«Фокус» закрывает Telegram, включает тёмную тему и VPN. «Созвон» ставит музыку на паузу и задаёт громкость. Открыть или закрыть приложения, вкладки, ссылки и быстрые команды — в один клик.</span></p></div>
+      <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#30d158" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 10a6.5 6.5 0 1 1-2-4.7"/><path d="M16.5 3v3.5H13"/></svg></div>
+        <h3><span class="en">Updates itself</span><span class="ru">Обновляется сама</span></h3>
+        <p><span class="en">Polka checks this project’s releases and installs new versions in place. Each update is verified with an Ed25519 signature before it replaces anything.</span><span class="ru">Polka проверяет релизы проекта и ставит новые версии сама. Каждое обновление проверяется подписью Ed25519, прежде чем что-либо заменить.</span></p></div>
     </div>
   </section>
 
@@ -206,15 +421,15 @@ footer a { color: var(--muted); }
     <div class="privacy">
       <div><b><span class="en">Two small requests</span><span class="ru">Два небольших запроса</span></b><span><span class="en">An update check against this project’s GitHub releases, and exchange rates if you turn them on. Both can be switched off; nothing else touches the network.</span><span class="ru">Проверка обновлений в релизах проекта на GitHub и курсы валют, если вы их включите. Оба можно выключить, больше ничего не идёт в сеть.</span></span></div>
       <div><b><span class="en">Passwords skipped</span><span class="ru">Пароли пропускаются</span></b><span><span class="en">Clipboard history lives in memory and ignores anything a password manager marks as concealed.</span><span class="ru">История буфера живёт в памяти и не трогает то, что менеджер паролей пометил как скрытое.</span></span></div>
-      <div><b><span class="en">Verifiable builds</span><span class="ru">Проверяемые сборки</span></b><span><span class="en">Every release is built by GitHub Actions and carries a signed provenance attestation.</span><span class="ru">Каждый релиз собирается в GitHub Actions и сопровождается подписанной аттестацией происхождения.</span></span></div>
+      <div><b><span class="en">Verifiable builds</span><span class="ru">Проверяемые сборки</span></b><span><span class="en">Every build comes from GitHub Actions, straight from the public source. Stable releases carry a signed provenance attestation.</span><span class="ru">Каждая сборка делается в GitHub Actions прямо из открытого кода. Стабильные релизы сопровождаются подписанной аттестацией происхождения.</span></span></div>
     </div>
   </section>
 
   <section id="install">
     <h2><span class="en">Install</span><span class="ru">Установка</span></h2>
-    <p class="lead"><span class="en">Download the latest release, move Polka to Applications and run once:</span><span class="ru">Скачайте последний релиз, перенесите Polka в «Программы» и один раз выполните:</span></p>
+    <p class="lead"><span class="en">Download, unzip, move Polka to Applications and run this once in Terminal:</span><span class="ru">Скачайте, распакуйте, перенесите Polka в «Программы» и один раз выполните в Терминале:</span></p>
     <pre>xattr -dr com.apple.quarantine /Applications/Polka.app</pre>
-    <p class="small"><span class="en">Needed because the app is not notarized yet. Prefer to build it yourself? See the README.</span><span class="ru">Нужно, потому что приложение пока не нотаризовано. Хотите собрать сами? Инструкция в README.</span></p>
+    <p class="small"><span class="en">Needed only for the first install: Polka is not notarized by Apple, which requires a paid developer account. After that it updates itself — pick the channel in Settings › Updates. Prefer to build it yourself? See the README.</span><span class="ru">Нужно только при первой установке: Polka не нотаризована Apple, для этого нужен платный аккаунт разработчика. Дальше она обновляется сама — канал выбирается в Настройках › Обновления. Хотите собрать сами? Инструкция в README.</span></p>
   </section>
 
   <section id="support">
@@ -298,19 +513,422 @@ footer a { color: var(--muted); }
     });
   });
 
-  const notch = document.getElementById('notch');
-  const screen = document.getElementById('screen');
-  let timer;
-  const open = () => { clearTimeout(timer); notch.classList.add('open'); screen.classList.add('touched'); };
-  const close = () => { timer = setTimeout(() => notch.classList.remove('open'), 300); };
-  notch.addEventListener('mouseenter', open);
-  notch.addEventListener('mouseleave', close);
-  notch.addEventListener('click', () => notch.classList.contains('open') ? notch.classList.remove('open') : open());
-  notch.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); notch.classList.toggle('open'); screen.classList.add('touched'); } });
 
-  const clock = document.getElementById('clock');
+  // Download button: the newest build that has a zip, stable first.
+  (async () => {
+    const button = document.getElementById('download');
+    const meta = document.getElementById('dl-meta');
+    try {
+      const response = await fetch('https://api.github.com/repos/romabmstu/polka/releases?per_page=20', { headers: { Accept: 'application/vnd.github+json' } });
+      if (!response.ok) return;
+      const releases = (await response.json()).filter(r => !r.draft);
+      const withZip = r => r.assets.find(a => /^Polka-.*\.zip$/.test(a.name));
+      const pick = releases.find(r => !r.prerelease && withZip(r)) || releases.find(withZip);
+      if (!pick) {
+        meta.innerHTML = '<span class="en">The first build is on its way — check back soon.</span><span class="ru">Первая сборка уже в пути — загляните чуть позже.</span>';
+        return;
+      }
+      const asset = withZip(pick);
+      button.href = asset.browser_download_url;
+      const [, version, build] = asset.name.match(/^Polka-(.+)-(\d+)\.zip$/) || [];
+      const size = (asset.size / 1048576).toFixed(1);
+      const kind = pick.prerelease ? ' · <span class="en">beta</span><span class="ru">бета</span>' : '';
+      meta.innerHTML = `${version ? `v${version} (${build})` : pick.tag_name}${kind} · ${size} <span class="en">MB</span><span class="ru">МБ</span> · <a href="${pick.html_url}"><span class="en">release notes</span><span class="ru">что нового</span></a>`;
+    } catch (e) {}
+  })();
+})();
+</script>
+<script>
+(() => {
+  const screen = document.getElementById('screen');
+  const stage = document.getElementById('stage');
+  if (!screen || !stage) return;
+
+  const L = (en, ru) => `<span class="en">${en}</span><span class="ru">${ru ?? en}</span>`;
+  const P = {
+    overview: '<rect x="2" y="2" width="5" height="5" rx="1.5"/><rect x="9" y="2" width="5" height="5" rx="1.5"/><rect x="2" y="9" width="5" height="5" rx="1.5"/><rect x="9" y="9" width="5" height="5" rx="1.5"/>',
+    tabs: '<rect x="2" y="5" width="9" height="9" rx="2"/><path d="M5 2.5h6.5a2 2 0 0 1 2 2V11"/>',
+    vpn: '<path d="M8 1.8 13 4v3.8c0 3-2.2 5.2-5 6.3-2.8-1.1-5-3.3-5-6.3V4z"/>',
+    media: '<circle cx="4.5" cy="12" r="2"/><circle cx="12" cy="10.5" r="2"/><path d="M6.5 12V4l7.5-1.6v8.1"/>',
+    calendar: '<rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 6.5h12M5.5 1.8v2.4M10.5 1.8v2.4"/>',
+    calculator: '<rect x="3" y="1.8" width="10" height="12.4" rx="2"/><path d="M5.5 5h5M5.5 8.5h.01M8 8.5h.01M10.5 8.5h.01M5.5 11.3h.01M8 11.3h.01M10.5 11.3h.01"/>',
+    clipboard: '<rect x="3" y="3" width="10" height="11.5" rx="2"/><path d="M6 1.8h4v2.4H6z"/>',
+    shelf: '<path d="M2 9.5h3.5l1 2h3l1-2H14"/><path d="M3.8 3.5h8.4L14 9.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9.5z"/>',
+    pin: '<path d="M6 2h4l-.6 4 2.6 2.4H4L6.6 6zM8 8.4V14"/>',
+    more: '<path d="M3.5 8h.01M8 8h.01M12.5 8h.01" stroke-width="2.4"/>',
+    prev: '<path d="M13 4v8L8 8zM8 4v8L3 8z" fill="currentColor" stroke="none"/>',
+    next: '<path d="M3 4v8l5-4zM8 4v8l5-4z" fill="currentColor" stroke="none"/>',
+    pause: '<path d="M4.5 3h2.5v10H4.5zM9 3h2.5v10H9z" fill="currentColor" stroke="none"/>',
+    play: '<path d="M5 3v10l8-5z" fill="currentColor" stroke="none"/>',
+    folder: '<path d="M2 4.5a1.5 1.5 0 0 1 1.5-1.5H6l1.5 1.5h5A1.5 1.5 0 0 1 14 6v5.5A1.5 1.5 0 0 1 12.5 13h-9A1.5 1.5 0 0 1 2 11.5z"/><path d="M8 6.5v4M6 8.5h4"/>',
+    search: '<circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/>',
+    plus: '<path d="M8 3v10M3 8h10"/>',
+    check: '<path d="m3 8.5 3.2 3L13 4.5" stroke-width="2"/>',
+    brief: '<rect x="2" y="5" width="12" height="8.5" rx="1.8"/><path d="M5.5 5V3.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V5M2 9h12"/>',
+    phone: '<path d="M4 2.5h2l1 3-1.5 1a7 7 0 0 0 4 4l1-1.5 3 1v2A1.5 1.5 0 0 1 12 13.5 10 10 0 0 1 2.5 4 1.5 1.5 0 0 1 4 2.5z"/>',
+    moon: '<path d="M13 9.5A5.5 5.5 0 1 1 6.5 3a4.5 4.5 0 0 0 6.5 6.5z"/>',
+    cup: '<path d="M3 5.5h8v4a3.5 3.5 0 0 1-3.5 3.5h-1A3.5 3.5 0 0 1 3 9.5zM11 6.5h1a1.8 1.8 0 0 1 0 3.6h-1.2M5 2v1.5M7.5 2v1.5"/>',
+    link: '<path d="M6.5 9.5 9.5 6.5M7 4.5l1-1a2.8 2.8 0 0 1 4 4l-1 1M9 11.5l-1 1a2.8 2.8 0 0 1-4-4l1-1"/>',
+    code: '<path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5"/>',
+    text: '<path d="M3 4h10M3 7h10M3 10h7M3 13h5"/>',
+    pinf: '<path d="M6 2h4l-.6 4 2.6 2.4H4L6.6 6zM8 8.4V14" fill="currentColor"/>',
+    air: '<circle cx="8" cy="8" r="1.4" fill="currentColor"/><path d="M5 11a4.2 4.2 0 1 1 6 0M3 13a7 7 0 1 1 10 0"/>',
+    chev: '<path d="m6 3.5 4.5 4.5L6 12.5"/>',
+    chevl: '<path d="M10 3.5 5.5 8l4.5 4.5"/>',
+    wifi: '<path d="M2 6.2a9 9 0 0 1 12 0M4.2 8.6a5.8 5.8 0 0 1 7.6 0M6.4 11a2.6 2.6 0 0 1 3.2 0"/><circle cx="8" cy="13.2" r=".6" fill="currentColor"/>',
+    batt: '<rect x="1.5" y="5" width="11.5" height="6.5" rx="1.8"/><rect x="3" y="6.5" width="7" height="3.5" rx=".8" fill="currentColor" stroke="none"/><path d="M14.5 7.3v2"/>',
+  };
+  const ic = (name, extra = '') => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${P[name]}</svg>`;
+
+  const SECTIONS = [
+    ['overview', 'Overview', 'Обзор'], ['tabs', 'Tabs', 'Вкладки'], ['vpn', 'VPN', 'VPN'], ['media', 'Music', 'Музыка'],
+    ['calendar', 'Calendar', 'Календарь'], ['calculator', 'Calculator', 'Калькулятор'], ['clipboard', 'Clipboard', 'Буфер'], ['shelf', 'Shelf', 'Полка'],
+  ];
+  const GROUPS = [
+    ['#6aa3ff', 'Work', 'Работа', 12], ['#bf5af2', 'Design', 'Дизайн', 8], ['#ff9f0a', 'Read later', 'Читать позже', 23],
+    ['#30d158', 'Trips', 'Путешествия', 5], ['#8e8e93', 'Inbox', 'Входящие', 3],
+  ];
+  const badge = (letter, bg, fg = '#fff') => `<div class="badge" style="background:${bg};color:${fg}">${letter}</div>`;
+
+  // ---- Scenes ----
+  const overview = `
+    <div class="ov">
+      <div class="card music playing">
+        <div class="lab">${L('Now playing', 'Сейчас играет')}</div>
+        <div class="mrow"><div class="art" style="width:64px;height:64px"></div>
+          <div><div class="ttl">Night Drive</div><div class="muted">Kaito Lane · ${L('Yandex Music', 'Яндекс Музыка')}</div></div></div>
+        <div class="bar"><i></i></div>
+        <div class="ctl">${ic('prev')}<div class="pp" data-pp>${ic('pause')}</div>${ic('next')}</div>
+      </div>
+      <div class="card" style="box-shadow:inset 0 0 0 1.5px var(--green)">
+        <div class="lab">VPN</div>
+        <div class="big g">${L('Protected', 'Защищено')}</div>
+        <div class="muted">Happ · ${L('Amsterdam', 'Амстердам')}</div>
+        <div class="dim" style="margin-top:28px;font-variant-numeric:tabular-nums" data-timer>1:24:07</div>
+      </div>
+      <div class="card">
+        <div class="lab">${L('Up next', 'Следующее')}</div>
+        <div class="big b">${L('In 12 min', 'Через 12 мин')}</div>
+        <div class="muted">${L('Design review', 'Обсуждение макетов')}</div>
+        <div class="dim">11:30 – 12:00</div>
+        <div class="cap bl" style="position:absolute;left:14px;bottom:14px">${L('Join · Telemost', 'Войти · Телемост')}</div>
+      </div>
+      <div class="scs">
+        <div class="sc run"><span class="g">${ic('brief')}</span><div><b>${L('Work', 'Работа')}</b><small>${L('Happ · work tabs · music', 'Happ · рабочие вкладки · музыка')}</small></div></div>
+        <div class="sc"><span class="b">${ic('phone')}</span><div><b>${L('Call', 'Созвон')}</b><small>${L('Pause music · Zoom · 60% volume', 'Пауза · Zoom · громкость 60%')}</small></div></div>
+        <div class="sc"><span style="color:#bf5af2">${ic('moon')}</span><div><b>${L('Focus', 'Фокус')}</b><small>${L('Quit Telegram · dark mode', 'Закрыть Telegram · тёмная тема')}</small></div></div>
+        <div class="sc"><span style="color:#ff9f0a">${ic('cup')}</span><div><b>${L('Evening', 'Вечер')}</b><small>${L('VPN off · light mode', 'VPN выкл. · светлая тема')}</small></div></div>
+      </div>
+    </div>`;
+
+  const tile = (letter, bg, en, ru, host, cls = '') =>
+    `<div class="tile ${cls}">${badge(letter, bg)}<div><b>${L(en, ru)}</b><small>${host}</small></div></div>`;
+  const tabsScene = `
+    <div class="tb">
+      <div class="groups">
+        ${GROUPS.map((g, i) => `<div class="grp ${i === 1 ? 'on' : ''}"><i style="background:${g[0]};box-shadow:0 0 6px ${g[0]}"></i><span>${L(g[1], g[2])}</span><em data-count="${i}">${g[3]}</em></div>`).join('')}
+      </div>
+      <div class="tright">
+        <div class="cur">${badge('F', '#a259ff')}
+          <div class="t"><div class="lab">${L('Open in Arc', 'Открыто в Arc')}</div><div>Polka — notch panel · Figma</div></div>
+          <div class="cap w">${L('Save to “Design”', 'Сохранить в «Дизайн»')}</div>
+          <div class="ib" style="color:#fff">${ic('folder')}</div>
+        </div>
+        <div class="tiles" data-tiles>
+          ${tile('D', '#0d99ff', 'Dribbble — Control centers', 'Dribbble — пункты управления', 'dribbble.com')}
+          ${tile('M', '#1e1e1e', 'Mobbin — macOS patterns', 'Mobbin — паттерны macOS', 'mobbin.com')}
+          ${tile('A', '#2c2c2e', 'Human Interface Guidelines', 'Human Interface Guidelines', 'developer.apple.com')}
+          ${tile('L', '#5e6ad2', 'Linear — Q4 roadmap', 'Linear — роадмап на Q4', 'linear.app')}
+          ${tile('G', '#24292f', 'romabmstu/polka', 'romabmstu/polka', 'github.com')}
+        </div>
+      </div>
+    </div>
+    <div class="hotkey" data-hotkey><kbd>⌥</kbd><kbd>⇧</kbd><kbd>S</kbd></div>
+    <div class="picker" data-picker>
+      <div class="left">
+        <div class="lab">${L('Save from Arc', 'Сохранить из Arc')}</div>
+        <div class="seg"><span class="on">${L('This tab', 'Эта вкладка')}</span><span>${L('Whole window · 7', 'Всё окно · 7')}</span></div>
+        <div class="pl">${badge('F', '#a259ff')}<div><b>Polka — notch panel · Figma</b><small>figma.com</small></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="search">${ic('search')}<span data-query></span><span class="caret"></span></div>
+        <div data-rows style="display:flex;flex-direction:column;gap:2px"></div>
+        <div class="hints"><span><b>↑↓</b> ${L('choose', 'выбор')}</span><span><b>↩</b> ${L('save', 'сохранить')}</span><span><b>⌘1–9</b> ${L('quick pick', 'быстрый выбор')}</span><span><b>esc</b> ${L('cancel', 'отмена')}</span></div>
+      </div>
+    </div>`;
+
+  const VPNS = [
+    ['H', '#2f6bff', 'Happ', true], ['V', '#7b5cff', 'V2Box', false],
+    ['F', '#1db954', 'FSNT Client', false], ['T', '#5a6270', 'Tunnelblick · Office', false],
+    ['W', '#88171a', 'WireGuard · Home', false], ['L', '#3a3a3c', 'L2TP · Work', false],
+  ];
+  const vpnScene = `
+    <div class="vg">
+      ${VPNS.map((v, i) => `<div class="card vt ${v[3] ? 'on' : ''}" data-vpn="${i}">
+        <div class="top"><div class="ico2" style="background:${v[1]}">${v[0]}</div><div class="sw ${v[3] ? 'on' : ''}" role="switch" aria-checked="${v[3]}" aria-label="${v[2]}"></div></div>
+        <div><b>${v[2]}</b><br><small data-vs>${v[3] ? L('Connected · 1:24:07', 'Подключено · 1:24:07') : L('Off', 'Выкл.')}</small></div>
+      </div>`).join('')}
+    </div>
+    <div class="vfoot"><i data-dot></i><span data-vtext>${L('Traffic goes through Happ', 'Трафик идёт через Happ')}</span><span class="sp"></span><span class="dim">${L('Only one VPN stays on', 'Включён только один VPN')}</span><span class="cap">${L('Disconnect', 'Отключить')}</span></div>`;
+
+  const mediaScene = `
+    <div class="mu playing">
+      <div class="art" style="width:190px;height:190px;border-radius:20px"></div>
+      <div class="info">
+        <span class="src"><i></i>${L('Yandex Music', 'Яндекс Музыка')}</span>
+        <div><div class="ttl">Night Drive</div><div class="muted" style="font-size:15px">Kaito Lane — Neon Coast</div></div>
+        <div><div class="bar"><i></i></div><div class="times"><span>1:12</span><span>−2:31</span></div></div>
+        <div class="ctl">${ic('prev')}<div class="pp" data-pp>${ic('pause')}</div>${ic('next')}</div>
+      </div>
+    </div>`;
+
+  const now = new Date();
+  const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const fmt = (lang, opts, d) => new Intl.DateTimeFormat(lang, opts).format(d);
+  const week = Array.from({ length: 7 }, (_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return d; });
+  const calScene = `
+    <div class="cal">
+      <div class="cal-h"><b>${L(fmt('en', { weekday: 'long', month: 'long', day: 'numeric' }, now), fmt('ru', { weekday: 'long', day: 'numeric', month: 'long' }, now).replace(/^./, c => c.toUpperCase()))}</b>
+        <div style="display:flex;gap:6px"><div class="cap">${ic('chevl')}</div><div class="cap">${L('Today', 'Сегодня')}</div><div class="cap">${ic('chev')}</div></div></div>
+      <div class="week">${week.map(d => `<div class="day ${d.toDateString() === now.toDateString() ? 'on' : ''} ${[0, 1, 3].includes((d.getDay() + 6) % 7) ? 'ev' : ''}"><small>${L(fmt('en', { weekday: 'short' }, d), fmt('ru', { weekday: 'short' }, d))}</small><b>${d.getDate()}</b></div>`).join('')}</div>
+      <div class="ag">
+        <div class="ev past"><i style="background:#8e8e93"></i><time>10:00 – 10:15</time><span>${L('Stand-up', 'Стендап')}</span></div>
+        <div class="ev next"><i style="background:var(--blue)"></i><time>11:30 – 12:00</time><span>${L('Design review', 'Обсуждение макетов')}</span><span class="cap bl" style="flex:none">${L('Join', 'Войти')}</span></div>
+        <div class="ev"><i style="background:#30d158"></i><time>14:00 – 15:00</time><span>${L('Lunch', 'Обед')}</span></div>
+        <div class="ev"><i style="background:#ff9f0a"></i><time>16:30 – 17:00</time><span>${L('Pull request review', 'Ревью пул-реквестов')}</span><span class="cap" style="flex:none">Zoom</span></div>
+        <div class="ev"><i style="background:#bf5af2"></i><time>19:00 – 20:30</time><span>${L('Gym', 'Спортзал')}</span></div>
+      </div>
+    </div>`;
+
+  const calcScene = `
+    <div class="calc">
+      <div class="card expr">
+        <div class="lab">${L('Type an expression', 'Введите выражение')}</div>
+        <div class="in"><span data-expr></span><span class="caret"></span></div>
+        <div class="out" data-out>&nbsp;</div>
+      </div>
+      <div class="cur-list">
+        <div class="lab" style="margin:4px 2px">${L('In your currencies', 'В ваших валютах')}</div>
+        <div class="cr"><div class="flag">₽</div><span>RUB</span><b>${L('1,908.00', '1 908,00')}</b></div>
+        <div class="cr"><div class="flag">$</div><span>USD</span><b>${L('23.56', '23,56')}</b></div>
+        <div class="cr"><div class="flag">€</div><span>EUR</span><b>${L('20.41', '20,41')}</b></div>
+        <div class="cr"><div class="flag">₸</div><span>KZT</span><b>${L('11,756', '11 756')}</b></div>
+      </div>
+    </div>`;
+
+  const clipScene = `
+    <div class="cl">
+      <div class="ci hl"><div class="thumb"></div><div class="tx">${L('Image', 'Изображение')} <span class="dim">· 2880×1800 · ${L('1.4 MB', '1,4 МБ')}</span></div><time>${L('now', 'сейчас')}</time></div>
+      <div class="ci"><div class="k">${ic('link')}</div><div class="tx">https://github.com/romabmstu/polka</div><time>${L('2 min', '2 мин')}</time></div>
+      <div class="ci"><div class="k">${ic('code')}</div><div class="tx"><code>let panel = NotchPanel(); panel.orderFrontRegardless()</code></div><time>${L('9 min', '9 мин')}</time></div>
+      <div class="ci"><div class="k">${ic('text')}</div><div class="tx">${L('The design review moved to 11:30, the link is in the invite', 'Обсуждение макетов перенесли на 11:30, ссылка во встрече')}</div><time>${L('25 min', '25 мин')}</time></div>
+      <div class="ci"><div class="k">${ic('text')}</div><div class="tx">${L('Moscow, Leningradsky Prospekt 39, entrance 2', 'Москва, Ленинградский проспект, 39, подъезд 2')}</div><span class="pin">${ic('pinf')}</span><time>${L('yesterday', 'вчера')}</time></div>
+      <div class="ci"><div class="k">${ic('link')}</div><div class="tx">https://www.figma.com/design/polka-notch</div><time>${L('yesterday', 'вчера')}</time></div>
+      <div class="dim" style="font-size:11.5px;margin:8px 10px 0">🔒 ${L('In memory only. Passwords and one-time codes are skipped.', 'Только в памяти. Пароли и одноразовые коды пропускаются.')}</div>
+    </div>`;
+
+  const file = (ext, bg, name, size) => `<div class="file"><div class="doc" style="background:${bg}">${ext}</div><b>${name}</b><small>${size}</small></div>`;
+  const shelfScene = `
+    <div class="sh">
+      <div class="files">
+        ${file('FIG', 'linear-gradient(160deg,#a259ff,#f24e1e)', 'Polka v3.fig', L('18 MB', '18 МБ'))}
+        ${file('PDF', 'linear-gradient(160deg,#ff5f57,#c62828)', L('Contract.pdf', 'Договор.pdf'), L('240 KB', '240 КБ'))}
+        ${file('PNG', 'linear-gradient(160deg,#6aa3ff,#1f3b73)', L('Screenshot.png', 'Скриншот.png'), L('1.4 MB', '1,4 МБ'))}
+        ${file('KEY', 'linear-gradient(160deg,#ffb340,#ff7a00)', L('Pitch.key', 'Презентация.key'), L('32 MB', '32 МБ'))}
+      </div>
+      <div class="drop">${L('Drop files here to keep them at hand — drag them out again anywhere', 'Перетащите файлы сюда, чтобы держать их под рукой, и вытаскивайте куда угодно')}</div>
+      <div class="sh-f"><span class="dim">${L('4 files · references only, nothing is copied', '4 файла · только ссылки, ничего не копируется')}</span><span class="cap w">${ic('air')}AirDrop</span></div>
+    </div>`;
+
+  const scenes = { overview, tabs: tabsScene, vpn: vpnScene, media: mediaScene, calendar: calScene, calculator: calcScene, clipboard: clipScene, shelf: shelfScene };
+
+  stage.innerHTML = `
+    <div class="mb"><div class="l"><b>Arc</b><span>${L('File', 'Файл')}</span><span>${L('Edit', 'Правка')}</span><span>${L('View', 'Вид')}</span><span>${L('Spaces', 'Пространства')}</span><span>${L('Window', 'Окно')}</span></div>
+      <div class="r">${ic('wifi')}${ic('batt')}<span data-clock></span></div></div>
+    <div class="win"><div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">figma.com/design/polka-notch</div></div>
+      <div class="win-body"><div><div class="ph"></div><div class="ph" style="width:70%"></div><div class="ph" style="width:85%"></div><div class="ph" style="width:60%"></div></div><div><div class="ph big"></div><div class="ph" style="width:90%"></div><div class="ph" style="width:75%"></div></div></div></div>
+    <div class="np wide" data-np role="region" aria-label="Polka">
+      <div class="wing l"><div class="mini-art"></div><div class="eq"><i></i><i></i><i></i><i></i></div></div>
+      <div class="wing r"><span class="cd">12 ${L('min', 'мин')}</span><span class="shield">${ic('vpn', 'fill="currentColor"')}</span></div>
+      <div class="pn">
+        <div class="ph-row">
+          <div class="tabsbar">${SECTIONS.map(([id, en, ru]) => `<button class="st" type="button" data-sec="${id}" title="${en}">${ic(id)}<span class="tl">${L(en, ru)}</span></button>`).join('')}</div>
+          <div class="ib">${ic('pin')}</div><div class="ib">${ic('more')}</div>
+        </div>
+        <div class="view">${Object.entries(scenes).map(([id, html]) => `<div class="scene" data-scene="${id}">${html}</div>`).join('')}
+          <div class="toast" data-toast>${ic('check')}<span data-toast-text></span></div>
+        </div>
+      </div>
+    </div>`;
+
+  const $ = s => stage.querySelector(s);
+  const $$ = s => [...stage.querySelectorAll(s)];
+  const np = $('[data-np]');
+  const lang = () => document.body.dataset.lang === 'ru' ? 'ru' : 'en';
+
+  // Scale the fixed-size stage to the available width.
+  const fit = () => { stage.style.transform = `scale(${screen.clientWidth / 1120})`; };
+  fit();
+  if ('ResizeObserver' in window) new ResizeObserver(fit).observe(screen); else addEventListener('resize', fit);
+
+  const clock = $('[data-clock]');
   const tick = () => { clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
   tick(); setInterval(tick, 30000);
+
+  // VPN session timer
+  let seconds = 1 * 3600 + 24 * 60 + 7;
+  setInterval(() => {
+    seconds += 1;
+    const t = `${Math.floor(seconds / 3600)}:${String(Math.floor(seconds / 60) % 60).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+    $$('[data-timer]').forEach(e => { e.textContent = t; });
+    const on = $('.vt.on [data-vs]');
+    if (on) on.innerHTML = L(`Connected · ${t}`, `Подключено · ${t}`);
+  }, 1000);
+
+  // ---- State ----
+  let current = null;
+  let timers = [];
+  let auto = true;
+  const later = (ms, fn) => { const id = setTimeout(fn, ms); timers.push(id); return id; };
+  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+
+  const toast = (en, ru) => {
+    $('[data-toast-text]').innerHTML = L(en, ru);
+    const t = $('[data-toast]');
+    t.classList.add('on');
+    setTimeout(() => t.classList.remove('on'), 1800);
+  };
+
+  const show = id => {
+    current = id;
+    $$('[data-sec]').forEach(b => { b.classList.toggle('on', b.dataset.sec === id); });
+    $$('[data-scene]').forEach(s => { s.classList.toggle('on', s.dataset.scene === id); });
+    if (id !== 'tabs') { $('[data-picker]').classList.remove('on'); $('[data-hotkey]').classList.remove('on'); }
+  };
+  const open = id => { np.classList.add('open'); np.classList.remove('wide'); if (id || !current) show(id || 'overview'); };
+  const close = () => { np.classList.remove('open'); np.classList.add('wide'); };
+
+  // ---- Save picker routine ----
+  const renderRows = query => {
+    const names = GROUPS.map(g => ({ en: g[1], ru: g[2], color: g[0], count: g[3] }));
+    const q = query.toLowerCase();
+    let rows = q ? names.filter(n => n[lang()].toLowerCase().includes(q)) : names;
+    let html = rows.map((n, i) => `<div class="row ${i === 0 ? 'hl' : ''}"><i style="background:${n.color}"></i><span>${L(n.en, n.ru)}</span><em class="dim" style="font-style:normal;font-size:12px">${n.count}</em><kbd>⌘${i + 1}</kbd></div>`).join('');
+    if (q) html += `<div class="row"><span class="b">${ic('plus', 'width="14" height="14"')}</span><span>${L(`New group “${query}”`, `Новая группа «${query}»`)}</span><kbd>⌘${rows.length + 1}</kbd></div>`;
+    $('[data-rows]').innerHTML = html;
+  };
+  let saved = false;
+  const playSave = () => {
+    if (saved) return;
+    const query = lang() === 'ru' ? 'диз' : 'des';
+    later(1300, () => $('[data-hotkey]').classList.add('on'));
+    later(2200, () => {
+      $('[data-hotkey]').classList.remove('on');
+      $('[data-query]').textContent = '';
+      renderRows('');
+      $('[data-picker]').classList.add('on');
+    });
+    [...query].forEach((_, i) => later(2900 + i * 220, () => {
+      const q = query.slice(0, i + 1);
+      $('[data-query]').textContent = q;
+      renderRows(q);
+    }));
+    later(4300, () => {
+      $('[data-picker]').classList.remove('on');
+      saved = true;
+      $('[data-tiles]').insertAdjacentHTML('afterbegin', tile('F', '#a259ff', 'Polka — notch panel · Figma', 'Polka — notch panel · Figma', 'figma.com', 'new'));
+      $$('[data-tiles] .tile')[6]?.remove();
+      $('[data-count="1"]').textContent = '9';
+      $('.cur .cap').innerHTML = `${ic('check', 'width="13" height="13"')} ${L('Saved', 'Сохранено')}`;
+      $('.cur .cap').classList.remove('w');
+      toast('Saved to “Design”', 'Сохранено в «Дизайн»');
+    });
+  };
+
+  // ---- VPN ----
+  const setVPN = index => {
+    $$('[data-vpn]').forEach((tileEl, i) => {
+      const on = i === index;
+      tileEl.classList.toggle('on', on);
+      const sw = tileEl.querySelector('.sw');
+      sw.classList.toggle('on', on);
+      sw.setAttribute('aria-checked', String(on));
+      tileEl.querySelector('[data-vs]').innerHTML = on ? L('Connecting…', 'Подключение…') : L('Off', 'Выкл.');
+    });
+    if (index >= 0) {
+      seconds = 0;
+      const name = VPNS[index][2];
+      $('[data-vtext]').innerHTML = L(`Traffic goes through ${name}`, `Трафик идёт через ${name}`);
+      $('[data-dot]').style.background = 'var(--green)';
+    } else {
+      $('[data-vtext]').innerHTML = L('Your connection is not protected by a VPN', 'Соединение не защищено VPN');
+      $('[data-dot]').style.background = 'var(--orange)';
+    }
+  };
+  $$('[data-vpn] .sw').forEach((sw, i) => sw.addEventListener('click', () => { stopAuto(); setVPN(sw.classList.contains('on') ? -1 : i); }));
+  $('.vfoot .cap').addEventListener('click', () => { stopAuto(); setVPN(-1); });
+
+  // ---- Calculator typing ----
+  const playCalc = () => {
+    const expr = lang() === 'ru' ? '(1250 + 340) × 1,2' : '(1250 + 340) × 1.2';
+    $('[data-expr]').textContent = '';
+    $('[data-out]').innerHTML = '&nbsp;';
+    [...expr].forEach((_, i) => later(250 + i * 85, () => { $('[data-expr]').textContent = expr.slice(0, i + 1); }));
+    later(300 + expr.length * 85, () => { $('[data-out]').innerHTML = L('= 1,908', '= 1 908'); });
+  };
+
+  // ---- Play / pause ----
+  $$('[data-pp]').forEach(btn => btn.addEventListener('click', () => {
+    const playing = !btn.closest('.playing');
+    $$('.music, .mu').forEach(el => el.classList.toggle('playing', playing));
+    $$('[data-pp]').forEach(b => { b.innerHTML = ic(playing ? 'pause' : 'play'); });
+    stage.querySelector('.eq').style.visibility = playing ? 'visible' : 'hidden';
+  }));
+
+  // ---- Autoplay ----
+  const ORDER = [['overview', 3800], ['tabs', 6200], ['vpn', 4200], ['media', 3400], ['calendar', 3800], ['calculator', 4200], ['clipboard', 3600], ['shelf', 3400]];
+  const enter = id => {
+    clearTimers();
+    show(id);
+    if (id === 'tabs') playSave();
+    if (id === 'calculator') playCalc();
+  };
+  let step = 0;
+  const run = () => {
+    if (!auto) return;
+    if (step === ORDER.length) {
+      close();
+      step = 0;
+      later(2600, () => { open(); run(); });
+      return;
+    }
+    const [id, ms] = ORDER[step++];
+    open(id);
+    enter(id);
+    if (id === 'vpn') { later(1500, () => setVPN(3)); later(2600, () => { const s = $('.vt.on [data-vs]'); if (s) s.innerHTML = L('Connected · 0:00:01', 'Подключено · 0:00:01'); }); later(3600, () => setVPN(0)); }
+    later(ms, run);
+  };
+  const stopAuto = () => { if (!auto) return; auto = false; clearTimers(); };
+
+  // ---- Interaction ----
+  $$('[data-sec]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); stopAuto(); enter(b.dataset.sec); }));
+  let leaveTimer;
+  np.addEventListener('mouseenter', () => { clearTimeout(leaveTimer); if (!np.classList.contains('open')) { stopAuto(); open(); enter(current || 'overview'); } });
+  np.addEventListener('mouseleave', () => { if (auto) return; leaveTimer = setTimeout(close, 450); });
+  np.addEventListener('click', () => { if (!np.classList.contains('open')) { stopAuto(); open(); enter(current || 'overview'); } });
+
+  document.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('click', () => {
+    stage.classList.toggle('pill', btn.dataset.mode === 'pill');
+    document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  }));
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) { auto = false; open('overview'); return; }
+  let started = false;
+  const start = () => { if (started) return; started = true; later(700, run); };
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entries, obs) => { if (entries.some(e => e.isIntersecting)) { start(); obs.disconnect(); } }, { threshold: 0.4 }).observe(screen);
+  } else start();
 })();
 </script>
 </body>
