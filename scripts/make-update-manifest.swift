@@ -12,7 +12,10 @@ guard args.count == 8, let build = Int(args[3]), ["stable", "beta"].contains(arg
 }
 
 guard
-    let encoded = ProcessInfo.processInfo.environment["UPDATE_SIGNING_KEY"]?.trimmingCharacters(in: .whitespacesAndNewlines),
+    // Tolerate what copy and paste adds around a secret: spaces, line
+    // breaks, quotes.
+    let encoded = ProcessInfo.processInfo.environment["UPDATE_SIGNING_KEY"]?
+        .filter({ $0.isASCII && ($0.isLetter || $0.isNumber || "+/=".contains($0)) }),
     let seed = Data(base64Encoded: encoded),
     let key = try? Curve25519.Signing.PrivateKey(rawRepresentation: seed)
 else {

@@ -5,7 +5,7 @@
 #
 # Optional environment:
 #   CODESIGN_P12_BASE64, CODESIGN_P12_PASSWORD  re-sign with the project certificate
-#   UPDATE_SIGNING_KEY                          sign update.json (required)
+#   UPDATE_SIGNING_KEY                          sign update.json (skipped with a warning if invalid)
 set -euo pipefail
 
 app="$1"; channel="$2"; tag="$3"; out="$4"
@@ -82,9 +82,15 @@ name="Polka-$version-$build.zip"
 ditto -c -k --keepParent "$app" "$out/$name"
 
 git log -1 --format='%s%n%n%b' > "$out/notes.txt"
-swift scripts/make-update-manifest.swift "$out/$name" "$version" "$build" "$channel" \
+signing_key="${UPDATE_SIGNING_KEY:-}"
+# Without a valid key the zip is still published for manual download; the
+# in-app updater only trusts a signed update.json, so that file is skipped.
+if ! swift scripts/make-update-manifest.swift "$out/$name" "$version" "$build" "$channel" \
   "https://github.com/romabmstu/polka/releases/download/$tag/$name" "$minimum" "$out/notes.txt" \
-  > "$out/update.json"
+  > "$out/update.json"; then
+  rm -f "$out/update.json"
+  echo "::warning title=No in-app update::UPDATE_SIGNING_KEY is missing or invalid (${#signing_key} characters, expected 44). The zip is published, but Polka will not offer it as an update."
+fi
 shasum -a 256 "$out/$name" > "$out/$name.sha256"
 echo "name=$name" >> "${GITHUB_OUTPUT:-/dev/null}"
 echo "version=$version" >> "${GITHUB_OUTPUT:-/dev/null}"

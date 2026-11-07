@@ -130,10 +130,6 @@ jobs:
           CODESIGN_P12_BASE64: ${{ secrets.CODESIGN_P12_BASE64 }}
           CODESIGN_P12_PASSWORD: ${{ secrets.CODESIGN_P12_PASSWORD }}
         run: |
-          if [[ -z "$UPDATE_SIGNING_KEY" ]]; then
-            echo "::warning title=Beta not published::UPDATE_SIGNING_KEY secret is not set"
-            exit 0
-          fi
           ditto -x -k Polka.zip .
           if ! scripts/package.sh Polka.app beta nightly out > package.log 2>&1; then
             cat package.log
@@ -152,7 +148,9 @@ jobs:
           BUILD: ${{ steps.package.outputs.build }}
         run: |
           gh release delete nightly --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
-          if ! gh release create nightly out/"$NAME" out/"$NAME".sha256 out/update.json \
+          files=(out/"$NAME" out/"$NAME".sha256)
+          [[ -f out/update.json ]] && files+=(out/update.json)
+          if ! gh release create nightly "${files[@]}" \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
             --title "Beta $VERSION ($BUILD)" --notes-file out/notes.txt > publish.log 2>&1; then
             cat publish.log
