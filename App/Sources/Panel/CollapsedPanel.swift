@@ -89,7 +89,7 @@ struct CollapsedPanel: View {
     @ViewBuilder
     private var leadingStatus: some View {
         if Self.showsMusic(app) {
-            ArtworkView(size: 20, cornerRadius: 5)
+            ArtworkView(size: app.panel.hasNotch ? 20 : 16, cornerRadius: 5)
         } else if let meeting = Self.upcomingMeeting(app) {
             MeetingBadge(meeting: meeting, now: app.agenda.now)
         }

@@ -20,7 +20,7 @@
 
 ---
 
-Point at the notch and it opens into a panel. Move away and it tucks back in. On displays without a notch Polka sits at the top center as a small capsule, and by default it follows the pointer to whichever display you are using.
+Point at the notch and it opens into a panel. Move away and it tucks back in. On displays without a notch Polka sits in the center of the menu bar as a compact control, and by default it follows the pointer to whichever display you are using.
 
 While closed, the notch shows what matters right now: a shield when your VPN is on and a countdown when a meeting is about to start.
 

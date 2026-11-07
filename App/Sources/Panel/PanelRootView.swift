@@ -37,7 +37,7 @@ struct PanelRootView: View {
         .overlay {
             if !panel.hasNotch { shape.stroke(Color.white.opacity(0.12), lineWidth: 1) }
         }
-        .shadow(color: .black.opacity(panel.isExpanded ? 0.5 : (panel.hasNotch ? 0 : 0.3)), radius: panel.isExpanded ? 26 : 10, y: 10)
+        .shadow(color: .black.opacity(panel.isExpanded ? 0.5 : 0), radius: panel.isExpanded ? 26 : 0, y: 10)
         .contentShape(shape)
     }
 
@@ -50,7 +50,7 @@ struct PanelRootView: View {
                     bottomRadius: panel.isExpanded ? PanelMetrics.expandedCorner : 11))
         }
         return AnyShape(
-            RoundedRectangle(cornerRadius: panel.isExpanded ? 26 : PanelState.pillSize.height / 2, style: .continuous))
+            RoundedRectangle(cornerRadius: panel.isExpanded ? 26 : collapsedSize.height / 2, style: .continuous))
     }
 
     /// The closed notch is exactly the camera housing when nothing is going on,
@@ -65,8 +65,8 @@ struct PanelRootView: View {
             }
             let wings = CollapsedPanel.hasActivity(app) ? 2 * PanelMetrics.wingWidth : 0
             return CGSize(width: width + shoulders + wings, height: height)
-        case .pill:
-            return PanelState.pillSize
+        case .pill(let menuBarHeight):
+            return CGSize(width: PanelState.pillWidth, height: menuBarHeight)
         }
     }
 }

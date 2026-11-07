@@ -93,12 +93,12 @@ header.nav { display: flex; align-items: center; justify-content: space-between;
 }
 .np.wide { width: 380px; }
 .np.open { width: 800px; height: 468px; border-radius: 0 0 34px 34px; box-shadow: 0 34px 90px rgba(0,0,0,.65); cursor: default; }
-.pill .np { top: 36px; width: 236px; height: 36px; border-radius: 18px; background: rgba(0,0,0,.9); box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.12); }
-.pill .np.open { top: 36px; width: 800px; height: 440px; border-radius: 26px; box-shadow: 0 34px 90px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.12); }
+.pill .np { top: 0; width: 180px; height: 30px; border-radius: 15px; background: rgba(0,0,0,.9); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+.pill .np.open { top: 0; width: 800px; height: 440px; border-radius: 26px; box-shadow: 0 34px 90px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.12); }
 
 .wing { position: absolute; top: 0; height: 32px; display: flex; align-items: center; gap: 7px; transition: opacity .2s; }
 .wing.l { left: 14px; } .wing.r { right: 14px; }
-.pill .wing { height: 36px; }
+.pill .wing { height: 30px; }
 .np.open .wing, .np:not(.wide) .wing { opacity: 0; pointer-events: none; }
 .pill .np:not(.open) .wing { opacity: 1; }
 .mini-art { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(135deg, #ff6b9a, #6a5cff); }
@@ -383,7 +383,7 @@ footer a { color: var(--muted); }
 
   <section id="features">
     <h2><span class="en">Everything you reach for, in one place</span><span class="ru">Всё, за чем вы тянетесь, — в одном месте</span></h2>
-    <p class="lead"><span class="en">Point at the notch or press ⌥⇧K. On displays without a notch Polka becomes a capsule under the menu bar and follows your pointer from screen to screen.</span><span class="ru">Наведите на чёлку или нажмите ⌥⇧K. На мониторах без чёлки Polka становится капсулой под строкой меню и переходит за курсором с экрана на экран.</span></p>
+    <p class="lead"><span class="en">Point at the notch or press ⌥⇧K. On displays without a notch Polka becomes a compact control in the menu bar and follows your pointer from screen to screen.</span><span class="ru">Наведите на чёлку или нажмите ⌥⇧K. На мониторах без чёлки Polka становится компактной кнопкой в строке меню и переходит за курсором с экрана на экран.</span></p>
     <div class="grid">
       <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#6aa3ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="11" height="11" rx="2.5"/><path d="M6 3.5h8.5A2.5 2.5 0 0 1 17 6v8.5"/></svg></div>
         <h3><span class="en">Tab groups</span><span class="ru">Группы вкладок</span></h3>
@@ -402,7 +402,7 @@ footer a { color: var(--muted); }
         <p><span class="en">Type (1250 + 340) × 1.2 and the answer appears as you type, already converted into the currencies you pick.</span><span class="ru">Пишете (1250 + 340) × 1,2 — ответ появляется сразу и тут же пересчитывается в выбранные вами валюты.</span></p></div>
       <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#64d2ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4" width="11" height="13.5" rx="2.5"/><path d="M7.5 2.5h5v3h-5z"/></svg></div>
         <h3><span class="en">Clipboard history</span><span class="ru">История буфера</span></h3>
-        <p><span class="en">The last 30 things you copied, screenshots and pictures included. Pin what you reuse. Passwords and one-time codes are never recorded.</span><span class="ru">30 последних скопированных фрагментов, включая скриншоты и картинки. Нужное можно закрепить. Пароли и одноразовые коды не записываются.</span></p></div>
+        <p><span class="en">The last 30 things you copied, screenshots and pictures included. Pin what you reuse. Content marked as concealed or transient is skipped; unmarked passwords may still appear.</span><span class="ru">30 последних скопированных фрагментов, включая скриншоты и картинки. Нужное можно закрепить. Данные с пометкой о конфиденциальности пропускаются, но пароли без такой пометки могут попасть в историю.</span></p></div>
       <div class="feature"><div class="ico"><svg viewBox="0 0 20 20" fill="none" stroke="#a1a1aa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 11.5h4l1.2 2.3h4.6l1.2-2.3h4"/><path d="M4.5 4.5h11l2 7V16a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-4.5z"/></svg></div>
         <h3><span class="en">File shelf</span><span class="ru">Полка для файлов</span></h3>
         <p><span class="en">Drop files on the shelf in the notch, drag them into another app later or send them with AirDrop. Only references are kept — nothing is copied or moved.</span><span class="ru">Бросьте файлы на полку в чёлке, а потом перетащите в другое приложение или отправьте по AirDrop. Хранятся только ссылки — ничего не копируется и не перемещается.</span></p></div>

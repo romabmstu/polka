@@ -8,7 +8,7 @@ final class PanelState {
     enum Style: Equatable {
         /// Grows out of the camera housing on MacBooks.
         case notch(width: CGFloat, height: CGFloat)
-        /// A floating capsule under the menu bar on displays without a notch.
+        /// A compact control inside the menu bar on displays without a notch.
         case pill(menuBarHeight: CGFloat)
     }
 
@@ -20,8 +20,7 @@ final class PanelState {
     }
 
     static let expandedSize = CGSize(width: 760, height: 420)
-    static let pillSize = CGSize(width: 220, height: 36)
-    static let pillGap: CGFloat = 6
+    static let pillWidth: CGFloat = 180
 
     private(set) var isExpanded = false
     private(set) var isPinned = false

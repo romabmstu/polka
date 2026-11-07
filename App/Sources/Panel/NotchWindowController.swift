@@ -140,14 +140,14 @@ final class NotchWindowController {
         {
             return .notch(width: screen.frame.width - left.width - right.width, height: screen.safeAreaInsets.top)
         }
-        let menuBar = max(screen.frame.maxY - screen.visibleFrame.maxY, NSStatusBar.system.thickness)
+        let menuBar = NSStatusBar.system.thickness
         return .pill(menuBarHeight: menuBar)
     }
 
     static func topOffset(for style: PanelState.Style) -> CGFloat {
         switch style {
         case .notch: 0
-        case .pill(let menuBar): menuBar + PanelState.pillGap
+        case .pill: 0
         }
     }
 
@@ -160,13 +160,11 @@ final class NotchWindowController {
             let w = width + 2 * PanelMetrics.wingWidth
             return NSRect(x: screen.frame.midX - w / 2, y: screen.frame.maxY - height - 2, width: w, height: height + 2)
         case .pill(let menuBar):
-            let size = PanelState.pillSize
-            let top = menuBar + PanelState.pillGap
             return NSRect(
-                x: screen.frame.midX - size.width / 2 - 8,
-                y: screen.frame.maxY - top - size.height - 4,
-                width: size.width + 16,
-                height: size.height + top + 4
+                x: screen.frame.midX - PanelState.pillWidth / 2 - 8,
+                y: screen.frame.maxY - menuBar,
+                width: PanelState.pillWidth + 16,
+                height: menuBar
             )
         }
     }
