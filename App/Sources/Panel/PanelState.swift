@@ -46,6 +46,8 @@ final class PanelState {
     @ObservationIgnored var onCollapse: () -> Void = {}
     /// Opens the panel on the right display and gives it the keyboard.
     @ObservationIgnored var openForKeyboard: () -> Void = {}
+    /// Gives an already open panel keyboard focus without pinning it.
+    @ObservationIgnored var focusForTextEditing: () -> Void = {}
     @ObservationIgnored private var flashTask: Task<Void, Never>?
 
     var hasNotch: Bool {

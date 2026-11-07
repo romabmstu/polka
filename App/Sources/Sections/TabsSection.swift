@@ -5,6 +5,13 @@ import UniformTypeIdentifiers
 
 struct TabsSection: View {
     @Environment(AppModel.self) private var app
+    @State private var editingGroupID: UUID?
+    @State private var groupName = ""
+
+    private func rename(_ group: TabGroup) {
+        groupName = group.name
+        editingGroupID = group.id
+    }
 
     var body: some View {
         let tabs = app.tabs
@@ -12,12 +19,12 @@ struct TabsSection: View {
             Placeholder(symbol: "exclamationmark.triangle", title: "Tabs are unavailable", message: LocalizedStringKey(error))
         } else {
             HStack(alignment: .top, spacing: 14) {
-                GroupList()
+                GroupList(editingGroupID: $editingGroupID, groupName: $groupName, rename: rename)
                     .frame(width: 196)
                 VStack(alignment: .leading, spacing: 12) {
                     CurrentPageBar()
                     if tabs.query.isEmpty {
-                        GroupDetail()
+                        GroupDetail(rename: rename)
                     } else {
                         SearchResults()
                     }
@@ -31,6 +38,9 @@ struct TabsSection: View {
 
 private struct GroupList: View {
     @Environment(AppModel.self) private var app
+    @Binding var editingGroupID: UUID?
+    @Binding var groupName: String
+    let rename: (TabGroup) -> Void
     @State private var isCreating = false
     @State private var newName = ""
     @FocusState private var isSearchFocused: Bool
@@ -59,32 +69,40 @@ private struct GroupList: View {
             ScrollView {
                 VStack(spacing: 2) {
                     ForEach(tabs.library.orderedGroups) { group in
-                        GroupRow(group: group, isSelected: tabs.selectedGroup?.id == group.id && tabs.query.isEmpty)
+                        GroupRow(group: group, isSelected: tabs.selectedGroup?.id == group.id && tabs.query.isEmpty,
+                                 editingGroupID: $editingGroupID, groupName: $groupName, rename: rename)
                     }
                 }
             }
             .scrollIndicators(.never)
 
-            Button {
-                newName = ""
-                isCreating = true
-            } label: {
-                Label("New Group", systemImage: "plus")
-                    .font(.system(size: 12.5, weight: .medium))
-                    .foregroundStyle(Theme.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 10)
-                    .frame(height: 30)
-                    .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
-            .hoverHighlight(cornerRadius: 10)
-            .popover(isPresented: $isCreating, arrowEdge: .trailing) {
-                NameEditor(title: "New Group", name: $newName, confirm: "Create") {
-                    tabs.createGroup(named: newName)
+            if isCreating {
+                GroupNameEditor(name: $newName, confirm: "Create") {
+                    tabs.createGroup(named: newName.trimmingCharacters(in: .whitespacesAndNewlines))
+                    isCreating = false
+                } cancel: {
                     isCreating = false
                 }
+            } else {
+                Button {
+                    editingGroupID = nil
+                    newName = ""
+                    isCreating = true
+                } label: {
+                    Label("New Group", systemImage: "plus")
+                        .font(.system(size: 12.5, weight: .medium))
+                        .foregroundStyle(Theme.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 10)
+                        .frame(height: 30)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .hoverHighlight(cornerRadius: 10)
             }
+        }
+        .onChange(of: editingGroupID) { _, id in
+            if id != nil { isCreating = false }
         }
     }
 }
@@ -93,9 +111,26 @@ private struct GroupRow: View {
     @Environment(AppModel.self) private var app
     let group: TabGroup
     let isSelected: Bool
+    @Binding var editingGroupID: UUID?
+    @Binding var groupName: String
+    let rename: (TabGroup) -> Void
     @State private var isTargeted = false
 
     var body: some View {
+        if editingGroupID == group.id {
+            GroupNameEditor(name: $groupName, confirm: "Rename") {
+                let name = groupName.trimmingCharacters(in: .whitespacesAndNewlines)
+                app.tabs.updateGroup(group.id) { $0.name = name }
+                editingGroupID = nil
+            } cancel: {
+                editingGroupID = nil
+            }
+        } else {
+            row
+        }
+    }
+
+    private var row: some View {
         Button {
             app.tabs.query = ""
             app.tabs.selectedGroupID = group.id
@@ -129,7 +164,7 @@ private struct GroupRow: View {
         .dropDestination(for: URL.self) { urls, _ in
             accept(urls)
         } isTargeted: { isTargeted = $0 }
-        .contextMenu { GroupMenu(group: group) }
+        .contextMenu { GroupMenu(group: group) { rename(group) } }
     }
 
     /// A dropped URL is either one of our own tabs being moved (it carries the
@@ -225,6 +260,7 @@ private struct CurrentPageBar: View {
 
 private struct GroupDetail: View {
     @Environment(AppModel.self) private var app
+    let rename: (TabGroup) -> Void
 
     var body: some View {
         if let group = app.tabs.selectedGroup {
@@ -236,7 +272,7 @@ private struct GroupDetail: View {
                         .foregroundStyle(Theme.tertiary)
                     Spacer()
                     Menu {
-                        GroupMenu(group: group)
+                        GroupMenu(group: group) { rename(group) }
                     } label: {
                         Image(systemName: "ellipsis.circle").font(.system(size: 14, weight: .semibold))
                     }
@@ -370,14 +406,12 @@ private struct TabTile: View {
     @ViewBuilder
     private var menu: some View {
         Button("Open") { app.tabs.open(tab) }
-        Button("Open in New Window") {
-            Task { await app.tabs.openInNewWindow(tab) }
-        }
-        Divider()
         Button("Edit…") { isEditing = true }
-        Menu("Move To") {
-            ForEach(app.tabs.library.orderedGroups.filter { $0.id != group.id }) { other in
-                Button(other.name) { app.tabs.moveTab(tab.id, to: other.id) }
+        if app.tabs.library.groups.count > 1 {
+            Menu("Move To") {
+                ForEach(app.tabs.library.orderedGroups.filter { $0.id != group.id }) { other in
+                    Button(other.name) { app.tabs.moveTab(tab.id, to: other.id) }
+                }
             }
         }
         Button("Copy Link") {
@@ -385,7 +419,7 @@ private struct TabTile: View {
             NSPasteboard.general.setString(tab.url.absoluteString, forType: .string)
         }
         Divider()
-        Button("Delete", role: .destructive) {
+        Button("Remove", role: .destructive) {
             app.tabs.removeTab(tab.id)
             app.panel.flash(.init(symbol: "trash", text: String(localized: "Tab deleted"), canUndo: true))
         }
@@ -413,14 +447,16 @@ private struct TabTile: View {
 struct GroupMenu: View {
     @Environment(AppModel.self) private var app
     let group: TabGroup
+    let rename: () -> Void
 
     var body: some View {
         let tabs = app.tabs
-        Button("Open All") { Task { await tabs.openGroup(group, inNewWindow: false) } }
-        Button("Open and Clear Group") {
-            Task { await tabs.openGroup(group, inNewWindow: false, removeAfterwards: true) }
+        Button("Rename…", action: rename)
+        Button {
+            tabs.updateGroup(group.id) { $0.isPinned.toggle() }
+        } label: {
+            if group.isPinned { Text("Unpin") } else { Text("Pin to Top") }
         }
-        Divider()
         Picker("Sort Tabs", selection: Binding(get: { group.sortOrder }, set: { order in tabs.updateGroup(group.id) { $0.sortOrder = order } })) {
             Text("Manually").tag(TabGroup.SortOrder.manual)
             Text("By Title").tag(TabGroup.SortOrder.title)
@@ -433,18 +469,6 @@ struct GroupMenu: View {
                 Text(color.name).tag(color)
             }
         }
-        Button {
-            tabs.updateGroup(group.id) { $0.isPinned.toggle() }
-        } label: {
-            if group.isPinned { Text("Unpin") } else { Text("Pin to Top") }
-        }
-        Button("Paste Links") { PasteHandler.addLinks(to: group.id, app: app) }
-        Button("Rename…") { RenamePrompt.show(group: group, tabs: tabs) }
-        Button("Copy Links as Markdown") {
-            let text = group.sortedTabs.map { "- [\($0.displayTitle)](\($0.url.absoluteString))" }.joined(separator: "\n")
-            NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(text, forType: .string)
-        }
         Divider()
         Button("Delete Group", role: .destructive) {
             tabs.deleteGroup(group.id)
@@ -453,52 +477,46 @@ struct GroupMenu: View {
     }
 }
 
-/// A small sheet-less prompt for renaming, shown as an alert because context
-/// menus cannot host text fields.
-@MainActor
-enum RenamePrompt {
-    static func show(group: TabGroup, tabs: TabsModel) {
-        let alert = NSAlert()
-        alert.messageText = String(localized: "Rename Group")
-        let field = NSTextField(string: group.name)
-        field.frame = NSRect(x: 0, y: 0, width: 240, height: 24)
-        alert.accessoryView = field
-        alert.addButton(withTitle: String(localized: "Rename"))
-        alert.addButton(withTitle: String(localized: "Cancel"))
-        alert.window.initialFirstResponder = field
-        NSApp.activate()
-        if alert.runModal() == .alertFirstButtonReturn {
-            let name = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !name.isEmpty { tabs.updateGroup(group.id) { $0.name = name } }
-        }
-    }
-}
-
-private struct NameEditor: View {
-    let title: LocalizedStringKey
+private struct GroupNameEditor: View {
+    @Environment(AppModel.self) private var app
     @Binding var name: String
     let confirm: LocalizedStringKey
     let action: () -> Void
+    let cancel: () -> Void
+    @FocusState private var focused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title).font(.headline)
+        HStack(spacing: 5) {
             TextField("Name", text: $name)
-                .textFieldStyle(.roundedBorder)
-                .frame(width: 220)
+                .textFieldStyle(.plain)
+                .font(.system(size: 13))
+                .focused($focused)
                 .onSubmit(submit)
-            HStack {
-                Spacer()
-                Button(confirm, action: submit)
-                    .keyboardShortcut(.defaultAction)
-                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
-            }
+            Button(action: cancel) { Image(systemName: "xmark") }
+                .accessibilityLabel(Text("Cancel"))
+                .help(Text("Cancel"))
+            Button(action: submit) { Image(systemName: "checkmark") }
+                .accessibilityLabel(Text(confirm))
+                .help(Text(confirm))
+                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
-        .padding(14)
+        .buttonStyle(.plain)
+        .padding(.horizontal, 10)
+        .frame(height: 34)
+        .background(Theme.card, in: .rect(cornerRadius: 10))
+        .task {
+            app.panel.isEditingText = true
+            app.panel.focusForTextEditing()
+            // Give SwiftUI a chance to install the field before focusing it.
+            await Task.yield()
+            focused = true
+        }
+        .onDisappear { app.panel.isEditingText = false }
+        .onExitCommand(perform: cancel)
     }
 
     private func submit() {
-        guard !name.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         action()
     }
 }

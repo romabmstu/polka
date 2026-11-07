@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 
 struct PanelRootView: View {
     @Environment(AppModel.self) private var app
+    @State private var fileDropTargeted = false
 
     var body: some View {
         let panel = app.panel
@@ -13,7 +14,7 @@ struct PanelRootView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .onDrop(of: [UTType.fileURL.identifier], isTargeted: nil) { providers in
+        .onDrop(of: [UTType.fileURL.identifier], isTargeted: $fileDropTargeted) { providers in
             guard panel.isExpanded, panel.section == .shelf else { return false }
             let fileProviders = providers.filter { $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) }
             for provider in fileProviders {
@@ -27,6 +28,9 @@ struct PanelRootView: View {
                 }
             }
             return !fileProviders.isEmpty
+        }
+        .onChange(of: fileDropTargeted) { _, targeted in
+            if targeted, panel.isExpanded { panel.section = .shelf }
         }
         .environment(\.colorScheme, .dark)
         .animation(.spring(response: 0.42, dampingFraction: 0.8), value: panel.isExpanded)

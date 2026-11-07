@@ -60,6 +60,7 @@ final class NotchWindowController {
         model.panel.onExpand = { [weak self] in self?.didExpand() }
         model.panel.onCollapse = { [weak self] in self?.didCollapse() }
         model.panel.openForKeyboard = { [weak self] in self?.openForKeyboard() }
+        model.panel.focusForTextEditing = { [weak self] in self?.panel.makeKey() }
     }
 
     func show() {
@@ -209,9 +210,6 @@ final class NotchWindowController {
 
         if state.isExpanded {
             if expandedArea.contains(point) {
-                if isDragging, NSPasteboard(name: .drag).availableType(from: [.fileURL]) != nil {
-                    state.section = .shelf
-                }
                 cancelHover()
             } else if !state.isPinned, !state.isEditingText, hoverTask == nil {
                 hoverTask = Task { [weak self] in
@@ -230,10 +228,8 @@ final class NotchWindowController {
             layout()
         }
 
-        if isDragging, collapsedArea.contains(point),
-            NSPasteboard(name: .drag).availableType(from: [.fileURL]) != nil {
+        if isDragging, collapsedArea.contains(point) {
             cancelHover()
-            state.section = .shelf
             state.expand()
             return
         }
