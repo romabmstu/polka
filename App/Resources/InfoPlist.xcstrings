@@ -26,13 +26,13 @@
         "en": {
           "stringUnit": {
             "state": "new",
-            "value": "Polka reads the address of the open browser tab so you can save it, and opens saved groups in a new window."
+            "value": "Polka reads the address of the open browser tab so you can save it, opens saved groups in a new window and switches Tunnelblick connections."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Polka читает адрес открытой вкладки браузера, чтобы её можно было сохранить, и открывает сохранённые группы в новом окне."
+            "value": "Polka читает адрес открытой вкладки браузера, чтобы её можно было сохранить, открывает сохранённые группы в новом окне и переключает подключения Tunnelblick."
           }
         }
       }

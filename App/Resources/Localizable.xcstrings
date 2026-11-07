@@ -333,6 +333,16 @@
         }
       }
     },
+    "Allow Polka to control Tunnelblick in System Settings › Privacy & Security › Automation.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешите Polka управлять Tunnelblick в Системных настройках › Конфиденциальность и безопасность › Автоматизация."
+          }
+        }
+      }
+    },
     "Allowed": {
       "localizations": {
         "ru": {

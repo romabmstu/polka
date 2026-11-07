@@ -28,7 +28,7 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
 
 **Tabs.** Keep pages in named, colored groups instead of a hundred open tabs. Save the current tab from Safari, Chrome, Arc, Brave, Edge or Yandex Browser with <kbd>⌥⇧S</kbd> and pick the group right in the notch — or the whole window at once. *Save to Polka…* in the Services menu (right-click a selection or a link) does the same from any app. Drag links from anywhere onto a group, paste a whole list (plain links, Markdown or a OneTab export). Sort by title, site, date or recent use, search across everything, open a group in the current or a new window.
 
-**VPN.** Every VPN registered in System Settings — WireGuard, Happ, V2Box, corporate L2TP and others — with a switch, plus proxy clients such as FSNT Client that Polka starts and quits for you. Turning one on turns the others off.
+**VPN.** Every VPN registered in System Settings — WireGuard, Happ, V2Box, corporate L2TP and others — with a switch, plus every Tunnelblick (OpenVPN) configuration and proxy clients such as FSNT Client that Polka starts and quits for you. Turning one on turns the others off.
 
 **Music.** Title, artist, artwork and a seekable progress bar for whatever is playing — Yandex Music, Music, Spotify, a video in the browser — and which app that is, so play and pause always act where you expect.
 

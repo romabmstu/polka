@@ -32,7 +32,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Polka reads the address of the open browser tab so you can save it, and opens saved groups in a new window.</string>
+	<string>Polka reads the address of the open browser tab so you can save it, opens saved groups in a new window and switches Tunnelblick connections.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Polka shows today’s events and a one-click Join button for your next meeting. Your calendar never leaves this Mac.</string>
 	<key>NSHumanReadableCopyright</key>

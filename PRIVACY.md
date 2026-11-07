@@ -29,6 +29,7 @@ Polka asks for each permission only when you use the feature that needs it.
 | --- | --- |
 | Automation › your browsers | Read the address and title of open tabs in Safari, Chrome, Arc, Brave, Edge or Yandex Browser to save them; open a group in a new window. Asked separately for each browser you use. |
 | Automation › System Events | Only if a scenario switches dark mode. |
+| Automation › Tunnelblick | Only if Tunnelblick is installed: list its configurations, their state, connect and disconnect. |
 | Calendars | Show today’s events and the next meeting. Read-only. |
 | Accessibility | Only as a fallback for the media keys if the Now Playing helper cannot run. Polka does not read the screen or other apps’ content. |
 

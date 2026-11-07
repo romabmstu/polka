@@ -79,6 +79,24 @@ import Testing
     }
 }
 
+@Suite struct TunnelblickTests {
+    @Test func parsesConfigurationsAndStates() {
+        let output = "Office\u{1F}CONNECTED\u{1E}Home NL\u{1F}EXITING\u{1E}Backup\u{1F}AUTH\u{1E}bad/name\u{1F}EXITING\u{1E}"
+        let list = Tunnelblick.connections(fromScriptOutput: output)
+        #expect(list.map(\.name) == ["Office", "Home NL", "Backup"])
+        #expect(list.map(\.status) == [.connected, .disconnected, .connecting])
+        #expect(list.allSatisfy { $0.isTunnelblick && !$0.isSystemService && !$0.isAppManaged })
+        #expect(Tunnelblick.configurationName(fromConnectionID: list[1].id) == "Home NL")
+    }
+
+    @Test func readsNamesFromDiskAndRejectsJunk() {
+        let names = Tunnelblick.configurationNames(fromFileNames: ["work.tblk", ".DS_Store", "Home.tblk", "work.tblk", "-x.tblk"])
+        #expect(names == ["Home", "work"])
+        #expect(Tunnelblick.configurationName(fromConnectionID: "tunnelblick:") == nil)
+        #expect(Tunnelblick.configurationName(fromConnectionID: "app:net.tunnelblick.tunnelblick") == nil)
+    }
+}
+
 @Suite struct MeetingLinkTests {
     @Test func prefersURLField() {
         let match = MeetingLink.find(

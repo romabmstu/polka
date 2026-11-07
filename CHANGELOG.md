@@ -9,6 +9,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Save tabs from Chrome, Arc, Brave, Edge and Yandex Browser, not only Safari.
 - ⌥⇧S asks where to save: pick or create a group from the keyboard, or save the whole window.
 - *Save to Polka…* in the Services menu, available from the context menu of selected text and links.
+- Tunnelblick: each OpenVPN configuration gets its own switch.
 - Proxy-based VPN clients such as FSNT Client: Polka starts and quits them and shows whether they carry traffic. Other apps can be added in Settings.
 - Pictures and screenshots in clipboard history, with *Add to Shelf*.
 - Scenario actions: open and quit apps, dark or light appearance, volume and mute.

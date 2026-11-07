@@ -4,8 +4,8 @@ import OSLog
 import PolkaCore
 import PolkaSystem
 
-/// System VPN services (through `scutil`) and proxy-based client apps such as
-/// FSNT Client, shown and switched as one list. Only one stays on at a time.
+/// System VPN services (through `scutil`), Tunnelblick configurations and
+/// proxy-based client apps such as FSNT Client, shown and switched as one list. Only one stays on at a time.
 @MainActor
 @Observable
 final class VPNModel {
@@ -21,6 +21,7 @@ final class VPNModel {
     @ObservationIgnored private let preferences: Preferences
     @ObservationIgnored private let controller = VPNController()
     @ObservationIgnored private let probe = NetworkProbe()
+    @ObservationIgnored private let tunnelblick = TunnelblickController()
     @ObservationIgnored private var polling: Task<Void, Never>?
     @ObservationIgnored private var appLocations: [String: URL] = [:]
     @ObservationIgnored private let log = Logger(subsystem: "Polka", category: "vpn")
@@ -52,6 +53,7 @@ final class VPNModel {
         } catch {
             log.error("Listing VPN services failed: \(error.localizedDescription, privacy: .public)")
         }
+        list += await tunnelblickConnections()
         list += await appConnections(systemActive: list.contains { $0.status.isActive })
 
         let now = Date.now
@@ -78,8 +80,9 @@ final class VPNModel {
         defer { busy.subtract(affected) }
         lastError = nil
 
-        let system = connections.filter { !$0.isAppManaged }
+        let system = connections.filter(\.isSystemService)
         let targetApp = id.flatMap(VPNApp.bundleID(fromConnectionID:))
+        let targetTunnelblick = id.flatMap(Tunnelblick.configurationName(fromConnectionID:))
         do {
             // Turn everything else off first, so two clients never fight over routes.
             for connection in connections where connection.isAppManaged && connection.id != id {
@@ -87,19 +90,29 @@ final class VPNModel {
                     await quit(bundleID)
                 }
             }
-            if let targetApp {
-                try await controller.switchExclusively(to: nil, among: system)
-                try await launch(targetApp)
-            } else {
-                try await controller.switchExclusively(to: id, among: system)
+            for connection in connections where connection.isTunnelblick && connection.status.isActive && connection.id != id {
+                if let name = Tunnelblick.configurationName(fromConnectionID: connection.id) {
+                    try await tunnelblick.disconnect(name)
+                }
             }
+            let systemTarget = id.flatMap { SCUtilParser.isValidServiceID($0) ? $0 : nil }
+            try await controller.switchExclusively(to: systemTarget, among: system)
+            if let targetApp {
+                try await launch(targetApp)
+            } else if let targetTunnelblick {
+                try await tunnelblick.connect(targetTunnelblick)
+            }
+        } catch TunnelblickController.Failure.notAuthorized {
+            lastError = String(localized: "Allow Polka to control Tunnelblick in System Settings › Privacy & Security › Automation.")
+            SystemSettings.open(.automation)
         } catch {
             lastError = String(localized: "The VPN client did not respond. Open it to check its settings.")
             log.error("VPN switch failed: \(error.localizedDescription, privacy: .public)")
         }
 
-        // Tunnels and proxy clients take a moment to come up.
-        let attempts = targetApp == nil ? 6 : 14
+        // Tunnels and proxy clients take a moment to come up; OpenVPN may
+        // also wait for a password in Tunnelblick's own window.
+        let attempts = targetApp == nil && targetTunnelblick == nil ? 6 : 14
         for _ in 0..<attempts {
             await refresh()
             if id == nil ? active == nil : connections.first(where: { $0.id == id })?.status == .connected { break }
@@ -121,6 +134,24 @@ final class VPNModel {
         return nil
     }
 
+    // MARK: Tunnelblick
+
+    /// Asks Tunnelblick for live states while it runs; otherwise lists the
+    /// installed configurations as off, without starting it.
+    private func tunnelblickConnections() async -> [VPNConnection] {
+        guard appURL(for: Tunnelblick.bundleID) != nil else { return [] }
+        if isRunning(Tunnelblick.bundleID) {
+            do {
+                return try await tunnelblick.connections()
+            } catch {
+                log.error("Reading Tunnelblick failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+        return TunnelblickController.installedConfigurationNames().map {
+            Tunnelblick.connection(named: $0, status: .disconnected)
+        }
+    }
+
     // MARK: App-managed clients
 
     /// Recognized clients that are installed, plus the ones the user added.
@@ -133,7 +164,9 @@ final class VPNModel {
                 result.append(app)
             }
         }
-        for app in preferences.vpnApps where !result.contains(where: { $0.bundleID == app.bundleID }) {
+        // Tunnelblick has its own, richer integration.
+        for app in preferences.vpnApps
+        where app.bundleID != Tunnelblick.bundleID && !result.contains(where: { $0.bundleID == app.bundleID }) {
             result.append(app)
         }
         return result
