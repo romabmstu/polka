@@ -42,7 +42,7 @@ final class UpdateModel {
         }
     }
 
-    /// Checks shortly after launch and then every six hours while enabled.
+    /// Checks shortly after launch and then every 15 minutes while enabled.
     func startAutomaticChecks(preferences: Preferences) {
         schedule?.cancel()
         guard preferences.checkForUpdatesAutomatically else { return }
@@ -50,13 +50,16 @@ final class UpdateModel {
             try? await Task.sleep(for: .seconds(20))
             while !Task.isCancelled {
                 await self?.check(channel: preferences.updateChannel, quietly: true)
-                try? await Task.sleep(for: .seconds(6 * 60 * 60))
+                try? await Task.sleep(for: .seconds(15 * 60))
             }
         }
     }
 
     func check(channel: UpdateChannel, quietly: Bool = false) async {
-        guard let updater else { return }
+        guard let updater else {
+            if !quietly { state = .failed(String(localized: "The update key is missing. Reinstall Polka from the official release.")) }
+            return
+        }
         if case .downloading = state { return }
         if !quietly { state = .checking }
         do {
@@ -72,9 +75,8 @@ final class UpdateModel {
                 state = .upToDate
             }
         } catch Updater.Failure.badResponse(404) {
-            // No build published on this channel yet.
             lastChecked = .now
-            if !quietly { state = .upToDate }
+            if !quietly { state = .failed(String(localized: "No signed update is available for this channel. Check the release page or choose another channel.")) }
         } catch {
             log.error("Update check failed: \(error.localizedDescription, privacy: .public)")
             if !quietly { state = .failed(String(localized: "Couldn’t check for updates. Check your connection and try again.")) }

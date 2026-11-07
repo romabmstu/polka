@@ -16,7 +16,7 @@ Polka is built to work entirely on your Mac.
 
 Polka makes two kinds of requests, both without cookies, identifiers or personal data:
 
-- **Updates.** Every six hours (and when you click *Check Now*) it reads a small `update.json` from this project's GitHub releases. Turn this off in Settings › Updates.
+- **Updates.** Every 15 minutes (and when you click *Check Now*) it reads a small `update.json` from this project's GitHub releases. Turn this off in Settings › Updates.
 - **Exchange rates.** Only if you turn on currency conversion: public rates from `https://open.er-api.com` (ExchangeRate-API), a few times a day.
 
 Nothing else goes over the network. Polka does not download site icons, so the sites you save never see a request from it.

@@ -60,7 +60,7 @@ gh attestation verify Polka-vX.Y.Z.zip --repo romabmstu/polka
 
 ## Updates
 
-Polka updates itself: Settings › Updates › *Check Now*, or wait for the *Update* button in the panel. Choose **Every new build (beta)** to get each change as soon as it is merged, or **Releases** for tagged versions. Updates are verified against a signing key built into the app before anything is replaced. If a beta has no signed update manifest, download and install it manually from its release page.
+Polka updates itself: Settings › Updates › *Check Now*, or wait for the *Update* button in the panel. Choose **Every new build (beta)** to receive successful builds after they are published (checked every 15 minutes by default), or **Releases** for tagged versions. Updates are verified against a signing key built into the app before anything is replaced. If a beta has no signed update manifest, download and install it manually from its release page.
 
 ## Keyboard
 

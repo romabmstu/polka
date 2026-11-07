@@ -105,7 +105,7 @@ final class Preferences {
         vpnApps = (Self.load([VPNApp].self, Key.vpnApps, defaults) ?? []).filter { VPNApp.isValidBundleID($0.bundleID) }
         askWhereToSave = defaults.object(forKey: Key.askWhereToSave) as? Bool ?? true
         hiddenCalendarIDs = Self.load(Set<String>.self, Key.hiddenCalendars, defaults) ?? []
-        updateChannel = defaults.string(forKey: Key.updateChannel).flatMap { UpdateChannel(rawValue: $0) } ?? .stable
+        updateChannel = defaults.string(forKey: Key.updateChannel).flatMap { UpdateChannel(rawValue: $0) } ?? .beta
         checkForUpdatesAutomatically = defaults.object(forKey: Key.autoUpdate) as? Bool ?? true
     }
 

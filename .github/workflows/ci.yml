@@ -154,8 +154,7 @@ jobs:
           BUILD: ${{ steps.package.outputs.build }}
         run: |
           gh release delete nightly --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
-          files=(out/"$NAME" out/"$NAME".sha256)
-          [[ -f out/update.json ]] && files+=(out/update.json)
+          files=(out/"$NAME" out/"$NAME".sha256 out/update.json)
           if ! gh release create nightly "${files[@]}" \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
             --title "Beta $VERSION ($BUILD)" --notes-file out/notes.txt > publish.log 2>&1; then

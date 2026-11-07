@@ -28,7 +28,7 @@ struct SavePicker: View {
     var body: some View {
         HStack(alignment: .top, spacing: 18) {
             pagesColumn
-                .frame(width: 290)
+                .frame(width: 265)
             Divider().overlay(Theme.hairline)
             groupsColumn
         }
@@ -44,13 +44,17 @@ struct SavePicker: View {
         let pages = request.pages(for: scope)
         return VStack(alignment: .leading, spacing: 10) {
             CardLabel("Save from \(request.source)")
+            Text("Pages to save").font(.system(size: 15, weight: .semibold))
             if request.offersWindow {
                 Picker("", selection: $scope) {
                     Text("This tab").tag(SaveRequest.Scope.current)
-                    Text("Whole window · \(request.window.count)").tag(SaveRequest.Scope.window)
+                    Text("All tabs · \(request.window.count)").tag(SaveRequest.Scope.window)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
+                (scope == .current ? Text("Only the current tab") : Text("All tabs from the current browser window"))
+                    .font(.system(size: 11)).foregroundStyle(Theme.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: 4) {
@@ -68,6 +72,16 @@ struct SavePicker: View {
     private var groupsColumn: some View {
         let choices = self.choices
         return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Choose a group").font(.system(size: 15, weight: .semibold))
+                    Text("Select where to save the pages")
+                        .font(.system(size: 11.5)).foregroundStyle(Theme.secondary)
+                }
+                Spacer(minLength: 8)
+                Button("Cancel") { app.panel.collapse() }
+                    .buttonStyle(CapsuleButtonStyle()).fixedSize()
+            }
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass").foregroundStyle(Theme.tertiary)
                 TextField("Find a group or name a new one", text: $query)
@@ -101,15 +115,11 @@ struct SavePicker: View {
                 .onChange(of: highlighted) { proxy.scrollTo(highlighted) }
             }
 
-            HStack(spacing: 14) {
-                hint("↑↓", "choose")
-                hint("↩", "save")
-                hint("⌘1–9", "quick pick")
-                hint("esc", "cancel")
-                Spacer()
-                Button("Cancel") { app.panel.collapse() }
-                    .buttonStyle(CapsuleButtonStyle())
-            }
+            Text("↑↓ Select   ·   Return Save   ·   Esc Cancel")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(Theme.tertiary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
     }
 
@@ -139,9 +149,10 @@ struct SavePicker: View {
                             .font(.system(size: 11.5, weight: .medium))
                             .foregroundStyle(Theme.active)
                     } else {
-                        Text(group.tabs.count, format: .number)
-                            .font(.system(size: 12).monospacedDigit())
+                        Text("\(group.tabs.count) saved")
+                            .font(.system(size: 11.5).monospacedDigit())
                             .foregroundStyle(Theme.tertiary)
+                            .fixedSize()
                     }
                 case .create(let name):
                     Image(systemName: "plus.circle.fill").foregroundStyle(Theme.accent)
@@ -162,14 +173,6 @@ struct SavePicker: View {
         }
         .buttonStyle(.plain)
         .onHover { if $0 { highlighted = index } }
-    }
-
-    private func hint(_ key: String, _ action: LocalizedStringKey) -> some View {
-        HStack(spacing: 4) {
-            Text(key).font(.system(size: 11, weight: .semibold).monospacedDigit())
-            Text(action).font(.system(size: 11))
-        }
-        .foregroundStyle(Theme.tertiary)
     }
 
     /// Invisible buttons that carry the ⌘1–⌘9 shortcuts.
@@ -217,7 +220,9 @@ private struct PageLine: View {
                     .foregroundStyle(Theme.tertiary)
                     .lineLimit(1)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 3)
     }
 }

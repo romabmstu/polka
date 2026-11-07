@@ -30,6 +30,8 @@ final class TranslatorModel {
     private(set) var target: String?
     private(set) var isWorking = false
     private(set) var errorText: String?
+    private(set) var needsLanguageDownload = false
+    private var retryCount = 0
     private(set) var history = TranslationHistory()
     private(set) var supportedLanguages: [String] = []
     /// Bumped to move keyboard focus into the input field.
@@ -51,7 +53,7 @@ final class TranslatorModel {
     }
 
     /// Changes whenever a new translation is due.
-    var requestKey: String { "\(primary)|\(secondary)|\(input)" }
+    var requestKey: String { "\(primary)|\(secondary)|\(input)|\(retryCount)" }
 
     func makeRequest() -> Request? {
         guard let text = TranslationRoute.prepare(input) else { return nil }
@@ -63,6 +65,7 @@ final class TranslatorModel {
         self.target = target
         isWorking = true
         errorText = nil
+        needsLanguageDownload = false
         return request
     }
 
@@ -73,11 +76,12 @@ final class TranslatorModel {
         history.record(.init(text: request.text, translation: translation, source: request.source, target: request.target))
     }
 
-    func fail(_ request: Request, message: String) {
+    func fail(_ request: Request, message: String, needsDownload: Bool = false) {
         guard request == pending else { return }
         isWorking = false
         output = ""
         errorText = message
+        needsLanguageDownload = needsDownload
     }
 
     func setSupportedLanguages(_ codes: [String]) {
@@ -111,6 +115,8 @@ final class TranslatorModel {
         focusRequest += 1
     }
 
+    func retry() { retryCount += 1 }
+
     func clearHistory() {
         history.clear()
     }
@@ -122,6 +128,7 @@ final class TranslatorModel {
         target = nil
         isWorking = false
         errorText = nil
+        needsLanguageDownload = false
     }
 
     static func displayName(of code: String) -> String {

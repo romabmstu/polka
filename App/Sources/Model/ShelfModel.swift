@@ -16,7 +16,8 @@ final class ShelfModel {
     private(set) var items: [Item] = []
 
     func add(_ urls: [URL]) {
-        let fresh = urls.filter { url in url.isFileURL && !items.contains { $0.url == url } }
+        var seen = Set(items.map(\.url))
+        let fresh = urls.filter { $0.isFileURL && seen.insert($0).inserted }
         items.insert(contentsOf: fresh.map(Item.init), at: 0)
         if items.count > 40 { items.removeLast(items.count - 40) }
     }

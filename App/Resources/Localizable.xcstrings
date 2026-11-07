@@ -3632,6 +3632,106 @@
           }
         }
       }
+    },
+    "The update key is missing. Reinstall Polka from the official release.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ключ обновлений отсутствует. Переустановите Polka из официального релиза."
+          }
+        }
+      }
+    },
+    "No signed update is available for this channel. Check the release page or choose another channel.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для этого канала нет подписанного обновления. Проверьте страницу релизов или выберите другой канал."
+          }
+        }
+      }
+    },
+    "Pages to save": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Страницы для сохранения"
+          }
+        }
+      }
+    },
+    "All tabs · %lld": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все вкладки · %lld"
+          }
+        }
+      }
+    },
+    "All tabs from the current browser window": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все вкладки текущего окна браузера"
+          }
+        }
+      }
+    },
+    "Choose a group": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите группу"
+          }
+        }
+      }
+    },
+    "Select where to save the pages": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Куда сохранить страницы"
+          }
+        }
+      }
+    },
+    "↑↓ Select   ·   Return Save   ·   Esc Cancel": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↑↓ Выбор   ·   Enter Сохранить   ·   Esc Отмена"
+          }
+        }
+      }
+    },
+    "%lld saved": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранено: %lld"
+          }
+        }
+      }
+    },
+    "Only the current tab": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Только текущая вкладка"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

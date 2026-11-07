@@ -167,9 +167,20 @@ private struct TranslatorPane: View {
                 ScrollView {
                     Group {
                         if let error = translator.errorText {
-                            Text(error)
-                                .foregroundStyle(Theme.warning)
-                                .font(.system(size: 13))
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text(error).foregroundStyle(Theme.warning).font(.system(size: 13))
+                                    .fixedSize(horizontal: false, vertical: true)
+                                if translator.needsLanguageDownload {
+                                    Button(String(localized: "Open Language & Region", table: "Translator")) {
+                                        app.panel.collapse()
+                                        if let url = URL(string: "x-apple.systempreferences:com.apple.Localization-Settings.extension") {
+                                            NSWorkspace.shared.open(url)
+                                        }
+                                    }.buttonStyle(CapsuleButtonStyle())
+                                    Button(String(localized: "Try again", table: "Translator")) { translator.retry() }
+                                        .buttonStyle(.plain).foregroundStyle(Theme.secondary)
+                                }
+                            }
                         } else {
                             Text(translator.output)
                                 .font(.system(size: 15))
@@ -242,6 +253,31 @@ private struct TranslatorPane: View {
         guard !Task.isCancelled, let request = translator.makeRequest() else { return }
         let source = request.source.map { Locale.Language(identifier: $0) }
         let target = Locale.Language(identifier: request.target)
+        let availability = LanguageAvailability()
+        let status: LanguageAvailability.Status
+        do {
+            if let source {
+                status = await availability.status(from: source, to: target)
+            } else {
+                status = try await availability.status(for: request.text, to: target)
+            }
+        } catch {
+            translator.fail(request, message: String(localized: "Could not identify the language. Try a longer text.", table: "Translator"))
+            return
+        }
+        guard !Task.isCancelled, translator.pending == request else { return }
+        switch status {
+        case .installed: break
+        case .supported:
+            translator.fail(request, message: String(localized: "Download the required translation languages in System Settings, then try again.", table: "Translator"), needsDownload: true)
+            return
+        case .unsupported:
+            translator.fail(request, message: String(localized: "This language pair is not supported on this Mac.", table: "Translator"))
+            return
+        @unknown default:
+            translator.fail(request, message: String(localized: "Translation language availability is unknown.", table: "Translator"))
+            return
+        }
         if configuration?.source == source, configuration?.target == target {
             configuration?.invalidate()
         } else {

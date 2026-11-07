@@ -1,6 +1,7 @@
 // Signs an update archive and prints its update.json.
 //
-//   UPDATE_SIGNING_KEY=<base64 Ed25519 seed> swift scripts/make-update-manifest.swift \
+//   UPDATE_SIGNING_KEY=<base64 Ed25519 seed> EXPECTED_UPDATE_PUBLIC_KEY=<base64 public key> \
+//       swift scripts/make-update-manifest.swift \
 //       <zip> <version> <build> <stable|beta> <download-url> <minimum-macos> <notes-file>
 import CryptoKit
 import Foundation
@@ -20,6 +21,13 @@ guard
     let key = try? Curve25519.Signing.PrivateKey(rawRepresentation: seed)
 else {
     FileHandle.standardError.write(Data("UPDATE_SIGNING_KEY is missing or invalid\n".utf8))
+    exit(1)
+}
+
+guard let expected = ProcessInfo.processInfo.environment["EXPECTED_UPDATE_PUBLIC_KEY"],
+    key.publicKey.rawRepresentation.base64EncodedString() == expected
+else {
+    FileHandle.standardError.write(Data("UPDATE_SIGNING_KEY does not match the app's update public key\n".utf8))
     exit(1)
 }
 

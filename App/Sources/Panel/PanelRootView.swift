@@ -1,5 +1,6 @@
 import PolkaCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct PanelRootView: View {
     @Environment(AppModel.self) private var app
@@ -12,6 +13,21 @@ struct PanelRootView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onDrop(of: [UTType.fileURL.identifier], isTargeted: nil) { providers in
+            guard panel.isExpanded, panel.section == .shelf else { return false }
+            let fileProviders = providers.filter { $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) }
+            for provider in fileProviders {
+                provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+                    let url: URL?
+                    if let data = item as? Data { url = URL(dataRepresentation: data, relativeTo: nil) }
+                    else if let value = item as? URL { url = value }
+                    else { url = nil }
+                    guard let url, url.isFileURL else { return }
+                    Task { @MainActor in app.shelf.add([url]) }
+                }
+            }
+            return !fileProviders.isEmpty
+        }
         .environment(\.colorScheme, .dark)
         .animation(.spring(response: 0.42, dampingFraction: 0.8), value: panel.isExpanded)
         .animation(.spring(response: 0.34, dampingFraction: 0.78), value: collapsedSize)

@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// Borderless panel that sits above the menu bar and never steals focus from
 /// the app the user is working in.
@@ -189,11 +190,11 @@ final class NotchWindowController {
 
     private func installMonitors() {
         let movement: NSEvent.EventTypeMask = [.mouseMoved, .leftMouseDragged]
-        let global = NSEvent.addGlobalMonitorForEvents(matching: movement) { [weak self] _ in
-            MainActor.assumeIsolated { self?.pointerMoved() }
+        let global = NSEvent.addGlobalMonitorForEvents(matching: movement) { [weak self] event in
+            MainActor.assumeIsolated { self?.pointerMoved(isDragging: event.type == .leftMouseDragged) }
         }
         let local = NSEvent.addLocalMonitorForEvents(matching: movement) { [weak self] event in
-            MainActor.assumeIsolated { self?.pointerMoved() }
+            MainActor.assumeIsolated { self?.pointerMoved(isDragging: event.type == .leftMouseDragged) }
             return event
         }
         let clicks = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
@@ -202,12 +203,15 @@ final class NotchWindowController {
         monitors = [global, local, clicks].compactMap { $0 }
     }
 
-    private func pointerMoved() {
+    private func pointerMoved(isDragging: Bool) {
         let point = NSEvent.mouseLocation
         let state = model.panel
 
         if state.isExpanded {
             if expandedArea.contains(point) {
+                if isDragging, NSPasteboard(name: .drag).availableType(from: [.fileURL]) != nil {
+                    state.section = .shelf
+                }
                 cancelHover()
             } else if !state.isPinned, !state.isEditingText, hoverTask == nil {
                 hoverTask = Task { [weak self] in
@@ -224,6 +228,14 @@ final class NotchWindowController {
         if model.preferences.display == .pointer, let pointerScreen = Self.screen(at: point), pointerScreen != screen {
             cancelHover()
             layout()
+        }
+
+        if isDragging, collapsedArea.contains(point),
+            NSPasteboard(name: .drag).availableType(from: [.fileURL]) != nil {
+            cancelHover()
+            state.section = .shelf
+            state.expand()
+            return
         }
 
         guard model.preferences.openOnHover else { return }

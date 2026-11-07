@@ -150,6 +150,66 @@
           }
         }
       }
+    },
+    "Open Language & Region": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть «Язык и регион»"
+          }
+        }
+      }
+    },
+    "Try again": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторить"
+          }
+        }
+      }
+    },
+    "Could not identify the language. Try a longer text.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось определить язык. Попробуйте ввести больше текста."
+          }
+        }
+      }
+    },
+    "Download the required translation languages in System Settings, then try again.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузите необходимые языки перевода в Системных настройках и повторите попытку."
+          }
+        }
+      }
+    },
+    "This language pair is not supported on this Mac.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта языковая пара не поддерживается на данном Mac."
+          }
+        }
+      }
+    },
+    "Translation language availability is unknown.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось определить доступность языков перевода."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
