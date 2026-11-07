@@ -41,7 +41,7 @@ jobs:
           shasum -a 256 "Polka-${GITHUB_REF_NAME}.zip" > "Polka-${GITHUB_REF_NAME}.zip.sha256"
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: Polka-${{ github.ref_name }}.zip
 
