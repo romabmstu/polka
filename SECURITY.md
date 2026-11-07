@@ -10,7 +10,7 @@ Only the latest release is supported.
 
 Polka runs with your user’s privileges and touches sensitive things (browser tabs, VPN, calendar, clipboard), so it follows a few rules.
 
-**No shell.** External tools (`scutil`, `route`, `osascript`, `shortcuts`) are started by absolute path with an argument list. Nothing is passed through `/bin/sh`, and the environment is reduced to a fixed `PATH` and locale.
+**No shell for user input.** External tools (`scutil`, `route`, `osascript`, `shortcuts`) are started by absolute path with an argument list. Arguments are not interpreted by a shell. The update relaunch uses a fixed shell script with the process ID and app path passed as positional arguments.
 
 **No string-built scripts.** AppleScript sources are constants. URLs and other values reach scripts only as `argv`, so a page address cannot change what runs.
 
@@ -21,7 +21,7 @@ Polka runs with your user’s privileges and touches sensitive things (browser t
 - The calculator is a small parser over `Decimal`, not an evaluator; input is never executed. Nesting depth and exponent size are capped.
 - Exchange-rate responses are size-limited, schema-checked and sanity-checked before use.
 
-**Minimal network surface.** One optional HTTPS endpoint, an ephemeral `URLSession` with no cookies, cache or credentials, TLS 1.2 or later.
+**Minimal network surface.** HTTPS requests for update checks and optional exchange rates, using an ephemeral `URLSession` with no cookies, cache or credentials, TLS 1.2 or later.
 
 **Careful storage.** The library is written atomically with `0600` permissions in a `0700` folder. A file that fails to parse is moved aside instead of being overwritten, and a file written by a newer version is left untouched.
 

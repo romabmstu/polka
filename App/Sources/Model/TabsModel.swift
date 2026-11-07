@@ -78,11 +78,14 @@ final class TabsModel {
             isLoaded = true
         } catch LibraryStore.StoreError.unsupportedVersion {
             loadError = String(localized: "Your tabs were saved by a newer version of Polka. Update Polka to open them.")
-        } catch {
-            log.error("Library unreadable, moved aside: \(error.localizedDescription, privacy: .public)")
+        } catch LibraryStore.StoreError.corruptFileQuarantined {
+            log.error("Library unreadable, moved aside")
             library = Library()
             isLoaded = true
             loadError = String(localized: "The tab library was damaged. A copy was kept next to it and a new one was started.")
+        } catch {
+            log.error("Could not read library: \(error.localizedDescription, privacy: .public)")
+            loadError = String(localized: "Could not read the tab library. Your changes will not be saved.")
         }
     }
 

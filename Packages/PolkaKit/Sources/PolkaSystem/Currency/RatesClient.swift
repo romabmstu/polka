@@ -3,8 +3,8 @@ import PolkaCore
 
 /// Downloads exchange rates from open.er-api.com and caches them on disk.
 ///
-/// This is the only network request Polka makes, and only after the user turns
-/// it on. The session is ephemeral: no cookies, no cache, no credentials.
+/// Rates are fetched only when enabled. The session is ephemeral: no cookies,
+/// no cache, no credentials.
 public actor RatesClient {
     public static let endpoint = URL(string: "https://open.er-api.com/v6/latest/USD")!
     public static let attributionURL = URL(string: "https://www.exchangerate-api.com")!

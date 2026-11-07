@@ -36,7 +36,7 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
 
 **Calculator and currencies.** Type `1250 × 1.2 + 15%`, get the answer. Convert between your favorite currencies.
 
-**Clipboard.** The last 30 things you copied, screenshots and pictures included. Passwords are never recorded.
+**Clipboard.** The last 30 things you copied, screenshots and pictures included. Content marked as concealed or transient is skipped, but passwords from apps that do not mark them may still be recorded.
 
 **Shelf.** Drop files into the notch and drag them out later, or send them over AirDrop.
 
@@ -76,7 +76,7 @@ Polka updates itself: Settings › Updates › *Check Now*, or wait for the *Upd
 
 Polka has no account, no analytics and no telemetry. Your tabs are stored in a single file only you can read: `~/Library/Application Support/Polka/library.json`.
 
-It uses the network for exactly one thing — exchange rates, and only after you turn them on. Details and the full list of permissions are in [PRIVACY.md](PRIVACY.md).
+It uses the network to check for updates and, if enabled, to fetch exchange rates. Details and the full list of permissions are in [PRIVACY.md](PRIVACY.md).
 
 ## Build from source
 

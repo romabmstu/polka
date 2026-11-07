@@ -8,6 +8,7 @@ import Foundation
 public actor LibraryStore {
     public enum StoreError: Error, Equatable {
         case unsupportedVersion(Int)
+        case corruptFileQuarantined
     }
 
     public nonisolated let fileURL: URL
@@ -42,7 +43,7 @@ public actor LibraryStore {
             return library
         } catch {
             try quarantineUnreadableFile()
-            throw error
+            throw StoreError.corruptFileQuarantined
         }
     }
 

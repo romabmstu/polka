@@ -36,11 +36,17 @@ import Testing
         try Data("{ not json".utf8).write(to: url)
         let store = LibraryStore(fileURL: url)
 
-        await #expect(throws: (any Error).self) { try await store.load() }
+        await #expect(throws: LibraryStore.StoreError.corruptFileQuarantined) { try await store.load() }
 
         let leftovers = try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false))
         #expect(leftovers.contains { $0.hasPrefix("library.unreadable-") })
         #expect(!FileManager.default.fileExists(atPath: url.path(percentEncoded: false)))
+    }
+
+    @Test func readFailureDoesNotQuarantineTheSource() async throws {
+        let store = LibraryStore(fileURL: directory)
+        await #expect(throws: (any Error).self) { try await store.load() }
+        #expect(FileManager.default.fileExists(atPath: directory.path(percentEncoded: false)))
     }
 
     @Test func newerFormatIsLeftUntouched() async throws {
