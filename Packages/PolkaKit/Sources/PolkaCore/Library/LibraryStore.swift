@@ -10,7 +10,7 @@ public actor LibraryStore {
         case unsupportedVersion(Int)
     }
 
-    public let fileURL: URL
+    public nonisolated let fileURL: URL
     private let fileManager = FileManager()
 
     public init(fileURL: URL) {

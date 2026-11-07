@@ -14,6 +14,8 @@ public struct Library: Codable, Equatable, Sendable {
     public struct AddResult: Equatable, Sendable {
         public var added: [SavedTab] = []
         public var duplicates: [URL] = []
+
+        public init() {}
     }
 
     public static let currentVersion = 1

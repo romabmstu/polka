@@ -95,7 +95,10 @@ import Testing
 
     @Test func ignoresBlankAndHugeText() {
         var history = ClipboardHistory()
-        #expect(!history.record("   \n"))
-        #expect(!history.record(String(repeating: "x", count: ClipboardHistory.maximumTextLength + 1)))
+        let blank = history.record("   \n")
+        let huge = history.record(String(repeating: "x", count: ClipboardHistory.maximumTextLength + 1))
+        #expect(!blank)
+        #expect(!huge)
+        #expect(history.entries.isEmpty)
     }
 }
