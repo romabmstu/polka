@@ -135,7 +135,13 @@ jobs:
             exit 0
           fi
           ditto -x -k Polka.zip .
-          scripts/package.sh Polka.app beta nightly out
+          if ! scripts/package.sh Polka.app beta nightly out > package.log 2>&1; then
+            cat package.log
+            # Logs need a sign-in; annotations are visible on the run page.
+            echo "::error title=Packaging failed::$(tail -n 20 package.log | awk '{ gsub(/%/, "%25"); printf "%s%%0A", $0 }')"
+            exit 1
+          fi
+          cat package.log
 
       - name: Publish
         if: steps.package.outputs.name != ''
@@ -146,7 +152,11 @@ jobs:
           BUILD: ${{ steps.package.outputs.build }}
         run: |
           gh release delete nightly --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
-          gh release create nightly out/"$NAME" out/"$NAME".sha256 out/update.json \
+          if ! gh release create nightly out/"$NAME" out/"$NAME".sha256 out/update.json \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
-            --title "Beta $VERSION ($BUILD)" --notes-file out/notes.txt
+            --title "Beta $VERSION ($BUILD)" --notes-file out/notes.txt > publish.log 2>&1; then
+            cat publish.log
+            echo "::error title=Publishing failed::$(tail -n 20 publish.log | awk '{ gsub(/%/, "%25"); printf "%s%%0A", $0 }')"
+            exit 1
+          fi
           echo "::notice title=Beta published::$VERSION ($BUILD)"
