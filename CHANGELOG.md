@@ -12,6 +12,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Tunnelblick: each OpenVPN configuration gets its own switch.
 - Proxy-based VPN clients such as FSNT Client: Polka starts and quits them and shows whether they carry traffic. Other apps can be added in Settings.
 - Pictures and screenshots in clipboard history, with *Add to Shelf*.
+- Translator: on-device translation as you type, ⌥⇧T for the selected text and *Translate with Polka* in the Services menu.
+- A slimmer capsule inside the menu bar on displays without a notch.
 - Scenario actions: open and quit apps, dark or light appearance, volume and mute.
 
 - Built-in updates from GitHub releases with Ed25519-signed manifests; beta channel with every build from `main`.
