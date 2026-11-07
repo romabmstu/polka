@@ -13,6 +13,10 @@ jobs:
   release:
     runs-on: macos-15
     timeout-minutes: 30
+    defaults:
+      run:
+        # Explicit bash turns on pipefail, so `cmd | tee log` fails when cmd fails.
+        shell: bash
     steps:
       - uses: actions/checkout@v4
         with:

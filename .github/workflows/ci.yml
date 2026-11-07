@@ -17,6 +17,10 @@ jobs:
     name: Test and build
     runs-on: macos-15
     timeout-minutes: 30
+    defaults:
+      run:
+        # Explicit bash turns on pipefail, so `cmd | tee log` fails when cmd fails.
+        shell: bash
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,9 +68,23 @@ jobs:
       - name: Summary
         if: always()
         run: |
-          tests=$(grep -E 'Test run with [0-9]+ tests|Executed [0-9]+ tests' test.log 2>/dev/null | tail -2 | tr '\n' ' ')
+          tests=$(grep -aE 'Test run with|Executed [0-9]+ tests|error:' test.log 2>/dev/null | tail -3 | tr -d ':' | tr '\n' ' ')
+          [ -n "$tests" ] || tests="last lines: $(tail -n 3 test.log 2>/dev/null | tr -d ':' | tr '\n' ' ')"
           echo "::notice title=Tests::${tests:-no test summary} (outcome: ${{ steps.tests.outcome }})"
           echo "::notice title=Build::outcome: ${{ steps.build.outcome }}"
+
+      - name: Verify app bundle
+        id: verify
+        if: steps.build.outcome == 'success'
+        run: |
+          app=build/Build/Products/Release/Polka.app
+          ls -la "$app/Contents" "$app/Contents/MacOS" || true
+          size=$(du -sh "$app" | cut -f1)
+          archs=$(lipo -archs "$app/Contents/MacOS/Polka" 2>/dev/null || echo "no executable")
+          echo "::notice title=App bundle::size $size, archs $archs, Info.plist $(test -f "$app/Contents/Info.plist" && echo present || echo missing)"
+          test -x "$app/Contents/MacOS/Polka"
+          test -f "$app/Contents/Info.plist"
+          codesign --verify --deep --strict "$app"
 
       - name: Package build
         if: steps.build.outcome == 'success'
