@@ -64,15 +64,15 @@ public struct Library: Codable, Equatable, Sendable {
 
     public func search(_ query: String) -> [(group: TabGroup, tabs: [SavedTab])] {
         let terms = query.lowercased().split(whereSeparator: \.isWhitespace).map(String.init)
-        guard !terms.isEmpty else { return orderedGroups.map { ($0, $0.sortedTabs) } }
+        guard !terms.isEmpty else { return orderedGroups.map { (group: $0, tabs: $0.sortedTabs) } }
         return orderedGroups.compactMap { group in
             let matches = group.sortedTabs.filter { tab in
                 let haystack = [tab.displayTitle, tab.url.absoluteString, tab.note, group.name]
                     .joined(separator: " ")
                     .lowercased()
-                return terms.allSatisfy(haystack.contains)
+                return terms.allSatisfy { haystack.contains($0) }
             }
-            return matches.isEmpty ? nil : (group, matches)
+            return matches.isEmpty ? nil : (group: group, tabs: matches)
         }
     }
 

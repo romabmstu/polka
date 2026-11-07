@@ -1,6 +1,7 @@
 import PolkaCore
 import PolkaSystem
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct TabsSection: View {
     @Environment(AppModel.self) private var app

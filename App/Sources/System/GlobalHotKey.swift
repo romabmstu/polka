@@ -51,7 +51,7 @@ final class GlobalHotKey {
                 guard status == noErr, hotKeyID.signature == GlobalHotKey.signature else { return status }
                 let id = hotKeyID.id
                 MainActor.assumeIsolated { GlobalHotKey.registry[id]?.action() }
-                return noErr
+                return OSStatus(noErr)
             }, 1, &spec, nil, nil)
     }
 }

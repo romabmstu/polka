@@ -61,7 +61,7 @@ final class Preferences {
         self.defaults = defaults
         openOnHover = defaults.object(forKey: Key.openOnHover) as? Bool ?? true
         hoverDelay = defaults.object(forKey: Key.hoverDelay) as? Double ?? 0.12
-        display = defaults.string(forKey: Key.display).flatMap(DisplayChoice.init) ?? .builtIn
+        display = defaults.string(forKey: Key.display).flatMap { DisplayChoice(rawValue: $0) } ?? .builtIn
         sections = Self.load([PanelSection].self, Key.sections, defaults) ?? PanelSection.allCases
         clipboardHistoryEnabled = defaults.object(forKey: Key.clipboard) as? Bool ?? true
         exchangeRatesEnabled = defaults.bool(forKey: Key.rates)

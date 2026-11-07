@@ -80,7 +80,11 @@ private final class Job: @unchecked Sendable {
     }
 
     func start(input: String?, timeout: Duration) async throws -> CommandResult {
-        process.standardInput = input == nil ? FileHandle.nullDevice : stdin
+        if input == nil {
+            process.standardInput = FileHandle.nullDevice
+        } else {
+            process.standardInput = stdin
+        }
 
         stdout.fileHandleForReading.readabilityHandler = { [state] handle in
             let chunk = handle.availableData

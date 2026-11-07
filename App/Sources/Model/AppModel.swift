@@ -8,7 +8,7 @@ import PolkaSystem
 @MainActor
 @Observable
 final class AppModel {
-    let preferences = Preferences()
+    let preferences: Preferences
     let panel = PanelState()
     let tabs = TabsModel()
     let vpn = VPNModel()
@@ -25,6 +25,8 @@ final class AppModel {
     @ObservationIgnored private let log = Logger(subsystem: "Polka", category: "app")
 
     init() {
+        let preferences = Preferences()
+        self.preferences = preferences
         calculator = CalculatorModel(defaultCurrency: preferences.favoriteCurrencies.first ?? "USD")
     }
 

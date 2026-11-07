@@ -59,8 +59,11 @@ public final class CalendarService {
         let predicate = store.predicateForEvents(withStart: start, end: end, calendars: nil)
         return store.events(matching: predicate)
             .filter { $0.status != .canceled }
-            .sorted { ($0.isAllDay ? 0 : 1, $0.startDate) < ($1.isAllDay ? 0 : 1, $1.startDate) }
-            .map(AgendaItem.init)
+            .sorted { lhs, rhs in
+                if lhs.isAllDay != rhs.isAllDay { return lhs.isAllDay }
+                return (lhs.startDate ?? .distantPast) < (rhs.startDate ?? .distantPast)
+            }
+            .map { AgendaItem($0) }
     }
 
     /// The first timed event that has not ended yet within the next `horizon`.
@@ -69,8 +72,8 @@ public final class CalendarService {
         let predicate = store.predicateForEvents(withStart: date, end: date.addingTimeInterval(horizon), calendars: nil)
         return store.events(matching: predicate)
             .filter { !$0.isAllDay && $0.status != .canceled && $0.endDate > date }
-            .min { $0.startDate < $1.startDate }
-            .map(AgendaItem.init)
+            .min { ($0.startDate ?? .distantPast) < ($1.startDate ?? .distantPast) }
+            .map { AgendaItem($0) }
     }
 }
 

@@ -6,7 +6,7 @@ public enum MeetingLink {
         case googleMeet, zoom, teams, telemost, jitsi, webex
     }
 
-    public struct Match: Equatable, Sendable {
+    public struct Match: Hashable, Sendable {
         public let url: URL
         public let service: Service
     }
