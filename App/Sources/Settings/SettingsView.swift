@@ -395,7 +395,7 @@ private struct AboutSettings: View {
 }
 
 
-private struct ThroneSettings: View {
+struct ThroneSettings: View {
     @Environment(AppModel.self) private var app
     @State private var key = ""
     @State private var message: String?
@@ -405,7 +405,20 @@ private struct ThroneSettings: View {
     var body: some View {
         Form {
             Section {
-                Text("In Throne advanced settings, enable the Throne API on 127.0.0.1, then enter its port and key. Some FSNT versions may not expose these settings. The key gives full control of the client.")
+                Text("1. Open the client. In FSNT, look for Advanced mode under More; in Throne, choose Program → Advanced Mode.")
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("Open FSNT / Throne") {
+                    if let item = app.vpn.configuredApps.first(where: { $0.bundleID.lowercased() == "moe.throne.macosx" }),
+                       let url = app.vpn.appURL(for: item.bundleID) {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+                Text("2. In Preferences → Integration Settings → Throne API, enable the API on 127.0.0.1. Copy the API key and check its port.")
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("If your version has no advanced mode or Throne API, use Open App to control the VPN there; Polka cannot control it without the API.")
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("3. Enter the port and key below, then select Connect. The key gives full control of this client; do not share it.")
+                    .fixedSize(horizontal: false, vertical: true)
                 TextField("Port", text: $portText)
                 SecureField("API key", text: $key)
                     .textContentType(.password)
@@ -432,7 +445,7 @@ private struct ThroneSettings: View {
                     }
                     if testing { ProgressView().controlSize(.small) }
                 }
-                if let message { Text(message).font(.caption) }
+                if let message { Text(message).font(.caption).fixedSize(horizontal: false, vertical: true) }
             } header: {
                 Text("FSNT / Throne")
             } footer: {

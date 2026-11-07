@@ -25,8 +25,11 @@ public struct TunnelblickController: Sendable {
                 set rs to character id 30
                 set out to ""
                 tell application id "\(Tunnelblick.bundleID)"
-                    repeat with c in configurations
-                        set out to out & (name of c) & fs & (state of c) & rs
+                    set configNames to get name of configurations
+                    set configStates to get state of configurations
+                    if (count of configNames) is not (count of configStates) then error "Configuration list changed"
+                    repeat with i from 1 to (count of configNames)
+                        set out to out & (item i of configNames) & fs & (item i of configStates) & rs
                     end repeat
                 end tell
                 return out

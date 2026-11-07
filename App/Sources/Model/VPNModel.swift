@@ -14,6 +14,7 @@ final class VPNModel {
     private(set) var lastError: String?
     private(set) var hasLoaded = false
     private(set) var systemStatusUnavailable = false
+    private(set) var tunnelblickAccessDenied = false
     /// When each tunnel was first seen connected, to show session length.
     private(set) var connectedSince: [String: Date] = [:]
     /// App-managed clients that are open, connected or not.
@@ -216,7 +217,14 @@ final class VPNModel {
         guard appURL(for: Tunnelblick.bundleID) != nil else { return [] }
         if isRunning(Tunnelblick.bundleID) {
             do {
-                return try await tunnelblick.connections()
+                let result = try await tunnelblick.connections()
+                tunnelblickAccessDenied = false
+                return result
+            } catch TunnelblickController.Failure.notAuthorized {
+                tunnelblickAccessDenied = true
+                return TunnelblickController.installedConfigurationNames().map {
+                    Tunnelblick.connection(named: $0, status: .unknown)
+                }
             } catch {
                 log.error("Reading Tunnelblick failed: \(error.localizedDescription, privacy: .public)")
                 return TunnelblickController.installedConfigurationNames().map {

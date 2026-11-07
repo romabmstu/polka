@@ -32,6 +32,18 @@ struct VPNSection: View {
                     }
                 }
                 .scrollIndicators(.never)
+                if let error = vpn.lastError {
+                    ScrollView(.vertical) {
+                        Text(error)
+                            .foregroundStyle(Theme.warning)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(minHeight: 40, maxHeight: 72)
+                    .scrollIndicators(.visible)
+                    .padding(10)
+                    .background(Theme.card, in: .rect(cornerRadius: 12))
+                }
                 footer
                 Text("Multiple VPNs may conflict. Their routes and DNS settings determine which traffic uses each connection.")
                     .font(.caption)
@@ -46,9 +58,7 @@ struct VPNSection: View {
             Circle()
                 .fill(vpn.active == nil ? Theme.warning : Theme.active)
                 .frame(width: 8, height: 8)
-            if let error = vpn.lastError {
-                Text(error).foregroundStyle(Theme.warning)
-            } else if !vpn.activeConnections.isEmpty {
+            if !vpn.activeConnections.isEmpty {
                 Text("Active VPNs: \(vpn.activeConnections.count)")
             } else if vpn.hasUnknownStatus {
                 Text("VPN status is unknown")
@@ -94,8 +104,17 @@ private struct ConnectionTile: View {
                     Spacer()
                     if isBusy {
                         ProgressView().controlSize(.small)
+                    } else if connection.isTunnelblick, connection.status == .unknown, vpn.tunnelblickAccessDenied {
+                        Button("Allow access…") { SystemSettings.open(.automation) }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(Theme.accent)
+                            .help(Text("Allow Polka to control Tunnelblick in Automation settings."))
                     } else if connection.isAppManaged, connection.status == .unknown {
-                        if let appURL {
+                        if connection.providerBundleID?.lowercased() == "moe.throne.macosx" {
+                            Button("Set up FSNT…") { FSNTSetupWindow.show(app) }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(Theme.accent)
+                        } else if let appURL {
                             Button("Open App") { NSWorkspace.shared.open(appURL) }
                                 .buttonStyle(.plain)
                         }

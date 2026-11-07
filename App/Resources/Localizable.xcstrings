@@ -3502,6 +3502,96 @@
           }
         }
       }
+    },
+    "Set up FSNT…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настроить FSNT…"
+          }
+        }
+      }
+    },
+    "Set up FSNT / Throne": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройка FSNT / Throne"
+          }
+        }
+      }
+    },
+    "Open FSNT / Throne": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть FSNT / Throne"
+          }
+        }
+      }
+    },
+    "2. In Preferences → Integration Settings → Throne API, enable the API on 127.0.0.1. Copy the API key and check its port.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2. В настройках интеграций откройте Throne API и включите API на адресе 127.0.0.1. Скопируйте ключ API и проверьте порт."
+          }
+        }
+      }
+    },
+    "3. Enter the port and key below, then select Connect. The key gives full control of this client; do not share it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3. Введите ниже порт и ключ, затем нажмите «Подключить». Ключ даёт полный доступ к управлению клиентом; никому его не передавайте."
+          }
+        }
+      }
+    },
+    "1. Open the client. In FSNT, look for Advanced mode under More; in Throne, choose Program → Advanced Mode.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Откройте клиент. В FSNT найдите «Расширенный режим» в меню «Ещё»; в Throne выберите «Программа → Расширенный режим»."
+          }
+        }
+      }
+    },
+    "If your version has no advanced mode or Throne API, use Open App to control the VPN there; Polka cannot control it without the API.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если в вашей версии нет расширенного режима или Throne API, нажмите «Открыть приложение» и управляйте VPN в нём. Без API Polka не сможет управлять подключением."
+          }
+        }
+      }
+    },
+    "Allow access…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешить доступ…"
+          }
+        }
+      }
+    },
+    "Allow Polka to control Tunnelblick in Automation settings.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешите Polka управлять Tunnelblick в настройках автоматизации."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
