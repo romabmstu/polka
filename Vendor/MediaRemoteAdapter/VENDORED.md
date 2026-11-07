@@ -8,6 +8,6 @@ information. The adapter loads this small framework into `/usr/bin/perl`,
 which is allowed to, and prints updates as JSON lines. Polka reads them in
 `PolkaSystem/Media/NowPlayingAdapter.swift`.
 
-Only the framework sources and the Perl entry script are included; the test
-client is not. To update, replace `src`, `include` and `bin` with a newer
+Only the framework sources, the Perl entry script and the one test-client
+header the framework includes are vendored; the test client itself is not. To update, replace `src`, `include` and `bin` with a newer
 upstream revision and record the commit above.
