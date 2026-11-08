@@ -431,9 +431,11 @@ footer a { color: var(--muted); }
 
   <section id="install">
     <h2><span class="en">Install</span><span class="ru">Установка</span></h2>
-    <p class="lead"><span class="en">Download, unzip, move Polka to Applications and run this once in Terminal:</span><span class="ru">Скачайте, распакуйте, перенесите Polka в «Программы» и один раз выполните в Терминале:</span></p>
+    <p class="lead"><span class="en">With Homebrew — one line, nothing else to do:</span><span class="ru">Через Homebrew — одна строка, больше ничего делать не нужно:</span></p>
+    <pre>brew tap romabmstu/polka https://github.com/romabmstu/polka &amp;&amp; brew install --cask polka</pre>
+    <p class="lead" style="margin-top:28px"><span class="en">Or download <b>Polka.dmg</b> above, drag Polka to Applications and run this once in Terminal:</span><span class="ru">Или скачайте <b>Polka.dmg</b> кнопкой выше, перетащите Polka в «Программы» и один раз выполните в Терминале:</span></p>
     <pre>xattr -dr com.apple.quarantine /Applications/Polka.app</pre>
-    <p class="small"><span class="en">Needed only for the first install: Polka is not notarized by Apple, which requires a paid developer account. Updates can be checked and installed from Settings › Updates. Prefer to build it yourself? See the README.</span><span class="ru">Нужно только при первой установке: Polka не нотаризована Apple, для этого нужен платный аккаунт разработчика. Обновления можно проверить и установить в Настройках › Обновления. Хотите собрать сами? Инструкция в README.</span></p>
+    <p class="small"><span class="en">That line is needed only once: Polka is not notarized by Apple yet, so macOS blocks the first launch of a downloaded copy. After that Polka updates itself. Prefer to build it yourself? See the README.</span><span class="ru">Эта строка нужна один раз: Polka пока не нотаризована Apple, поэтому macOS блокирует первый запуск скачанной копии. Дальше Polka обновляется сама. Хотите собрать сами? Инструкция в README.</span></p>
   </section>
 
   <section id="support">
@@ -518,7 +520,8 @@ footer a { color: var(--muted); }
   });
 
 
-  // Download button: the newest build that has a zip, stable first.
+  // Download button: the newest disk image, stable first, beta otherwise;
+  // the zip is the fallback for releases made before images existed.
   (async () => {
     const button = document.getElementById('download');
     const meta = document.getElementById('dl-meta');
@@ -527,22 +530,32 @@ footer a { color: var(--muted); }
       if (!response.ok) return;
       const releases = (await response.json()).filter(r => !r.draft);
       const buildNumber = a => Number(a.name.match(/-(\d+)\.zip$/)?.[1] || 0);
-      const withZip = r => r.assets.filter(a => /^Polka-[\w.\-]+\.zip$/.test(a.name))
+      const download = r => r.assets.find(a => a.name === 'Polka.dmg') || r.assets
+        .filter(a => /^Polka-[\w.\-]+\.zip$/.test(a.name))
         .sort((a, b) => buildNumber(b) - buildNumber(a) || Date.parse(b.updated_at) - Date.parse(a.updated_at))[0];
-      const pick = releases.find(r => r.tag_name === 'nightly' && withZip(r)) || releases.find(r => !r.prerelease && withZip(r)) || releases.find(withZip);
+      const stable = releases.find(r => !r.prerelease && download(r));
+      const beta = releases.find(r => r.tag_name === 'nightly' && download(r));
+      const pick = stable || beta || releases.find(download);
       if (!pick) {
         meta.innerHTML = '<span class="en">The first build is on its way — check back soon.</span><span class="ru">Первая сборка уже в пути — загляните чуть позже.</span>';
         return;
       }
-      const asset = withZip(pick);
+      const asset = download(pick);
       button.href = asset.browser_download_url;
-      const [, version, build] = asset.name.match(/^Polka-(.+)-(\d+)\.zip$/) || [];
       const size = (asset.size / 1048576).toFixed(1);
-      meta.replaceChildren(document.createTextNode(`${version ? `v${version} (${build})` : pick.tag_name}${pick.prerelease ? ' · beta' : ''} · ${size} MB · `));
-      const releaseLink = document.createElement('a');
-      releaseLink.href = 'https://github.com/romabmstu/polka/releases/tag/' + encodeURIComponent(pick.tag_name);
-      releaseLink.innerHTML = '<span class="en">release notes</span><span class="ru">что нового</span>';
-      meta.append(releaseLink);
+      const label = pick.prerelease ? 'beta' : pick.tag_name;
+      meta.replaceChildren(document.createTextNode(`${label} · ${size} MB · `));
+      const notes = document.createElement('a');
+      notes.href = 'https://github.com/romabmstu/polka/releases/tag/' + encodeURIComponent(pick.tag_name);
+      notes.innerHTML = '<span class="en">release notes</span><span class="ru">что нового</span>';
+      meta.append(notes);
+      if (stable && beta) {
+        meta.append(document.createTextNode(' · '));
+        const betaLink = document.createElement('a');
+        betaLink.href = download(beta).browser_download_url;
+        betaLink.innerHTML = '<span class="en">latest beta</span><span class="ru">свежая бета</span>';
+        meta.append(betaLink);
+      }
     } catch (e) {}
   })();
 })();

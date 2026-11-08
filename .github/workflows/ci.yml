@@ -73,6 +73,9 @@ jobs:
           echo "::notice title=Tests::${tests:-no summary} (outcome: ${{ steps.tests.outcome }})"
           echo "::notice title=Build::build ${{ steps.number.outputs.build }}, outcome: ${{ steps.build.outcome }}"
 
+      - name: Check Homebrew cask
+        run: ruby -c Casks/polka.rb
+
       - name: Verify app bundle
         if: steps.build.outcome == 'success'
         run: |
@@ -162,6 +165,9 @@ jobs:
           fi
           gh release upload nightly out/"$NAME" out/"$NAME".sha256 \
             --repo "$GITHUB_REPOSITORY" --clobber
+          if [[ -f out/Polka.dmg ]]; then
+            gh release upload nightly out/Polka.dmg out/Polka.dmg.sha256 --repo "$GITHUB_REPOSITORY" --clobber
+          fi
           gh release upload nightly out/update.json --repo "$GITHUB_REPOSITORY" --clobber
           gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/nightly" \
             -f sha="$GITHUB_SHA" -F force=true >/dev/null

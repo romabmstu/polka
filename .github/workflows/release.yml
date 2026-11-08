@@ -49,12 +49,37 @@ jobs:
       - name: Attest build provenance
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
         with:
-          subject-path: out/${{ steps.package.outputs.name }}
+          subject-path: out/Polka*
+
+      - name: Release notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          # The matching CHANGELOG section, or the commit subjects since the
+          # previous tag when there is none.
+          awk -v v="$version" '
+            /^## \[/ { if (found) exit; if (index($0, "[" v "]")) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          if [[ ! -s notes.md ]]; then
+            previous=$(git describe --tags --abbrev=0 "$GITHUB_REF_NAME^" 2>/dev/null || true)
+            git log --format='- %s' ${previous:+"$previous.."}"$GITHUB_REF_NAME" > notes.md
+          fi
+          cat >> notes.md <<'NOTES'
+
+          ### Install
+
+          - **Homebrew:** `brew tap romabmstu/polka https://github.com/romabmstu/polka && brew install --cask polka`
+          - **Disk image:** open `Polka.dmg`, drag Polka to Applications, then run `xattr -dr com.apple.quarantine /Applications/Polka.app` once (Polka is not notarized yet).
+
+          Already installed? Polka updates itself — no need to download this by hand.
+          NOTES
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
           NAME: ${{ steps.package.outputs.name }}
         run: |
-          gh release create "$GITHUB_REF_NAME" out/"$NAME" out/"$NAME".sha256 out/update.json \
-            --title "Polka ${GITHUB_REF_NAME#v}" --generate-notes --verify-tag
+          files=(out/"$NAME" out/"$NAME".sha256 out/update.json)
+          if [[ -f out/Polka.dmg ]]; then files+=(out/Polka.dmg out/Polka.dmg.sha256); fi
+          gh release create "$GITHUB_REF_NAME" "${files[@]}" \
+            --title "Polka ${GITHUB_REF_NAME#v}" --notes-file notes.md --verify-tag

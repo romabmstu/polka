@@ -4,31 +4,31 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Added
+## [0.1.0] - 2026-11-08
 
-- Save tabs from Chrome, Arc, Brave, Edge and Yandex Browser, not only Safari.
-- ⌥⇧S asks where to save: pick or create a group from the keyboard, or save the whole window.
-- *Save to Polka…* in the Services menu, available from the context menu of selected text and links.
-- Tunnelblick: each OpenVPN configuration gets its own switch.
-- Proxy-based VPN clients such as FSNT Client: Polka starts and quits them and shows whether they carry traffic. Other apps can be added in Settings.
-- Pictures and screenshots in clipboard history, with *Add to Shelf*.
-- Translator: on-device translation as you type, ⌥⇧T for the selected text and *Translate with Polka* in the Services menu.
-- A slimmer capsule inside the menu bar on displays without a notch.
-- Scenario actions: open and quit apps, dark or light appearance, volume and mute.
+The first public release.
 
-- Built-in updates from GitHub releases with Ed25519-signed manifests; beta channel with every build from `main`.
-- Real Now Playing information: title, artist, artwork, seeking, and the app being controlled.
-- The panel follows the pointer to other displays.
-- Calendar: browse other days and weeks; choose which calendars to show.
-- Settings for closed-notch indicators, meeting countdown and section order.
+### Panel
 
-- Notch panel on MacBooks, capsule under the menu bar on other displays.
-- Tab groups: save from Safari, drag and drop, paste lists, sort, search, open in a new window.
-- VPN switching for configurations registered with the system.
-- Media controls for the app that is playing.
-- Today’s calendar and one-click meeting join.
-- Calculator and currency converter.
-- Clipboard history kept in memory.
-- File shelf with AirDrop.
-- Scenarios combining VPN, music, tabs, links and Shortcuts.
-- English and Russian localization.
+- Opens from the MacBook notch on hover or with ⌥⇧K; on other displays it is a slim capsule in the menu bar and follows the pointer between screens.
+- The closed notch shows what is playing, an active VPN and a countdown to the next meeting.
+- English and Russian.
+
+### Sections
+
+- **Tabs:** groups and nested groups; ⌥⇧S saves the current tab or the whole window from Safari, Chrome, Arc, Brave, Edge or Yandex Browser and asks which group; *Save to Polka…* in the Services menu; paste lists, Markdown and OneTab exports; search and sorting.
+- **VPN:** system VPN connections, Tunnelblick configurations, and FSNT Client / Throne through its local API.
+- **Music:** title, artist, artwork, seeking and the app that is playing.
+- **Translator:** on-device translation with Apple’s Translation framework (macOS 15+), ⌥⇧T for selected text, *Translate with Polka* in the Services menu.
+- **Calendar:** browse days and weeks, choose calendars, one-click join for Meet, Zoom, Teams, Telemost, Jitsi and Webex.
+- **Calculator** with currency conversion.
+- **Clipboard history** in memory, pictures included.
+- **Shelf** for files, with AirDrop.
+- **Scenarios:** VPN, music, tabs, links, Shortcuts, opening and quitting apps, dark mode and volume in one click.
+
+### Distribution
+
+- Disk image and Homebrew cask.
+- Built-in updates verified with an Ed25519 signature; a beta channel gets every build from `main`.
+- Release builds carry a build provenance attestation.
+

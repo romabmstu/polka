@@ -76,6 +76,30 @@ codesign --verify --deep --strict "$app"
 name="Polka-$version-$build.zip"
 ditto -c -k --keepParent "$app" "$out/$name"
 
+# A disk image for people: drag Polka onto Applications. The zip above stays
+# the format the in-app updater uses. The image has a fixed name so
+# releases/latest/download/Polka.dmg always points at the newest one.
+dmg_root="$(mktemp -d)/Polka"
+mkdir -p "$dmg_root"
+ditto "$app" "$dmg_root/Polka.app"
+ln -s /Applications "$dmg_root/Applications"
+for attempt in 1 2 3; do
+  # hdiutil occasionally reports "Resource busy" on CI runners; retry.
+  if hdiutil create -volname Polka -srcfolder "$dmg_root" -fs HFS+ -format UDZO -ov "$out/Polka.dmg" >/dev/null; then
+    break
+  fi
+  rm -f "$out/Polka.dmg"
+  sleep $((attempt * 5))
+done
+rm -rf "$(dirname "$dmg_root")"
+if [[ -f "$out/Polka.dmg" ]]; then
+  hdiutil verify "$out/Polka.dmg" >/dev/null
+  shasum -a 256 "$out/Polka.dmg" > "$out/Polka.dmg.sha256"
+  echo "dmg=Polka.dmg" >> "${GITHUB_OUTPUT:-/dev/null}"
+else
+  echo "::warning title=No disk image::hdiutil failed three times; the zip is still published."
+fi
+
 git log -1 --format='%s%n%n%b' > "$out/notes.txt"
 # Never publish an update the installed app cannot authenticate.
 export EXPECTED_UPDATE_PUBLIC_KEY=$(/usr/libexec/PlistBuddy -c 'Print :PolkaUpdatePublicKey' "$info")
