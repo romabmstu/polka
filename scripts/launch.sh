@@ -59,7 +59,7 @@ echo "CI passed."
 if gh release view "$tag" -R "$repo" >/dev/null 2>&1; then
   say "$tag is already released: https://github.com/$repo/releases/tag/$tag"
 else
-  say "Tagging $tag…"
+  say "Tagging ${tag}…"
   if ! git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
     git tag -a "$tag" -m "Polka $version"
   fi
