@@ -69,7 +69,12 @@ private struct MediaCard: View {
                         Text(item.artist ?? "").font(.system(size: 12.5)).foregroundStyle(Theme.secondary).lineLimit(1)
                     } else {
                         Text("Nothing is playing").font(.system(size: 15, weight: .semibold)).lineLimit(1)
-                        if let player = MediaModel.appName(bundleID: app.preferences.playerBundleID) {
+                        if let message = media.startMessage {
+                            Text(message).font(.system(size: 12)).foregroundStyle(Theme.warning).lineLimit(3)
+                        } else if app.preferences.playerBundleID == YandexMusicControl.bundleID {
+                            Text("Press play to start Yandex Music")
+                                .font(.system(size: 12.5)).foregroundStyle(Theme.secondary).lineLimit(1)
+                        } else if let player = MediaModel.appName(bundleID: app.preferences.playerBundleID) {
                             Text("Press play to open \(player)")
                                 .font(.system(size: 12.5)).foregroundStyle(Theme.secondary).lineLimit(1)
                         }

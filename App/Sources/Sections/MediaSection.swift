@@ -44,6 +44,15 @@ struct MediaSection: View {
                         }
                     }
                     PlaybackBar()
+                    if let message = media.startMessage {
+                        HStack {
+                            Text(message).font(.system(size: 12)).foregroundStyle(Theme.warning)
+                            if !MediaKeys.isAllowed {
+                                Button("Open Settings") { SystemSettings.open(.accessibility) }
+                                    .buttonStyle(CapsuleButtonStyle())
+                            }
+                        }
+                    }
                     volumeControl
                     HStack {
                         TransportControls(size: 42)
@@ -101,9 +110,17 @@ struct MediaSection: View {
         let preferred = app.preferences.playerBundleID
         HStack(spacing: 8) {
             if let name = MediaModel.appName(bundleID: preferred), app.media.nowPlaying?.appBundleIdentifier != preferred {
-                Button { app.media.openPlayer(bundleID: preferred) } label: {
-                    Label("Open \(name)", systemImage: "arrow.up.forward.app")
-                }.buttonStyle(CapsuleButtonStyle())
+                if preferred == YandexMusicControl.bundleID {
+                    Button { app.media.playPreferredPlayer(bundleID: preferred) } label: {
+                        Label("Play \(name)", systemImage: "play.fill")
+                    }
+                    .buttonStyle(CapsuleButtonStyle())
+                    .disabled(app.media.isStartingPlayer)
+                } else {
+                    Button { app.media.openPlayer(bundleID: preferred) } label: {
+                        Label("Open \(name)", systemImage: "arrow.up.forward.app")
+                    }.buttonStyle(CapsuleButtonStyle())
+                }
             }
             Button("Choose your player…") { app.settingsPage = .music; app.openSettings() }
                 .buttonStyle(.plain)

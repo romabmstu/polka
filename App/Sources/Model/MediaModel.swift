@@ -17,6 +17,8 @@ final class MediaModel {
     /// `false` only when the adapter is missing and media keys are not allowed.
     private(set) var canControl = true
     private(set) var usesMediaKeys = false
+    private(set) var startMessage: String?
+    private(set) var isStartingPlayer = false
     /// Ticks once a second while something plays, to move the progress bar.
     private(set) var clock = Date.now
 
@@ -121,6 +123,44 @@ final class MediaModel {
             return
         }
         NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+    }
+
+    func playPreferredPlayer(bundleID: String) {
+        guard !isStartingPlayer else { return }
+        guard bundleID == YandexMusicControl.bundleID else {
+            openPlayer(bundleID: bundleID)
+            return
+        }
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
+            startMessage = String(localized: "The selected player could not be found.")
+            return
+        }
+        guard MediaKeys.isAllowed else {
+            MediaKeys.requestPermission()
+            startMessage = String(localized: "Allow Accessibility access for Polka, then press play again.")
+            return
+        }
+        startMessage = nil
+        isStartingPlayer = true
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = false
+        NSWorkspace.shared.openApplication(at: url, configuration: configuration) { [weak self] application, error in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                guard let application, error == nil else {
+                    self.isStartingPlayer = false
+                    self.startMessage = String(localized: "The selected player could not be opened.")
+                    return
+                }
+                let result = await YandexMusicControl.start(pid: application.processIdentifier)
+                self.isStartingPlayer = false
+                switch result {
+                case .started, .alreadyPlaying: self.startMessage = nil
+                case .permissionRequired: self.startMessage = String(localized: "Allow Accessibility access for Polka, then press play again.")
+                case .notReady: self.startMessage = String(localized: "Could not start Yandex Music. Open the player and check that a track is selected.")
+                }
+            }
+        }
     }
 
     /// Brings the app that is playing to the front.

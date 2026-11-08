@@ -198,7 +198,7 @@ private struct MusicSettings: View {
                     }
                 }
             } footer: {
-                Text("The preferred player opens when nothing is playing. The controls follow the app currently playing.")
+                Text("When nothing is playing, Play starts Yandex Music or opens another selected player. The controls otherwise follow the current source.")
             }
         }.formStyle(.grouped)
     }

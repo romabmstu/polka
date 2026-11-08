@@ -1,6 +1,13 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "When nothing is playing, Play starts Yandex Music or opens another selected player. The controls otherwise follow the current source.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Если ничего не играет, Play включает Яндекс Музыку или открывает другой выбранный плеер. В остальных случаях кнопки управляют текущим источником." } } } },
+    "Play %@": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Включить %@" } } } },
+    "Press play to start Yandex Music": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Нажмите Play, чтобы включить Яндекс Музыку" } } } },
+    "The selected player could not be found.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Выбранный плеер не найден." } } } },
+    "The selected player could not be opened.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось открыть выбранный плеер." } } } },
+    "Allow Accessibility access for Polka, then press play again.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Разрешите Polka доступ в разделе «Универсальный доступ», затем снова нажмите Play." } } } },
+    "Could not start Yandex Music. Open the player and check that a track is selected.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось включить Яндекс Музыку. Откройте плеер и проверьте, выбран ли трек." } } } },
     "Loading tabs…": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Загрузка вкладок…" } } } },
     "Could not save tabs. Check available disk space and folder permissions, then try again.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось сохранить вкладки. Проверьте свободное место и доступ к папке, затем повторите попытку." } } } },
     "Could not save tabs": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось сохранить вкладки" } } } },

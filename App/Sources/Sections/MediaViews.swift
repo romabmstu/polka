@@ -44,13 +44,17 @@ struct TransportControls: View {
                 .accessibilityLabel(Text("Previous track"))
             Button {
                 if media.nowPlaying == nil, !app.preferences.playerBundleID.isEmpty {
-                    media.openPlayer(bundleID: app.preferences.playerBundleID)
+                    media.playPreferredPlayer(bundleID: app.preferences.playerBundleID)
                 } else {
                     media.playPause()
                 }
             } label: {
-                Image(systemName: media.isPlaying ? "pause.fill" : "play.fill")
-                    .contentTransition(.symbolEffect(.replace))
+                if media.isStartingPlayer {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Image(systemName: media.isPlaying ? "pause.fill" : "play.fill")
+                        .contentTransition(.symbolEffect(.replace))
+                }
             }
             .buttonStyle(IconButtonStyle(size: size * 1.2, filled: true))
             .accessibilityLabel(Text("Play or pause"))
@@ -58,7 +62,7 @@ struct TransportControls: View {
                 .buttonStyle(IconButtonStyle(size: size))
                 .accessibilityLabel(Text("Next track"))
         }
-        .disabled(!media.canControl)
+        .disabled(!media.canControl || media.isStartingPlayer)
     }
 }
 
