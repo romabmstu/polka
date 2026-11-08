@@ -19,16 +19,30 @@ public enum ClipboardPrivacy {
     }
 }
 
-/// A copied picture, kept as PNG bytes.
+/// A copied picture, kept as PNG bytes, with a small preview for the list.
 public struct ClipboardImage: Hashable, Sendable {
     public let png: Data
     public let pixelWidth: Int
     public let pixelHeight: Int
+    /// A PNG at most a couple hundred pixels across; empty if none was made.
+    public let preview: Data
 
-    public init(png: Data, pixelWidth: Int, pixelHeight: Int) {
+    public init(png: Data, pixelWidth: Int, pixelHeight: Int, preview: Data = Data()) {
         self.png = png
         self.pixelWidth = pixelWidth
         self.pixelHeight = pixelHeight
+        self.preview = preview
+    }
+
+    /// The same picture, whatever preview was made for it.
+    public static func == (lhs: ClipboardImage, rhs: ClipboardImage) -> Bool {
+        lhs.pixelWidth == rhs.pixelWidth && lhs.pixelHeight == rhs.pixelHeight && lhs.png == rhs.png
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(pixelWidth)
+        hasher.combine(pixelHeight)
+        hasher.combine(png.count)
     }
 }
 
@@ -59,6 +73,12 @@ public struct ClipboardHistory: Sendable, Equatable {
     public static let maximumImageBytes = 15_000_000
     /// Images cost far more memory than text, so fewer of them are kept.
     public static let imageCapacity = 8
+    /// All pictures together, pinned ones included, stay under this many bytes;
+    /// the oldest unpinned picture goes first.
+    public static let maximumTotalImageBytes = 40_000_000
+    /// Pinned pictures may use at most this share of the total, so new copies
+    /// always have room.
+    public static let maximumPinnedImageBytes = maximumTotalImageBytes / 2
 
     public private(set) var entries: [Entry] = []
     public let capacity: Int
@@ -80,28 +100,55 @@ public struct ClipboardHistory: Sendable, Equatable {
     }
 
     /// Records a picture unless it is empty or too large; the same picture
-    /// copied again moves to the top.
+    /// copied again moves to the top. Pictures are prepared in the background,
+    /// so `date` is when it was copied: anything copied later stays above it.
+    /// Returns whether the picture is in the history afterwards.
     @discardableResult
     public mutating func record(_ image: ClipboardImage, at date: Date = .now) -> Bool {
         guard !image.png.isEmpty, image.png.count <= Self.maximumImageBytes, image.pixelWidth > 0, image.pixelHeight > 0
         else { return false }
-        insert(text: "", image: image, at: date) { $0.image == image }
-        return true
+        let id = insert(text: "", image: image, at: date) { $0.image == image }
+        return entries.contains { $0.id == id }
     }
 
-    private mutating func insert(text: String, image: ClipboardImage?, at date: Date, matching same: (Entry) -> Bool) {
+    /// Entries stay newest first by the time they were copied.
+    @discardableResult
+    private mutating func insert(
+        text: String, image: ClipboardImage?, at date: Date, matching same: (Entry) -> Bool
+    ) -> Entry.ID {
         var pinned = false
         if let existing = entries.firstIndex(where: same) {
             pinned = entries[existing].isPinned
             entries.remove(at: existing)
         }
-        entries.insert(Entry(id: UUID(), text: text, image: image, copiedAt: date, isPinned: pinned), at: 0)
+        let entry = Entry(id: UUID(), text: text, image: image, copiedAt: date, isPinned: pinned)
+        let index = entries.firstIndex { $0.copiedAt <= date } ?? entries.endIndex
+        entries.insert(entry, at: index)
         trim()
+        return entry.id
     }
 
-    public mutating func togglePin(_ id: UUID) {
-        guard let i = entries.firstIndex(where: { $0.id == id }) else { return }
+    /// Whether `id` can be pinned: always for text, and for a picture while
+    /// pinned pictures stay within their share of memory.
+    public func canPin(_ id: UUID) -> Bool {
+        guard let entry = entries.first(where: { $0.id == id }) else { return false }
+        guard !entry.isPinned, let image = entry.image else { return true }
+        let pinned = entries.filter { $0.isPinned && $0.image != nil }
+        let pinnedBytes = pinned.reduce(0) { $0 + ($1.image?.png.count ?? 0) }
+        return pinned.count < Self.imageCapacity / 2 && pinnedBytes + image.png.count <= Self.maximumPinnedImageBytes
+    }
+
+    /// Pins or unpins an entry; returns false when a picture can't be pinned.
+    @discardableResult
+    public mutating func togglePin(_ id: UUID) -> Bool {
+        guard let i = entries.firstIndex(where: { $0.id == id }), canPin(id) else { return false }
         entries[i].isPinned.toggle()
+        return true
+    }
+
+    /// Bytes held by all pictures.
+    public var imageBytes: Int {
+        entries.reduce(0) { $0 + ($1.image?.png.count ?? 0) }
     }
 
     public mutating func remove(_ id: UUID) {
@@ -113,7 +160,7 @@ public struct ClipboardHistory: Sendable, Equatable {
     }
 
     private mutating func trim() {
-        while entries.filter({ $0.image != nil }).count > Self.imageCapacity,
+        while entries.filter({ $0.image != nil }).count > Self.imageCapacity || imageBytes > Self.maximumTotalImageBytes,
             let last = entries.lastIndex(where: { $0.image != nil && !$0.isPinned })
         {
             entries.remove(at: last)

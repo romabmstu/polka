@@ -35,6 +35,7 @@ final class UpdateModel {
         updater = (Bundle.main.object(forInfoDictionaryKey: "PolkaUpdatePublicKey") as? String).map {
             Updater(publicKey: $0)
         }
+        Task.detached(priority: .background) { Updater.removeLeftovers() }
     }
 
     var available: UpdateManifest? {
@@ -70,7 +71,10 @@ final class UpdateModel {
             let latest = try await updater.latest(on: channel)
             guard isCurrentCheck(sequence) else { return }
             lastChecked = .now
-            if latest.isNewer(thanBuild: currentBuild), latest.runs(on: ProcessInfo.processInfo.operatingSystemVersion) {
+            if UpdatePolicy.shouldOffer(
+                latest, currentBuild: currentBuild, skippedBuild: UpdateRecovery.skippedBuild(), automatic: quietly,
+                system: ProcessInfo.processInfo.operatingSystemVersion)
+            {
                 state = .available(latest)
                 if latest.build > announcedBuild {
                     announcedBuild = latest.build
@@ -114,7 +118,7 @@ final class UpdateModel {
                 state = .failed(String(localized: "Could not save tabs, so the update was not installed. Check disk space and permissions, then try again."))
                 return
             }
-            try Updater.installAndRelaunch(app, replacing: Bundle.main.bundleURL)
+            try Updater.installAndRelaunch(app, replacing: Bundle.main.bundleURL, newBuild: manifest.build)
         } catch Updater.Failure.notInstalledInApplications {
             state = .failed(String(localized: "Move Polka to the Applications folder, open it from there and try again."))
         } catch is URLError {

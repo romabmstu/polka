@@ -25,10 +25,17 @@ final class SupportCenter {
             CrashMonitor.markChecked(upTo: .now)
             showWelcome()
         } else {
+            // Read now, before the first update check, so a rolled-back build
+            // is not offered again.
+            let rolledBack = UpdateRecovery.takeRolledBackBuild()
             Task {
                 // Let the panel settle before asking anything.
                 try? await Task.sleep(for: .seconds(3))
-                offerCrashReport()
+                if let rolledBack {
+                    explainRollback(from: rolledBack)
+                } else {
+                    offerCrashReport()
+                }
             }
         }
     }
@@ -131,6 +138,31 @@ final class SupportCenter {
             what: "Polka quit unexpectedly. The crash file is attached.\n\nWhat I was doing:\n",
             details: report.summary.text)
         NSWorkspace.shared.activateFileViewerSelecting([report.url])
+    }
+}
+
+extension SupportCenter {
+    /// After an update crashed at launch and the previous version was put
+    /// back: says what happened and offers to report the crash.
+    fileprivate func explainRollback(from build: Int) {
+        let report = CrashMonitor.newestUnseenReport()
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = String(localized: "Polka went back to the previous version", table: "Support")
+        alert.informativeText = String(
+            localized: "The update to build \(build) closed right after it started, so Polka put back the version you had. That build won’t be installed automatically. A report on GitHub helps fix it.",
+            table: "Support")
+        alert.addButton(withTitle: String(localized: "Report on GitHub…", table: "Support"))
+        alert.addButton(withTitle: String(localized: "Not Now", table: "Support"))
+        NSApp.activate()
+        let response = alert.runModal()
+        if let report { CrashMonitor.markChecked(upTo: report.date) }
+        guard response == .alertFirstButtonReturn else { return }
+        reportProblem(
+            title: report.map { "Update to build \(build) crashed: \($0.summary.exception)" } ?? "Update to build \(build) crashed at launch",
+            what: "Polka was rolled back after the update to build \(build) crashed at launch.\n\nWhat I was doing:\n",
+            details: report?.summary.text)
+        if let report { NSWorkspace.shared.activateFileViewerSelecting([report.url]) }
     }
 }
 

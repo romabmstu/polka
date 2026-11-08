@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- If an update closes right after it starts, Polka puts the previous version back, says so, and offers to report it. That build is not installed automatically again.
+
+### Changed
+
+- Links opened from Polka go to a new tab in the browser window you have open (Safari, Chrome, Arc, Brave, Edge, Yandex Browser) instead of a new window. Opening a whole group in a new window works as before.
+
+### Fixed
+
+- Copying a large picture no longer makes the panel stutter: pictures are converted in the background, and clipboard history keeps them under 40 MB in total.
+- A panel layout saved by a newer version no longer resets after going back to an older one.
+
+### Security
+
+- Updates are installed only if they are signed with the same certificate as the running app, so macOS keeps the permissions you granted.
+
 ## [0.1.0] - 2026-11-08
 
 The first public release.

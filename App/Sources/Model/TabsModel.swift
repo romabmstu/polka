@@ -248,20 +248,19 @@ final class TabsModel {
 
     // MARK: Opening
 
+    /// Opens a saved page as a new tab in the browser window the user has
+    /// open, not in a separate window.
     func open(_ tab: SavedTab) {
         guard URLNormalizer.isSavable(tab.url) else { return }
         mutate { $0.markOpened([tab.id]) }
-        NSWorkspace.shared.open(tab.url)
+        let url = tab.url
+        Task { await openInTabs([url]) }
     }
 
     func openInNewWindow(_ tab: SavedTab) async {
         guard URLNormalizer.isSavable(tab.url) else { return }
         mutate { $0.markOpened([tab.id]) }
-        do {
-            try await browsers.open([tab.url], in: currentBrowser ?? .safari, inNewWindow: true)
-        } catch {
-            NSWorkspace.shared.open(tab.url)
-        }
+        await openInWindow([tab.url])
     }
 
     func openGroup(_ group: TabGroup, inNewWindow: Bool, removeAfterwards: Bool = false) async {
@@ -271,10 +270,46 @@ final class TabsModel {
             library.markOpened(tabs.map(\.id))
             if removeAfterwards { library.updateGroup(group.id) { $0.tabs.removeAll() } }
         }
+        let urls = tabs.map(\.url)
+        if inNewWindow {
+            await openInWindow(urls)
+        } else {
+            await openInTabs(urls)
+        }
+    }
+
+    /// New tabs in the front window of the browser in use; macOS opens the
+    /// pages in the default browser when none of the supported ones is.
+    private func openInTabs(_ urls: [URL]) async {
+        guard let browser = BrowserBridge.browserForOpening(recent: recentBrowsers) else {
+            urls.forEach { NSWorkspace.shared.open($0) }
+            return
+        }
         do {
-            try await browsers.open(tabs.map(\.url), in: currentBrowser ?? .safari, inNewWindow: inNewWindow)
+            try await browsers.open(urls, in: browser, placement: .newTab)
         } catch {
-            for tab in tabs { NSWorkspace.shared.open(tab.url) }
+            log.error("Opening in \(browser.name, privacy: .public) tabs failed: \(error.localizedDescription, privacy: .public)")
+            await openWithoutScripting(urls, browser: browser)
+        }
+    }
+
+    private func openInWindow(_ urls: [URL]) async {
+        let browser = BrowserBridge.browserForOpening(recent: recentBrowsers) ?? currentBrowser ?? .safari
+        do {
+            try await browsers.open(urls, in: browser, placement: .newWindow)
+        } catch {
+            log.error("Opening a \(browser.name, privacy: .public) window failed: \(error.localizedDescription, privacy: .public)")
+            await openWithoutScripting(urls, browser: browser)
+        }
+    }
+
+    /// Used when the browser can't be scripted, for example when the user
+    /// declined Automation access: Launch Services still opens the pages.
+    private func openWithoutScripting(_ urls: [URL], browser: Browser) async {
+        do {
+            try await browsers.openWithApplication(urls, browser: browser)
+        } catch {
+            urls.forEach { NSWorkspace.shared.open($0) }
         }
     }
 }

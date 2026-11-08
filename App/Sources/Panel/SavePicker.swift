@@ -124,12 +124,9 @@ struct SavePicker: View {
     }
 
     private var choices: [Choice] {
-        let name = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        let groups = app.tabs.saveTargets
-        guard !name.isEmpty else { return groups.map(Choice.group) }
-        var result = groups.filter { $0.name.localizedStandardContains(name) }.map(Choice.group)
-        let exists = groups.contains { $0.name.compare(name, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame }
-        if !exists { result.append(.create(String(name.prefix(80)))) }
+        let found = GroupNameSearch.results(in: app.tabs.saveTargets, name: { $0.name }, query: query)
+        var result = found.matches.map(Choice.group)
+        if let name = found.newGroupName { result.append(.create(name)) }
         return result
     }
 

@@ -42,7 +42,7 @@ public enum Browser: String, CaseIterable, Sendable, Identifiable {
     /// Chromium browsers share one scripting dictionary; Safari has its own.
     fileprivate var usesChromiumDictionary: Bool { self != .safari }
 
-    fileprivate var supportsNewWindowScript: Bool { self != .arc }
+    var supportsNewWindowScript: Bool { self != .arc }
 }
 
 public struct BrowserTab: Hashable, Sendable {
@@ -84,7 +84,36 @@ public struct BrowserBridge: Sendable {
         for id in recent {
             if let browser = Browser(bundleIdentifier: id), browser.isRunning { return browser }
         }
+        if let browser = defaultBrowser, browser.isRunning { return browser }
         return Browser.allCases.first(where: \.isRunning)
+    }
+
+    /// Where a link opened from Polka should go: the browser the user is in,
+    /// else the one they used last, else their default browser if it is
+    /// running. `nil` means "let macOS open it in the default browser", which
+    /// also covers default browsers Polka cannot script.
+    @MainActor
+    public static func browserForOpening(recent: [String]) -> Browser? {
+        if let front = NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
+            let browser = Browser(bundleIdentifier: front)
+        {
+            return browser
+        }
+        for id in recent {
+            if let browser = Browser(bundleIdentifier: id), browser.isRunning { return browser }
+        }
+        if let browser = defaultBrowser, browser.isRunning { return browser }
+        return nil
+    }
+
+    /// The system default web browser, if it is one Polka supports.
+    @MainActor
+    public static var defaultBrowser: Browser? {
+        guard let probe = URL(string: "https://example.com"),
+            let app = NSWorkspace.shared.urlForApplication(toOpen: probe),
+            let id = Bundle(url: app)?.bundleIdentifier
+        else { return nil }
+        return Browser(bundleIdentifier: id)
     }
 
     public func tabs(in browser: Browser) async throws -> [BrowserTab] {
@@ -106,21 +135,61 @@ public struct BrowserBridge: Sendable {
         try await tabs(in: browser).first { $0.window == 1 && $0.isCurrent }?.page
     }
 
+    /// Where opened pages go.
+    public enum Placement: Sendable {
+        /// New tabs in the browser's front window, like a link opened from
+        /// another app; a window is made only when the browser has none.
+        case newTab
+        /// All pages together in a new window.
+        case newWindow
+    }
+
     /// Opens pages in `browser`, in a new window if asked and supported.
     @MainActor
     public func open(_ urls: [URL], in browser: Browser, inNewWindow: Bool) async throws {
-        let safe = urls.filter { ["http", "https"].contains($0.scheme?.lowercased() ?? "") }
+        try await open(urls, in: browser, placement: inNewWindow ? .newWindow : .newTab)
+    }
+
+    /// Opens web pages in `browser`. A browser that is not running is started
+    /// with the pages. Throws when the browser could not be scripted (for
+    /// example, permission was denied); `openWithApplication` is the fallback.
+    @MainActor
+    public func open(_ urls: [URL], in browser: Browser, placement: Placement) async throws {
+        let safe = Self.webPages(urls)
         guard !safe.isEmpty else { return }
-        if inNewWindow, browser.supportsNewWindowScript {
-            _ = try await runScript(
-                Self.newWindowScript(for: browser), arguments: safe.map(\.absoluteString), browser: browser)
+        guard browser.isRunning else {
+            try await openWithApplication(safe, browser: browser)
             return
         }
+        switch placement {
+        case .newWindow:
+            guard browser.supportsNewWindowScript else {
+                try await openWithApplication(safe, browser: browser)
+                return
+            }
+            _ = try await runScript(
+                Self.newWindowScript(for: browser), arguments: safe.map(\.absoluteString), browser: browser)
+        case .newTab:
+            _ = try await runScript(
+                Self.newTabScript(for: browser), arguments: safe.map(\.absoluteString), browser: browser)
+        }
+    }
+
+    /// Hands pages to the browser through Launch Services, the way Finder
+    /// would. The browser decides between a tab and a window.
+    @MainActor
+    public func openWithApplication(_ urls: [URL], browser: Browser) async throws {
+        let safe = Self.webPages(urls)
+        guard !safe.isEmpty else { return }
         guard let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: browser.bundleIdentifier) else {
             safe.forEach { NSWorkspace.shared.open($0) }
             return
         }
         _ = try await NSWorkspace.shared.open(safe, withApplicationAt: app, configuration: NSWorkspace.OpenConfiguration())
+    }
+
+    static func webPages(_ urls: [URL]) -> [URL] {
+        urls.filter { ["http", "https"].contains($0.scheme?.lowercased() ?? "") }
     }
 
     private func runScript(_ script: String, arguments: [String], browser: Browser) async throws -> String {
@@ -135,7 +204,7 @@ public struct BrowserBridge: Sendable {
 
     // MARK: Scripts
 
-    private static func listTabsScript(for browser: Browser) -> String {
+    static func listTabsScript(for browser: Browser) -> String {
         let current = browser.usesChromiumDictionary ? "id of active tab of w" : "index of current tab of w"
         let key = browser.usesChromiumDictionary ? "id of t" : "index of t"
         let title = browser.usesChromiumDictionary ? "title of t" : "name of t"
@@ -165,7 +234,124 @@ public struct BrowserBridge: Sendable {
             """
     }
 
-    private static func newWindowScript(for browser: Browser) -> String {
+    /// Adds the pages as tabs to the front browser window and brings it
+    /// forward, restoring it if minimized. Windows without tabs (settings,
+    /// downloads) and incognito windows are skipped; with no usable window a
+    /// new one is made.
+    static func newTabScript(for browser: Browser) -> String {
+        switch browser {
+        case .safari:
+            return """
+                on run argv
+                    tell application id "com.apple.Safari"
+                        set chosen to missing value
+                        set minimizedWindow to missing value
+                        repeat with w in windows
+                            try
+                                set tabCount to count of tabs of w
+                                if miniaturized of w then
+                                    if minimizedWindow is missing value then set minimizedWindow to contents of w
+                                else
+                                    set chosen to contents of w
+                                    exit repeat
+                                end if
+                            end try
+                        end repeat
+                        if chosen is missing value and minimizedWindow is not missing value then
+                            set chosen to minimizedWindow
+                            try
+                                set miniaturized of chosen to false
+                            end try
+                        end if
+                        set firstNew to 1
+                        if chosen is missing value then
+                            make new document with properties {URL:(item 1 of argv)}
+                            set chosen to front window
+                            set firstNew to 2
+                        end if
+                        set lastTab to missing value
+                        tell chosen
+                            repeat with i from firstNew to (count of argv)
+                                set lastTab to make new tab at end of tabs with properties {URL:(item i of argv)}
+                            end repeat
+                            if lastTab is not missing value then set current tab to lastTab
+                        end tell
+                        try
+                            set index of chosen to 1
+                        end try
+                        activate
+                    end tell
+                end run
+                """
+        case .arc:
+            return """
+                on run argv
+                    tell application id "company.thebrowser.Browser"
+                        if (count of windows) is 0 then error "Arc has no open window." number 1
+                        tell front window
+                            repeat with u in argv
+                                make new tab with properties {URL:(contents of u)}
+                            end repeat
+                        end tell
+                        activate
+                    end tell
+                end run
+                """
+        case .chrome, .brave, .edge, .yandex:
+            return """
+                on run argv
+                    tell application id "\(browser.bundleIdentifier)"
+                        set chosen to missing value
+                        set minimizedWindow to missing value
+                        repeat with w in windows
+                            set usable to true
+                            try
+                                set usable to ((mode of w) is "normal")
+                            end try
+                            if usable then
+                                set isMinimized to false
+                                try
+                                    set isMinimized to minimized of w
+                                end try
+                                if isMinimized then
+                                    if minimizedWindow is missing value then set minimizedWindow to contents of w
+                                else
+                                    set chosen to contents of w
+                                    exit repeat
+                                end if
+                            end if
+                        end repeat
+                        if chosen is missing value and minimizedWindow is not missing value then
+                            set chosen to minimizedWindow
+                            try
+                                set minimized of chosen to false
+                            end try
+                        end if
+                        set firstNew to 1
+                        if chosen is missing value then
+                            set chosen to make new window
+                            set URL of active tab of chosen to (item 1 of argv)
+                            set firstNew to 2
+                        end if
+                        repeat with i from firstNew to (count of argv)
+                            make new tab at end of tabs of chosen with properties {URL:(item i of argv)}
+                        end repeat
+                        if firstNew is 1 then
+                            try
+                                set active tab index of chosen to (count of tabs of chosen)
+                            end try
+                        end if
+                        try
+                            set index of chosen to 1
+                        end try
+                        activate
+                    end tell
+                end run
+                """
+        }
+    }
+
+    static func newWindowScript(for browser: Browser) -> String {
         if browser == .safari {
             return """
                 on run argv

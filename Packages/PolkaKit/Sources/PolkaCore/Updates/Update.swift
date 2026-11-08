@@ -115,3 +115,19 @@ public enum UpdateVerifier {
         else { throw .badSignature }
     }
 }
+
+/// Decides whether a build found on the update channel is offered.
+public enum UpdatePolicy {
+    /// A newer build that runs on this system is offered, except that
+    /// automatic checks pass over builds up to `skippedBuild`: the build that
+    /// was rolled back after crashing is not pushed again. Checking by hand
+    /// still shows it.
+    public static func shouldOffer(
+        _ manifest: UpdateManifest, currentBuild: Int, skippedBuild: Int?, automatic: Bool,
+        system: OperatingSystemVersion
+    ) -> Bool {
+        guard manifest.isNewer(thanBuild: currentBuild), manifest.runs(on: system) else { return false }
+        if automatic, let skippedBuild, manifest.build <= skippedBuild { return false }
+        return true
+    }
+}

@@ -84,13 +84,18 @@ final class Preferences {
         openOnHover = defaults.object(forKey: Key.openOnHover) as? Bool ?? true
         hoverDelay = defaults.object(forKey: Key.hoverDelay) as? Double ?? 0.12
         display = defaults.string(forKey: Key.display).flatMap { DisplayChoice(rawValue: $0) } ?? .pointer
-        var sections = Self.load([PanelSection].self, Key.sections, defaults) ?? PanelSection.allCases
-        let known = Set(defaults.stringArray(forKey: Key.knownSections) ?? PanelSection.original.map(\.rawValue))
-        for section in PanelSection.allCases where !known.contains(section.rawValue) && !sections.contains(section) {
-            sections.append(section)
-        }
-        self.sections = sections
-        defaults.set(PanelSection.allCases.map(\.rawValue), forKey: Key.knownSections)
+        // Read as plain IDs so a section saved by a newer version (after going
+        // back to an older one) doesn't reset the whole layout.
+        let allSections = PanelSection.allCases.map(\.rawValue)
+        let originalSections = PanelSection.original.map(\.rawValue)
+        let knownSections = defaults.stringArray(forKey: Key.knownSections)
+        sections = SectionLayout.restore(
+            saved: Self.load([String].self, Key.sections, defaults), known: knownSections,
+            all: allSections, original: originalSections
+        ).compactMap(PanelSection.init(rawValue:))
+        defaults.set(
+            SectionLayout.known(before: knownSections, all: allSections, original: originalSections),
+            forKey: Key.knownSections)
         clipboardHistoryEnabled = defaults.object(forKey: Key.clipboard) as? Bool ?? true
         exchangeRatesEnabled = defaults.bool(forKey: Key.rates)
         favoriteCurrencies = Self.load([String].self, Key.currencies, defaults) ?? Self.defaultCurrencies()

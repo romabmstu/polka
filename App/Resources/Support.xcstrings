@@ -310,6 +310,36 @@
           }
         }
       }
+    },
+    "Pinned pictures already use their share of memory. Unpin one first.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закреплённые картинки уже заняли свою долю памяти. Сначала открепите одну из них."
+          }
+        }
+      }
+    },
+    "Polka went back to the previous version": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polka вернулась к предыдущей версии"
+          }
+        }
+      }
+    },
+    "The update to build %lld closed right after it started, so Polka put back the version you had. That build won’t be installed automatically. A report on GitHub helps fix it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление до сборки %lld закрылось сразу после запуска, поэтому Polka вернула версию, которая у вас была. Эту сборку Polka не будет устанавливать автоматически. Отчёт на GitHub поможет исправить ошибку."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

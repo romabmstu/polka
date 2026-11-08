@@ -97,7 +97,13 @@ private struct ClipboardRow: View {
                 }
                 .buttonStyle(IconButtonStyle(size: 24))
                 .foregroundStyle(entry.isPinned ? Theme.active : Theme.tertiary)
-                .help(entry.isPinned ? Text("Unpin") : Text("Pin"))
+                .disabled(!app.clipboard.canPin(entry))
+                .help(
+                    entry.isPinned
+                        ? Text("Unpin")
+                        : app.clipboard.canPin(entry)
+                            ? Text("Pin")
+                            : Text("Pinned pictures already use their share of memory. Unpin one first.", tableName: "Support"))
             }
             .padding(.horizontal, 10)
             .frame(height: 44)
