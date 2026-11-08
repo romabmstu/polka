@@ -70,7 +70,7 @@
 
 ```sh
 brew tap romabmstu/polka https://github.com/romabmstu/polka
-brew install --cask polka
+brew install --cask romabmstu/polka/polka
 ```
 
 **Образ диска:**
@@ -120,7 +120,7 @@ gh attestation verify Polka.dmg --repo romabmstu/polka
 <details>
 <summary><b>Как удалить?</b></summary>
 
-`brew uninstall --zap --cask polka` или закройте Polka, перенесите её в Корзину и удалите `~/Library/Application Support/Polka`.
+`brew uninstall --zap --cask romabmstu/polka/polka` или закройте Polka, перенесите её в Корзину и удалите `~/Library/Application Support/Polka`.
 </details>
 
 ## Обновления

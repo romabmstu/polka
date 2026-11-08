@@ -70,7 +70,7 @@ While closed, the notch shows what matters right now: what is playing, a shield 
 
 ```sh
 brew tap romabmstu/polka https://github.com/romabmstu/polka
-brew install --cask polka
+brew install --cask romabmstu/polka/polka
 ```
 
 **Disk image:**
@@ -120,7 +120,7 @@ Yes. On external displays and Macs without a notch it is a small capsule in the 
 <details>
 <summary><b>How do I uninstall it?</b></summary>
 
-`brew uninstall --zap --cask polka`, or quit Polka, move it to the Trash and delete `~/Library/Application Support/Polka`.
+`brew uninstall --zap --cask romabmstu/polka/polka`, or quit Polka, move it to the Trash and delete `~/Library/Application Support/Polka`.
 </details>
 
 ## Updates

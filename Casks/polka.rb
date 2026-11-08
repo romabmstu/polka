@@ -1,6 +1,6 @@
 # Homebrew cask kept in the project itself, so no separate tap repository:
 #   brew tap romabmstu/polka https://github.com/romabmstu/polka
-#   brew install --cask polka
+#   brew install --cask romabmstu/polka/polka
 cask "polka" do
   version :latest
   sha256 :no_check
