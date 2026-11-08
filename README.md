@@ -5,24 +5,44 @@
 <h1 align="center">Polka</h1>
 
 <p align="center">
-  A control center that lives in your MacBook’s notch.<br>
-  Saved tabs, VPN, music, your next meeting, a calculator and a clipboard — one hover away.
+  <b>Your MacBook’s notch, finally useful.</b><br>
+  Tabs from any browser, your VPNs, music, calendar, translator, clipboard and a file shelf — one hover away.<br>
+  Free and open source.
 </p>
 
 <p align="center">
-  <a href="https://github.com/romabmstu/polka/releases/tag/nightly"><img src="https://img.shields.io/badge/download-beta-blue" alt="Download beta"></a>
+  <a href="https://github.com/romabmstu/polka/releases/latest/download/Polka.dmg"><b>Download for macOS</b></a>
+  &nbsp;·&nbsp; <a href="#install">Homebrew</a>
+  &nbsp;·&nbsp; <a href="https://romabmstu.github.io/polka/">Website</a>
+  &nbsp;·&nbsp; <a href="README.ru.md">По-русски</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/romabmstu/polka/releases/latest"><img src="https://img.shields.io/github/v/release/romabmstu/polka?sort=semver&label=release" alt="Latest release"></a>
+  <a href="https://github.com/romabmstu/polka/releases"><img src="https://img.shields.io/github/downloads/romabmstu/polka/total?label=downloads" alt="Downloads"></a>
   <a href="https://github.com/romabmstu/polka/actions/workflows/ci.yml"><img src="https://github.com/romabmstu/polka/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/macOS-14%2B-black" alt="macOS 14 or later">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"></a>
 </p>
 
-<p align="center"><a href="README.ru.md">Читать по-русски</a> · <a href="https://romabmstu.github.io/polka/">Website</a></p>
+<p align="center">
+  <img src="docs/assets/demo-en.gif" width="800" alt="Polka opening from the notch: overview, saving a tab, VPN, music, translator">
+  <br><sub>Animated preview of the <a href="https://romabmstu.github.io/polka/">interactive demo</a> on the website.</sub>
+</p>
 
 ---
 
-Point at the notch and it opens into a panel. Move away and it tucks back in. On displays without a notch Polka sits in the center of the menu bar as a compact control, and by default it follows the pointer to whichever display you are using.
+Point at the notch and it opens into a panel. Move away and it tucks back in. On displays without a notch Polka is a slim capsule in the center of the menu bar, and it follows the pointer to whichever display you are using.
 
-While closed, the notch shows what matters right now: a shield when your VPN is on and a countdown when a meeting is about to start.
+While closed, the notch shows what matters right now: what is playing, a shield when a VPN is on and a countdown when a meeting is about to start.
+
+## Why Polka
+
+- **Free, MIT-licensed, no account.** No subscription, no paid tier, no telemetry.
+- **The things you switch all day, not just a music widget.** VPN clients, tab groups from every browser, your calendar with one-click join, a translator — next to music and the clipboard.
+- **Private by design.** Everything stays on your Mac; translation runs on device. The network is used only to check for updates and, if you turn it on, for exchange rates.
+- **Works with any display.** The notch on a MacBook, a compact capsule on external monitors.
+- **Keeps itself current.** Signed updates install from inside the app.
 
 ## What it does
 
@@ -46,19 +66,62 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
 
 ## Install
 
-1. Download the ZIP with the highest build number from the [beta build](https://github.com/romabmstu/polka/releases/tag/nightly) and move **Polka** to Applications. Older archives remain available for update compatibility.
-2. The app is not notarized by Apple yet, so the first launch is blocked. Run once in Terminal:
+**Homebrew** (recommended — nothing else to do):
+
+```sh
+brew tap romabmstu/polka https://github.com/romabmstu/polka
+brew install --cask polka
+```
+
+**Disk image:**
+
+1. Download [**Polka.dmg**](https://github.com/romabmstu/polka/releases/latest/download/Polka.dmg) and drag Polka to Applications.
+2. Polka is not notarized by Apple yet, so macOS blocks the first launch of a downloaded copy. Run once in Terminal:
    ```sh
    xattr -dr com.apple.quarantine /Applications/Polka.app
    ```
    or open it, then go to System Settings › Privacy & Security and click **Open Anyway**.
-3. Point at the notch.
+3. Point at the notch, or press <kbd>⌥⇧K</kbd>.
 
-The beta build includes a SHA-256 checksum. Tagged releases also carry a [build provenance attestation](https://github.com/romabmstu/polka/attestations), which can be checked with:
+Requires macOS 14 Sonoma or later on Apple silicon or Intel; the Translator needs macOS 15. Want every new build as soon as it passes CI? Take it from the [beta release](https://github.com/romabmstu/polka/releases/tag/nightly) or switch the channel in Settings › Updates.
+
+Release builds carry a [build provenance attestation](https://github.com/romabmstu/polka/attestations):
 
 ```sh
-gh attestation verify Polka-vX.Y.Z.zip --repo romabmstu/polka
+gh attestation verify Polka.dmg --repo romabmstu/polka
 ```
+
+## Questions
+
+<details>
+<summary><b>Is it safe? Why the Terminal command?</b></summary>
+
+Apple’s notarization requires a paid developer account, which this free project does not have yet, so macOS asks you to confirm the first launch. In exchange everything is out in the open: the code is here, every build is made by GitHub Actions from this repository, release builds carry a provenance attestation, and updates are checked against an Ed25519 key built into the app before anything is replaced. Polka runs with the Hardened Runtime and sends no analytics. See [SECURITY.md](SECURITY.md).
+</details>
+
+<details>
+<summary><b>Why does it ask for permissions?</b></summary>
+
+Each one is requested only when you first use the feature that needs it: automation of your browser to read the open tab’s address, Calendars for your events, and Accessibility for translating selected text with <kbd>⌥⇧T</kbd>. The full list is in [PRIVACY.md](PRIVACY.md).
+</details>
+
+<details>
+<summary><b>Which VPN clients work?</b></summary>
+
+Anything listed in System Settings › VPN (Happ, V2Box, WireGuard, L2TP and others), Tunnelblick configurations, and FSNT Client / Throne through its local API. Other clients may appear without a known status.
+</details>
+
+<details>
+<summary><b>Does it work without a notch?</b></summary>
+
+Yes. On external displays and Macs without a notch it is a small capsule in the menu bar that opens the same panel.
+</details>
+
+<details>
+<summary><b>How do I uninstall it?</b></summary>
+
+`brew uninstall --zap --cask polka`, or quit Polka, move it to the Trash and delete `~/Library/Application Support/Polka`.
+</details>
 
 ## Updates
 
@@ -70,6 +133,7 @@ Polka checks for updates: use Settings › Updates › *Check Now*, or the *Upda
 | --- | --- |
 | <kbd>⌥⇧K</kbd> | Open or close Polka |
 | <kbd>⌥⇧S</kbd> | Save the current browser tab, choosing the group |
+| <kbd>⌥⇧T</kbd> | Translate the selected text |
 | <kbd>⌘1</kbd> … <kbd>⌘9</kbd> | Switch sections |
 | <kbd>⌘V</kbd> | Paste links into the open group |
 | <kbd>Esc</kbd> | Close the panel |
@@ -79,6 +143,15 @@ Polka checks for updates: use Settings › Updates › *Check Now*, or the *Upda
 Polka has no account, no analytics and no telemetry. Your tabs are stored locally in `~/Library/Application Support/Polka/library.json`. Before saving, Polka keeps previous copies in the adjacent `Recovery` folder; keep a separate backup to protect against disk loss.
 
 It uses the network to check for updates and, if enabled, to fetch exchange rates. Details and the full list of permissions are in [PRIVACY.md](PRIVACY.md).
+
+## Roadmap
+
+Ideas, not promises — vote or suggest in [Discussions](https://github.com/romabmstu/polka/discussions):
+
+- Notarized builds, so no Terminal step is needed
+- More VPN client integrations
+- An optional DeepL engine for the translator
+- Your own sections through Shortcuts
 
 ## Build from source
 
