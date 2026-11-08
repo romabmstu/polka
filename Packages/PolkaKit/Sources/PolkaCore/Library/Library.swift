@@ -69,6 +69,20 @@ public struct Library: Codable, Equatable, Sendable {
         return groups[0].id
     }
 
+    /// Collapse is presentation state; it never changes the stored hierarchy.
+    public func visibleGroups(collapsed: Set<UUID>) -> [TabGroup] {
+        let byID = Dictionary(groups.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return orderedGroups.filter { group in
+            var parent = group.parentID
+            var visited: Set<UUID> = [group.id]
+            while let id = parent, visited.insert(id).inserted {
+                if collapsed.contains(id) { return false }
+                parent = byID[id]?.parentID
+            }
+            return true
+        }
+    }
+
     public func group(_ id: UUID) -> TabGroup? {
         groups.first { $0.id == id }
     }

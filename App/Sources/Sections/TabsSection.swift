@@ -77,7 +77,27 @@ private struct GroupList: View {
     @State private var draggedGroupID: UUID?
     @State private var groupFrames: [UUID: CGRect] = [:]
     @State private var groupDropTarget: GroupDropTarget?
+    @AppStorage("collapsedTabGroups") private var collapsedGroupStorage = ""
     @FocusState private var isSearchFocused: Bool
+
+    private var collapsedGroups: Set<UUID> {
+        Set(collapsedGroupStorage.split(separator: ",").compactMap { UUID(uuidString: String($0)) })
+    }
+
+    private func setCollapsed(_ id: UUID, _ collapsed: Bool) {
+        var ids = collapsedGroups
+        if collapsed { ids.insert(id) } else { ids.remove(id) }
+        collapsedGroupStorage = ids.map(\.uuidString).sorted().joined(separator: ",")
+    }
+
+    private func reveal(_ id: UUID?) {
+        var parent = id.flatMap { app.tabs.library.group($0)?.parentID }
+        var visited = Set<UUID>()
+        while let id = parent, visited.insert(id).inserted {
+            setCollapsed(id, false)
+            parent = app.tabs.library.group(id)?.parentID
+        }
+    }
 
     var body: some View {
         @Bindable var tabs = app.tabs
@@ -102,10 +122,25 @@ private struct GroupList: View {
 
             ScrollView {
                 VStack(spacing: 2) {
-                    ForEach(tabs.library.orderedGroups) { group in
+                    ForEach(tabs.library.visibleGroups(collapsed: collapsedGroups)) { group in
                         GroupRow(group: group, isSelected: tabs.selectedGroup?.id == group.id && tabs.query.isEmpty,
                                  editingGroupID: $editingGroupID, groupName: $groupName, draggedGroupID: $draggedGroupID,
                                  frames: groupFrames, dropTarget: $groupDropTarget,
+                                 hasChildren: tabs.library.groups.contains { $0.parentID == group.id },
+                                 isCollapsed: collapsedGroups.contains(group.id),
+                                 toggleCollapsed: {
+                                     let collapsing = !collapsedGroups.contains(group.id)
+                                     if collapsing, let selected = tabs.selectedGroup?.id {
+                                         var parent = tabs.library.group(selected)?.parentID
+                                         var seen = Set<UUID>()
+                                         while let id = parent, seen.insert(id).inserted {
+                                             if id == group.id { tabs.selectedGroupID = group.id; break }
+                                             parent = tabs.library.group(id)?.parentID
+                                         }
+                                     }
+                                     setCollapsed(group.id, collapsing)
+                                 },
+                                 expand: { setCollapsed($0, false) },
                                  rename: rename, createChild: createChild)
                     }
                 }
@@ -119,6 +154,7 @@ private struct GroupList: View {
                     Text(parent.name).font(.caption).foregroundStyle(Theme.secondary).lineLimit(1)
                 }
                 GroupNameEditor(name: $newName, confirm: "Create") {
+                    if let parent = creatingParent { setCollapsed(parent, false) }
                     tabs.createGroup(named: newName.trimmingCharacters(in: .whitespacesAndNewlines), parentID: creatingParent)
                     isCreating = false
                     newName = ""
@@ -147,6 +183,7 @@ private struct GroupList: View {
         .onChange(of: editingGroupID) { _, id in
             if id != nil { isCreating = false }
         }
+        .onChange(of: app.tabs.selectedGroupID) { _, id in reveal(id) }
     }
 }
 
@@ -159,6 +196,10 @@ private struct GroupRow: View {
     @Binding var draggedGroupID: UUID?
     let frames: [UUID: CGRect]
     @Binding var dropTarget: GroupDropTarget?
+    let hasChildren: Bool
+    let isCollapsed: Bool
+    let toggleCollapsed: () -> Void
+    let expand: (UUID) -> Void
     let rename: (TabGroup) -> Void
     let createChild: (TabGroup) -> Void
     @State private var isTargeted = false
@@ -185,10 +226,6 @@ private struct GroupRow: View {
     }
 
     private var row: some View {
-        Button {
-            app.tabs.query = ""
-            app.tabs.selectedGroupID = group.id
-        } label: {
             HStack(spacing: 10) {
                 Image(systemName: "line.3.horizontal")
                     .font(.system(size: 10, weight: .semibold))
@@ -197,20 +234,45 @@ private struct GroupRow: View {
                     .contentShape(.rect)
                     .help(Text("Drag to an edge to reorder, or to the center to nest"))
                     .highPriorityGesture(groupDrag)
-                Circle()
-                    .fill(group.color.color)
-                    .frame(width: 9, height: 9)
-                    .shadow(color: group.color.color.opacity(0.6), radius: 3)
-                Text(group.name)
-                    .font(.system(size: 13, weight: .semibold))
-                    .lineLimit(1)
-                Spacer(minLength: 4)
-                if group.isPinned {
-                    Image(systemName: "pin.fill").font(.system(size: 9)).foregroundStyle(Theme.tertiary)
+                if hasChildren {
+                    Button(action: toggleCollapsed) {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 9, weight: .bold))
+                            .rotationEffect(.degrees(isCollapsed ? 0 : 90))
+                            .frame(width: 14, height: 24)
+                            .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Theme.secondary)
+                    .help(isCollapsed ? Text("Expand folder") : Text("Collapse folder"))
+                    .accessibilityLabel(isCollapsed ? Text("Expand folder") : Text("Collapse folder"))
+                } else {
+                    Color.clear.frame(width: 14, height: 24)
                 }
-                Text(group.tabs.count, format: .number)
-                    .font(.system(size: 12).monospacedDigit())
-                    .foregroundStyle(Theme.tertiary)
+                Button {
+                    app.tabs.query = ""
+                    app.tabs.selectedGroupID = group.id
+                } label: {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(group.color.color)
+                            .frame(width: 9, height: 9)
+                            .shadow(color: group.color.color.opacity(0.6), radius: 3)
+                        Text(group.name)
+                            .font(.system(size: 13, weight: .semibold))
+                            .lineLimit(1)
+                        Spacer(minLength: 4)
+                        if group.isPinned {
+                            Image(systemName: "pin.fill").font(.system(size: 9)).foregroundStyle(Theme.tertiary)
+                        }
+                        Text(group.tabs.count, format: .number)
+                            .font(.system(size: 12).monospacedDigit())
+                            .foregroundStyle(Theme.tertiary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 34)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
             }
             .padding(.leading, 10 + CGFloat(depth) * 12)
             .padding(.trailing, 10)
@@ -238,8 +300,6 @@ private struct GroupRow: View {
                 }
             }
             .contentShape(.rect)
-        }
-        .buttonStyle(.plain)
         .hoverHighlight(cornerRadius: 10)
         .dropDestination(for: URL.self) { urls, _ in
             accept(urls)
@@ -271,7 +331,9 @@ private struct GroupRow: View {
                     switch target.position {
                     case .before: app.tabs.moveGroup(group.id, relativeTo: target.id, after: false)
                     case .after: app.tabs.moveGroup(group.id, relativeTo: target.id, after: true)
-                    case .inside: app.tabs.moveGroup(group.id, into: target.id)
+                    case .inside:
+                        app.tabs.moveGroup(group.id, into: target.id)
+                        expand(target.id)
                     }
                 }
                 draggedGroupID = nil

@@ -4,6 +4,29 @@ import Testing
 @testable import PolkaCore
 
 @Suite struct LibraryTests {
+    @Test func collapsedGroupsHideDescendantsWithoutChangingTheLibrary() {
+        var library = Library()
+        let parent = library.createGroup(named: "Parent")
+        let child = library.createGroup(named: "Child", parentID: parent.id)
+        let grandchild = library.createGroup(named: "Grandchild", parentID: child.id)
+        let sibling = library.createGroup(named: "Sibling")
+        let before = library
+        let visible = library.visibleGroups(collapsed: [parent.id]).map(\.id)
+        #expect(visible.contains(parent.id))
+        #expect(visible.contains(sibling.id))
+        #expect(!visible.contains(child.id))
+        #expect(!visible.contains(grandchild.id))
+        #expect(library.visibleGroups(collapsed: []).contains { $0.id == grandchild.id })
+        let nestedCollapsed = library.visibleGroups(collapsed: [child.id]).map(\.id)
+        #expect(nestedCollapsed.contains(child.id))
+        #expect(!nestedCollapsed.contains(grandchild.id))
+        #expect(library == before)
+
+        library.moveGroup(child.id, into: sibling.id)
+        let afterMove = library.visibleGroups(collapsed: [parent.id]).map(\.id)
+        #expect(afterMove.contains(child.id))
+        #expect(afterMove.contains(grandchild.id))
+    }
     @Test func nestedGroupsSurviveParentDeletion() {
         var library = Library()
         let parent = library.createGroup(named: "Parent")

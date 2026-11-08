@@ -1,6 +1,14 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Volume": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Громкость" } } } },
+    "Expand folder": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Развернуть папку" } } } },
+    "Collapse folder": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Свернуть папку" } } } },
+    "Audio output": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Устройство вывода звука" } } } },
+    "Audio output unavailable": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Нет устройства вывода" } } } },
+    "Could not update audio output": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось обновить устройство вывода звука" } } } },
+    "Could not change volume": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось изменить громкость" } } } },
+    "Volume unavailable for this device": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Для этого устройства громкость недоступна" } } } },
     "When nothing is playing, Play starts Yandex Music or opens another selected player. The controls otherwise follow the current source.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Если ничего не играет, Play включает Яндекс Музыку или открывает другой выбранный плеер. В остальных случаях кнопки управляют текущим источником." } } } },
     "Play %@": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Включить %@" } } } },
     "Press play to start Yandex Music": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Нажмите Play, чтобы включить Яндекс Музыку" } } } },

@@ -8,6 +8,13 @@ struct MediaSection: View {
     @State private var volumeAvailable = false
     @State private var editingVolume = false
     @State private var volumeError = false
+    @State private var outputs: AudioOutputs.Snapshot?
+    @State private var outputError = false
+    @State private var selectionError = false
+    @State private var isWritingVolume = false
+    @State private var isChangingOutput = false
+    @State private var volumeRevision = 0
+    @State private var editedOutputID: UInt32?
     private let system = SystemControls()
 
     var body: some View {
@@ -66,43 +73,126 @@ struct MediaSection: View {
             .background(Theme.card, in: .rect(cornerRadius: 22))
             .frame(maxHeight: .infinity, alignment: .center)
             .task {
+                var tick = 0
                 while !Task.isCancelled {
-                    if !editingVolume {
+                    if !isChangingOutput {
+                        let revision = volumeRevision
+                        do {
+                            let next = try await Task.detached { try AudioOutputs.snapshot() }.value
+                            if revision == volumeRevision && !isChangingOutput {
+                                if let previous = outputs, previous.selectedID != next.selectedID {
+                                    volumeRevision += 1
+                                    tick = 0
+                                }
+                                outputs = next
+                                outputError = false
+                            }
+                        } catch {
+                            if revision == volumeRevision { outputError = true }
+                        }
+                    }
+                    if !editingVolume && !isWritingVolume && !isChangingOutput && tick % 5 == 0 {
+                        let revision = volumeRevision
                         let value = try? await system.outputVolume()
-                        if !editingVolume {
+                        if !editingVolume && !isWritingVolume && !isChangingOutput && revision == volumeRevision {
                             if let value { volume = Double(value) }
                             volumeAvailable = value != nil
                         }
                     }
-                    try? await Task.sleep(for: .seconds(10))
+                    tick += 1
+                    try? await Task.sleep(for: .seconds(2))
                 }
             }
         }
     }
 
     private var volumeControl: some View {
-        HStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
+          HStack(spacing: 10) {
             Image(systemName: volume == 0 ? "speaker.slash.fill" : "speaker.wave.2.fill")
                 .foregroundStyle(Theme.secondary)
             Slider(value: $volume, in: 0...100, onEditingChanged: { editing in
                 editingVolume = editing
-                if !editing {
+                if editing {
+                    editedOutputID = outputs?.selectedID
+                } else {
+                    guard let editedOutputID, (try? AudioOutputs.snapshot().selectedID) == editedOutputID else {
+                        volumeError = true
+                        volumeRevision += 1
+                        return
+                    }
                     let value = Int(volume.rounded())
+                    isWritingVolume = true
+                    volumeRevision += 1
                     Task {
                         do { try await system.setVolume(percent: value); volumeError = false }
                         catch { volumeError = true }
+                        isWritingVolume = false
                     }
                 }
-            }) { Text("System volume") }
-            .disabled(!volumeAvailable)
+            }) { Text("Volume") }
+            .disabled(!volumeAvailable || isWritingVolume || isChangingOutput)
             if volumeError {
                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Theme.warning)
             }
             Text(volumeAvailable ? "\(Int(volume.rounded()))%" : "—")
                 .font(.system(size: 11, weight: .medium).monospacedDigit())
                 .foregroundStyle(Theme.secondary).frame(width: 36, alignment: .trailing)
+          }
+          .help(volumeError ? Text("Could not change volume") : (volumeAvailable ? Text("Volume") : Text("Volume unavailable for this device")))
+          HStack(spacing: 6) {
+              Image(systemName: "hifispeaker")
+                  .foregroundStyle(Theme.tertiary)
+              Menu {
+                  if let snapshot = outputs {
+                      ForEach(snapshot.devices) { device in
+                          Button {
+                              isChangingOutput = true
+                              volumeRevision += 1
+                              let revision = volumeRevision
+                              Task {
+                                  do {
+                                      let next = try await Task.detached {
+                                          try AudioOutputs.select(device.id)
+                                          return try AudioOutputs.snapshot()
+                                      }.value
+                                      outputs = next
+                                      outputError = false
+                                      selectionError = false
+                                      let value = try? await system.outputVolume()
+                                      if revision == volumeRevision && !editingVolume && !isWritingVolume {
+                                          if let value { volume = Double(value) }
+                                          volumeAvailable = value != nil
+                                      }
+                                  } catch { selectionError = true }
+                                  isChangingOutput = false
+                              }
+                          } label: {
+                              if device.id == snapshot.selectedID { Label(device.name, systemImage: "checkmark") }
+                              else { Text(device.name) }
+                          }
+                      }
+                  }
+              } label: {
+                  HStack(spacing: 4) {
+                      Text(outputs?.devices.first(where: { $0.id == outputs?.selectedID })?.name ?? String(localized: "Audio output unavailable"))
+                          .lineLimit(1)
+                      Image(systemName: "chevron.up.chevron.down").font(.system(size: 9, weight: .semibold))
+                  }
+                  .font(.system(size: 11.5, weight: .medium))
+                  .foregroundStyle(Theme.secondary)
+                  .frame(maxWidth: 240, alignment: .leading)
+              }
+              .menuStyle(.borderlessButton)
+              .disabled(outputs?.devices.isEmpty != false || editingVolume || isWritingVolume || isChangingOutput)
+              .help(Text("Audio output"))
+              if outputError || selectionError {
+                  Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Theme.warning)
+                      .help(Text("Could not update audio output"))
+              }
+              Spacer(minLength: 0)
+          }
         }
-        .help(volumeError ? Text("Could not change system volume") : (volumeAvailable ? Text("System volume") : Text("System volume unavailable")))
     }
 
     @ViewBuilder
