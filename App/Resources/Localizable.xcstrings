@@ -1,6 +1,7 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Could not connect to GitHub. Check your connection and VPN settings, then try again.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось подключиться к GitHub. Проверьте интернет и настройки VPN, затем повторите попытку." } } } },
     "Volume": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Громкость" } } } },
     "Expand folder": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Развернуть папку" } } } },
     "Collapse folder": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Свернуть папку" } } } },

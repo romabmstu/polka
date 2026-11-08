@@ -46,7 +46,9 @@ public actor Updater {
 
     /// The newest build on `channel`, whether or not it is newer than this one.
     public func latest(on channel: UpdateChannel) async throws -> UpdateManifest {
-        let (data, response) = try await session.data(from: Self.manifestURL(for: channel))
+        let url = Self.manifestURL(for: channel)
+        let session = self.session
+        let (data, response) = try await NetworkRetry.run { try await session.data(from: url) }
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else { throw Failure.badResponse(status) }
         guard data.count <= 64 * 1024 else { throw Failure.tooLarge }
@@ -63,7 +65,8 @@ public actor Updater {
         try UpdateVerifier.verifyMetadata(manifest, publicKey: publicKey)
         guard manifest.size > 0, manifest.size <= Self.maximumArchiveSize else { throw Failure.tooLarge }
 
-        let (download, response) = try await session.download(from: manifest.url)
+        let session = self.session
+        let (download, response) = try await NetworkRetry.run { try await session.download(from: manifest.url) }
         defer { try? FileManager.default.removeItem(at: download) }
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else { throw Failure.badResponse(status) }
