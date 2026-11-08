@@ -4,12 +4,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-08
+
 ### Added
 
 - If an update closes right after it starts, Polka puts the previous version back, says so, and offers to report it. That build is not installed automatically again.
 
 ### Changed
 
+- New installs get updates from releases. The beta channel, with every build from `main`, is one switch away in Settings › Updates.
 - Links opened from Polka go to a new tab in the browser window you have open (Safari, Chrome, Arc, Brave, Edge, Yandex Browser) instead of a new window. Opening a whole group in a new window works as before.
 
 ### Fixed
@@ -56,5 +59,6 @@ The first public release.
 - Built-in updates verified with an Ed25519 signature; a beta channel gets every build from `main`.
 - Release builds carry a build provenance attestation.
 
-[Unreleased]: https://github.com/romabmstu/polka/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/romabmstu/polka/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/romabmstu/polka/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/romabmstu/polka/releases/tag/v0.1.0
