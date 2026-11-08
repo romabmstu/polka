@@ -35,6 +35,9 @@ struct ExpandedPanel: View {
                     .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)
                 }
             }
+            .padding(3)
+            .background(Color.white.opacity(0.045), in: .capsule)
+            .overlay(Capsule().strokeBorder(Color.white.opacity(0.07), lineWidth: 0.7))
             Spacer(minLength: 0)
             if app.updates.available != nil {
                 UpdateBadge()
@@ -70,7 +73,7 @@ struct ExpandedPanel: View {
             .fixedSize()
             .help(Text("More"))
         }
-        .frame(height: 32)
+        .frame(height: 36)
     }
 
     @ViewBuilder
@@ -127,7 +130,7 @@ private struct SectionTab: View {
             HStack(spacing: 6) {
                 Image(systemName: section.symbol)
                     .font(.system(size: 12.5, weight: .semibold))
-                if isSelected || isHovered {
+                if isSelected {
                     Text(section.title)
                         .font(.system(size: 12.5, weight: .semibold))
                         .lineLimit(1)
@@ -137,7 +140,10 @@ private struct SectionTab: View {
             .padding(.horizontal, 10)
             .frame(height: 30)
             .foregroundStyle(isSelected ? Color.black : (isHovered ? Color.white : Theme.secondary))
-            .background(isSelected ? Color.white : (isHovered ? Theme.cardHover : .clear), in: .capsule)
+            .background {
+                if isSelected { Capsule().fill(Theme.selectionGradient) }
+                else if isHovered { Capsule().fill(Theme.cardHover) }
+            }
             .contentShape(.capsule)
         }
         .buttonStyle(.plain)
@@ -165,6 +171,8 @@ private struct UpdateBadge: View {
             UpdateDetails()
                 .padding(16)
                 .frame(width: 300)
+                .background(Color(red: 0.09, green: 0.10, blue: 0.13))
+                .preferredColorScheme(.dark)
         }
     }
 }

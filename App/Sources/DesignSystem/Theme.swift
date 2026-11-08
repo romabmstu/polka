@@ -11,15 +11,27 @@ enum PanelMetrics {
 /// Colors and shapes of the panel. It is always dark — it extends the black
 /// camera housing — so these do not follow the system appearance.
 enum Theme {
-    static let card = Color.white.opacity(0.065)
-    static let cardHover = Color.white.opacity(0.1)
-    static let hairline = Color.white.opacity(0.08)
-    static let secondary = Color.white.opacity(0.64)
-    static let tertiary = Color.white.opacity(0.46)
+    static let card = Color.white.opacity(0.075)
+    static let cardHover = Color(red: 0.60, green: 0.74, blue: 1).opacity(0.14)
+    static let hairline = Color.white.opacity(0.11)
+    static let secondary = Color(red: 0.78, green: 0.81, blue: 0.88)
+    static let tertiary = Color(red: 0.65, green: 0.69, blue: 0.77)
     static let active = Color(red: 0.19, green: 0.82, blue: 0.35)
     static let accent = Color(red: 0.42, green: 0.64, blue: 1)
     static let warning = Color(red: 1, green: 0.62, blue: 0.04)
     static let cornerRadius: CGFloat = 16
+    static var panelBackground: some View {
+        ZStack {
+            LinearGradient(colors: [Color(red: 0.065, green: 0.075, blue: 0.11), Color(red: 0.022, green: 0.026, blue: 0.043)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+            RadialGradient(colors: [Color(red: 0.19, green: 0.28, blue: 0.48).opacity(0.40), .clear],
+                           center: .topLeading, startRadius: 0, endRadius: 490)
+            RadialGradient(colors: [Color(red: 0.25, green: 0.14, blue: 0.35).opacity(0.25), .clear],
+                           center: .bottomTrailing, startRadius: 0, endRadius: 440)
+        }
+    }
+    static let selectionGradient = LinearGradient(colors: [Color(red: 0.90, green: 0.96, blue: 1), Color(red: 0.75, green: 0.85, blue: 1)],
+                                                   startPoint: .topLeading, endPoint: .bottomTrailing)
 }
 
 extension GroupColor {
@@ -73,7 +85,10 @@ struct Card<Content: View>: View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(Theme.card, in: .rect(cornerRadius: Theme.cornerRadius, style: .continuous))
+            .background(
+                LinearGradient(colors: [Color.white.opacity(0.105), Color.white.opacity(0.045)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: .rect(cornerRadius: Theme.cornerRadius, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
                     .strokeBorder(highlight ?? Theme.hairline, lineWidth: highlight == nil ? 1 : 1.5)
@@ -98,6 +113,7 @@ struct CardLabel: View {
 struct CapsuleButtonStyle: ButtonStyle {
     var prominent = false
     var tint: Color = .white
+    @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -105,8 +121,15 @@ struct CapsuleButtonStyle: ButtonStyle {
             .padding(.horizontal, 13)
             .frame(height: 30)
             .foregroundStyle(prominent ? Color.black : Color.white)
-            .background(prominent ? tint : Color.white.opacity(configuration.isPressed ? 0.16 : 0.09), in: .capsule)
-            .opacity(configuration.isPressed && prominent ? 0.85 : 1)
+            .background {
+                if prominent {
+                    Capsule().fill(LinearGradient(colors: [tint, tint.opacity(0.78)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                } else {
+                    Capsule().fill(Color.white.opacity(configuration.isPressed ? 0.17 : 0.09))
+                        .overlay(Capsule().strokeBorder(Color.white.opacity(0.06), lineWidth: 0.7))
+                }
+            }
+            .opacity(!isEnabled ? 0.42 : (configuration.isPressed && prominent ? 0.85 : 1))
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
             .contentShape(.capsule)

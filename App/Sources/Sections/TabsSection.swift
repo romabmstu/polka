@@ -54,6 +54,9 @@ private struct GroupList: View {
     let rename: (TabGroup) -> Void
     let createChild: (TabGroup) -> Void
     @State private var newName = ""
+    @State private var draggedGroupID: UUID?
+    @State private var groupFrames: [UUID: CGRect] = [:]
+    @State private var groupDropTarget: GroupDropTarget?
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
@@ -81,10 +84,14 @@ private struct GroupList: View {
                 VStack(spacing: 2) {
                     ForEach(tabs.library.orderedGroups) { group in
                         GroupRow(group: group, isSelected: tabs.selectedGroup?.id == group.id && tabs.query.isEmpty,
-                                 editingGroupID: $editingGroupID, groupName: $groupName, rename: rename, createChild: createChild)
+                                 editingGroupID: $editingGroupID, groupName: $groupName, draggedGroupID: $draggedGroupID,
+                                 frames: groupFrames, dropTarget: $groupDropTarget,
+                                 rename: rename, createChild: createChild)
                     }
                 }
             }
+            .coordinateSpace(name: "groupList")
+            .onPreferenceChange(GroupFrameKey.self) { groupFrames = $0 }
             .scrollIndicators(.never)
 
             if isCreating {
@@ -129,10 +136,12 @@ private struct GroupRow: View {
     let isSelected: Bool
     @Binding var editingGroupID: UUID?
     @Binding var groupName: String
+    @Binding var draggedGroupID: UUID?
+    let frames: [UUID: CGRect]
+    @Binding var dropTarget: GroupDropTarget?
     let rename: (TabGroup) -> Void
     let createChild: (TabGroup) -> Void
     @State private var isTargeted = false
-    @State private var groupTargeted = false
 
     private var depth: Int {
         var current = group.parentID
@@ -161,6 +170,13 @@ private struct GroupRow: View {
             app.tabs.selectedGroupID = group.id
         } label: {
             HStack(spacing: 10) {
+                Image(systemName: "line.3.horizontal")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Theme.tertiary)
+                    .frame(width: 14, height: 34)
+                    .contentShape(.rect)
+                    .help(Text("Drag to an edge to reorder, or to the center to nest"))
+                    .highPriorityGesture(groupDrag)
                 Circle()
                     .fill(group.color.color)
                     .frame(width: 9, height: 9)
@@ -180,24 +196,67 @@ private struct GroupRow: View {
             .padding(.trailing, 10)
             .frame(height: 34)
             .background(
-                (isTargeted || groupTargeted) ? Theme.accent.opacity(0.25) : (isSelected ? Color.white.opacity(0.12) : .clear),
+                (isTargeted || (dropTarget?.id == group.id && dropTarget?.position == .inside))
+                    ? Theme.accent.opacity(0.22) : (isSelected ? Color.white.opacity(0.12) : .clear),
                 in: .rect(cornerRadius: 10, style: .continuous)
             )
+            .overlay(alignment: dropTarget?.position == .after ? .bottom : .top) {
+                if dropTarget?.id == group.id && dropTarget?.position != .inside {
+                    Capsule().fill(Theme.accent).frame(height: 2)
+                        .padding(.leading, 10 + CGFloat(depth) * 12).padding(.trailing, 8)
+                }
+            }
+            .overlay {
+                if dropTarget?.id == group.id && dropTarget?.position == .inside {
+                    RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.accent, lineWidth: 1.5)
+                }
+            }
+            .opacity(draggedGroupID == group.id ? 0.55 : 1)
+            .background {
+                GeometryReader { proxy in
+                    Color.clear.preference(key: GroupFrameKey.self, value: [group.id: proxy.frame(in: .named("groupList"))])
+                }
+            }
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .hoverHighlight(cornerRadius: 10)
-        .draggable("polka-group:\(group.id.uuidString)")
-        .dropDestination(for: String.self) { values, point in
-            guard let value = values.first, value.hasPrefix("polka-group:"),
-                  let id = UUID(uuidString: String(value.dropFirst("polka-group:".count))), id != group.id else { return false }
-            app.tabs.moveGroup(id, relativeTo: group.id, after: point.y >= 17)
-            return true
-        } isTargeted: { groupTargeted = $0 }
         .dropDestination(for: URL.self) { urls, _ in
             accept(urls)
         } isTargeted: { isTargeted = $0 }
         .contextMenu { GroupMenu(group: group, rename: { rename(group) }, createChild: { createChild(group) }) }
+    }
+
+    private var groupDrag: some Gesture {
+        DragGesture(minimumDistance: 5, coordinateSpace: .named("groupList"))
+            .onChanged { value in
+                draggedGroupID = group.id
+                guard let target = frames.first(where: { $0.key != group.id && $0.value.contains(value.location) }) else {
+                    dropTarget = nil
+                    return
+                }
+                let relativeY = (value.location.y - target.value.minY) / max(target.value.height, 1)
+                let position: GroupDropTarget.Position = relativeY < 0.25 ? .before : (relativeY > 0.75 ? .after : .inside)
+                // A group cannot become a child of itself or its descendants.
+                var ancestor = position == .inside ? target.key : app.tabs.library.group(target.key)?.parentID
+                var seen = Set<UUID>()
+                while let id = ancestor, seen.insert(id).inserted {
+                    if id == group.id { dropTarget = nil; return }
+                    ancestor = app.tabs.library.group(id)?.parentID
+                }
+                dropTarget = GroupDropTarget(id: target.key, position: position)
+            }
+            .onEnded { _ in
+                if let target = dropTarget {
+                    switch target.position {
+                    case .before: app.tabs.moveGroup(group.id, relativeTo: target.id, after: false)
+                    case .after: app.tabs.moveGroup(group.id, relativeTo: target.id, after: true)
+                    case .inside: app.tabs.moveGroup(group.id, into: target.id)
+                    }
+                }
+                draggedGroupID = nil
+                dropTarget = nil
+            }
     }
 
     /// A dropped URL is either one of our own tabs being moved (it carries the
@@ -216,6 +275,19 @@ private struct GroupRow: View {
         }
         if !outside.isEmpty { tabs.add(outside, to: group.id) }
         return true
+    }
+}
+
+private struct GroupDropTarget: Equatable {
+    enum Position { case before, inside, after }
+    let id: UUID
+    let position: Position
+}
+
+private struct GroupFrameKey: PreferenceKey {
+    static let defaultValue: [UUID: CGRect] = [:]
+    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
     }
 }
 
@@ -295,6 +367,10 @@ private struct GroupDetail: View {
     @Environment(AppModel.self) private var app
     let rename: (TabGroup) -> Void
     let createChild: (TabGroup) -> Void
+    @State private var addingLink = false
+    @State private var linkInput = ""
+    @State private var invalidLink = false
+    @FocusState private var linkFocused: Bool
 
     var body: some View {
         if let group = app.tabs.selectedGroup {
@@ -314,25 +390,86 @@ private struct GroupDetail: View {
                     .menuIndicator(.hidden)
                     .fixedSize()
                     .help(Text("Group options"))
-                    Button("New Window") { Task { await app.tabs.openGroup(group, inNewWindow: true) } }
-                        .buttonStyle(CapsuleButtonStyle())
-                        .disabled(group.tabs.isEmpty)
-                    Button("Open All") { Task { await app.tabs.openGroup(group, inNewWindow: false) } }
+                    pasteButton(for: group.id)
+                    Button {
+                        linkInput = ""
+                        invalidLink = false
+                        addingLink = true
+                    } label: {
+                        Label("Add Link", systemImage: "plus")
+                    }
                         .buttonStyle(CapsuleButtonStyle(prominent: true))
-                        .disabled(group.tabs.isEmpty)
+                }
+                if addingLink {
+                    VStack(alignment: .leading, spacing: 5) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "link").foregroundStyle(Theme.secondary)
+                            TextField("Paste or type a link", text: $linkInput)
+                                .textFieldStyle(.plain)
+                                .focused($linkFocused)
+                                .onSubmit { addLink(to: group.id) }
+                            Button("Cancel") { addingLink = false }.buttonStyle(.plain).foregroundStyle(Theme.secondary)
+                            Button("Add") { addLink(to: group.id) }
+                                .buttonStyle(CapsuleButtonStyle(prominent: true))
+                                .disabled(linkInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        }
+                        .padding(.horizontal, 10).padding(.vertical, 7)
+                        .background(Theme.card, in: .rect(cornerRadius: 12))
+                        if invalidLink {
+                            Text("Enter a valid link.").font(.caption).foregroundStyle(Theme.warning)
+                        }
+                    }
+                    .task {
+                        app.panel.isEditingText = true
+                        app.panel.focusForTextEditing()
+                        await Task.yield()
+                        linkFocused = true
+                    }
+                    .onDisappear { app.panel.isEditingText = false }
+                    .onExitCommand { addingLink = false }
                 }
                 if group.tabs.isEmpty {
                     Placeholder(
                         symbol: "square.dashed",
                         title: "Nothing here yet",
-                        message: "Save the open browser tab, drag links onto this group or press ⌘V to paste a list of links.")
+                        message: "Save the open browser tab, add a link or paste links from the clipboard.")
                 } else {
                     TabGrid(group: group, tabs: group.sortedTabs)
                 }
             }
             .onPasteCommand(of: [.url, .plainText]) { _ in
-                PasteHandler.addLinks(to: group.id, app: app)
+                if !addingLink, let selected = app.tabs.selectedGroup {
+                    PasteHandler.addLinks(to: selected.id, app: app)
+                }
             }
+            .onChange(of: group.id) { _, _ in addingLink = false }
+        }
+    }
+
+    @ViewBuilder
+    private func pasteButton(for groupID: UUID) -> some View {
+        if app.panel.isEditingText || addingLink {
+            Button("Paste Link") { PasteHandler.addLinks(to: app.tabs.selectedGroup?.id ?? groupID, app: app) }
+                .buttonStyle(CapsuleButtonStyle())
+        } else {
+            Button("Paste Link") { PasteHandler.addLinks(to: app.tabs.selectedGroup?.id ?? groupID, app: app) }
+                .buttonStyle(CapsuleButtonStyle())
+                .keyboardShortcut("v", modifiers: .command)
+        }
+    }
+
+    private func addLink(to groupID: UUID) {
+        var pages = LinkExtractor.pages(in: linkInput)
+        if pages.isEmpty, let url = URLNormalizer.url(fromUserInput: linkInput), URLNormalizer.isSavable(url) {
+            pages = [PageReference(url: url)]
+        }
+        guard !pages.isEmpty else { invalidLink = true; return }
+        let result = app.tabs.add(pages, to: groupID)
+        addingLink = false
+        if result.added.isEmpty {
+            app.panel.flash(.init(symbol: "checkmark", text: String(localized: "Link already saved")))
+        } else {
+            app.panel.flash(.init(symbol: "link", text: String(localized: "Added \(result.added.count) links")))
         }
     }
 }
@@ -434,6 +571,7 @@ private struct TabTile: View {
         .contextMenu { menu }
         .popover(isPresented: $isEditing, arrowEdge: .bottom) {
             TabEditor(tab: tab, groupID: group.id) { isEditing = false }
+                .preferredColorScheme(.dark)
         }
     }
 
@@ -587,11 +725,15 @@ private struct TabEditor: View {
             }
             .padding([.horizontal, .bottom], 14)
         }
+        .scrollContentBackground(.hidden)
+        .background(Color(red: 0.09, green: 0.10, blue: 0.13))
         .onAppear {
+            app.panel.isEditingText = true
             title = tab.title
             address = tab.url.absoluteString
             note = tab.note
         }
+        .onDisappear { app.panel.isEditingText = false }
     }
 
     private func save() {
@@ -612,6 +754,10 @@ enum PasteHandler {
     static func addLinks(to groupID: UUID, app: AppModel) {
         let pasteboard = NSPasteboard.general
         var pages = LinkExtractor.pages(in: pasteboard.string(forType: .string) ?? "")
+        if pages.isEmpty, let text = pasteboard.string(forType: .string),
+           let url = URLNormalizer.url(fromUserInput: text), URLNormalizer.isSavable(url) {
+            pages = [PageReference(url: url)]
+        }
         if pages.isEmpty, let url = pasteboard.readObjects(forClasses: [NSURL.self])?.first as? URL {
             pages = [PageReference(url: url)]
         }
@@ -620,7 +766,11 @@ enum PasteHandler {
             return
         }
         let result = app.tabs.add(pages, to: groupID)
-        app.panel.flash(.init(symbol: "link", text: String(localized: "Added \(result.added.count) links")))
+        if result.added.isEmpty, !result.duplicates.isEmpty {
+            app.panel.flash(.init(symbol: "checkmark", text: String(localized: "Link already saved")))
+        } else {
+            app.panel.flash(.init(symbol: "link", text: String(localized: "Added \(result.added.count) links")))
+        }
     }
 }
 

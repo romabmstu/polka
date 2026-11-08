@@ -1,6 +1,14 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Drag to reorder": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Перетащите, чтобы изменить порядок" } } } },
+    "Drag to an edge to reorder, or to the center to nest": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Перетащите к краю строки для изменения порядка или в центр для вложения" } } } },
+    "Add Link": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Добавить ссылку" } } } },
+    "Paste Link": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Вставить ссылку" } } } },
+    "Paste or type a link": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Вставьте или введите ссылку" } } } },
+    "Enter a valid link.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Введите корректную ссылку." } } } },
+    "Link already saved": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Ссылка уже сохранена" } } } },
+    "Save the open browser tab, add a link or paste links from the clipboard.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Сохраните открытую вкладку браузера, добавьте ссылку или вставьте ссылки из буфера обмена." } } } },
     "%@ is open but not connected. Turn on connecting at launch and the system proxy or TUN mode in its settings.": {
       "localizations": {
         "ru": {

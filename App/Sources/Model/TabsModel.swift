@@ -203,6 +203,10 @@ final class TabsModel {
         mutate { $0.moveGroup(id, relativeTo: target, after: after) }
     }
 
+    func moveGroup(_ id: UUID, into parentID: UUID) {
+        mutate { $0.moveGroup(id, into: parentID) }
+    }
+
     func setGroupOrder(_ order: Library.GroupOrder) {
         mutate { $0.groupOrder = order }
     }

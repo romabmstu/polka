@@ -135,7 +135,7 @@ private struct GeneralSettings: View {
             Section("Keyboard") {
                 LabeledContent("Open or close Polka") { Text("⌥⇧K").monospaced() }
                 LabeledContent("Save the current browser tab") { Text("⌥⇧S").monospaced() }
-                LabeledContent("Switch sections") { Text("⌘1 … ⌘8").monospaced() }
+                LabeledContent("Switch sections") { Text("⌘1 … ⌘9").monospaced() }
             }
 
             Section {

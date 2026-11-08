@@ -25,6 +25,48 @@ import Testing
         #expect(library.group(parent.id)?.parentID == nil)
         #expect(library.group(child.id)?.parentID == parent.id)
     }
+
+    @Test func reordersGroupsBeforeAndAfterTargets() {
+        var library = Library()
+        let first = library.createGroup(named: "First")
+        let second = library.createGroup(named: "Second")
+        let third = library.createGroup(named: "Third")
+        library.moveGroup(third.id, relativeTo: first.id, after: true)
+        let ordered = library.orderedGroups.map(\.id)
+        #expect(ordered.firstIndex(of: third.id)! == ordered.firstIndex(of: first.id)! + 1)
+        library.moveGroup(second.id, relativeTo: first.id, after: false)
+        let updated = library.orderedGroups.map(\.id)
+        #expect(updated.firstIndex(of: second.id)! + 1 == updated.firstIndex(of: first.id)!)
+    }
+
+    @Test func movingGroupBetweenSiblingsPreservesItsChildren() {
+        var library = Library()
+        let parent = library.createGroup(named: "Parent")
+        let child = library.createGroup(named: "Child", parentID: parent.id)
+        let grandchild = library.createGroup(named: "Grandchild", parentID: child.id)
+        let sibling = library.createGroup(named: "Sibling", parentID: parent.id)
+        library.moveGroup(child.id, relativeTo: sibling.id, after: true)
+        #expect(library.group(child.id)?.parentID == parent.id)
+        #expect(library.group(grandchild.id)?.parentID == child.id)
+        let ordered = library.orderedGroups.map(\.id)
+        #expect(ordered.firstIndex(of: sibling.id)! < ordered.firstIndex(of: child.id)!)
+        #expect(ordered.firstIndex(of: child.id)! < ordered.firstIndex(of: grandchild.id)!)
+    }
+
+    @Test func nestingMovesTheWholeTreeAndRejectsCycles() {
+        var library = Library()
+        let destination = library.createGroup(named: "Destination")
+        let parent = library.createGroup(named: "Parent")
+        let child = library.createGroup(named: "Child", parentID: parent.id)
+        library.add([page("https://example.com")], to: child.id)
+        library.moveGroup(parent.id, into: destination.id)
+        #expect(library.group(parent.id)?.parentID == destination.id)
+        #expect(library.group(child.id)?.parentID == parent.id)
+        #expect(library.group(child.id)?.tabs.count == 1)
+        library.moveGroup(destination.id, into: child.id)
+        #expect(library.group(destination.id)?.parentID == nil)
+        #expect(library.group(parent.id)?.parentID == destination.id)
+    }
     private func page(_ string: String, _ title: String = "") -> PageReference {
         PageReference(url: URL(string: string)!, title: title)
     }

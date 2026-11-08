@@ -26,9 +26,9 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
 
 ## What it does
 
-**Tabs.** Keep pages in named, colored groups instead of a hundred open tabs. Save the current tab from Safari, Chrome, Arc, Brave, Edge or Yandex Browser with <kbd>⌥⇧S</kbd> and pick the group right in the notch — or the whole window at once. *Save to Polka…* in the Services menu (right-click a selection or a link) does the same from any app. Drag links from anywhere onto a group, paste a whole list (plain links, Markdown or a OneTab export). Sort by title, site, date or recent use, search across everything, open a group in the current or a new window.
+**Tabs.** Save pages in groups and nested groups. Use <kbd>⌥⇧S</kbd> to save the current tab or window from Safari, Chrome, Arc, Brave, Edge or Yandex Browser. Select a group and use **Add Link** or **Paste Link** to add addresses, Markdown links or a OneTab export. Drag a group by its handle: drop on the edge of a row to reorder, or in the middle to nest it. Search saved pages and sort links within a group.
 
-**VPN.** Every VPN registered in System Settings — WireGuard, Happ, V2Box, corporate L2TP and others — with a switch, plus every Tunnelblick (OpenVPN) configuration and FSNT Client / Throne through its local API. In Polka’s FSNT settings, enter the port and key of the enabled API; the key is stored in Keychain. Some FSNT versions expose the API only in advanced mode. Other apps without a supported integration have unknown connection status. Connections are controlled independently; whether they work together depends on the clients and their routes.
+**VPN.** Polka shows supported system VPN connections, Tunnelblick configurations and FSNT Client / Throne through its local API. In Polka’s FSNT settings, enter the port and key of the enabled API; the key is stored in Keychain. Some FSNT versions expose the API only in advanced mode. Apps without a supported integration may have an unknown connection status. Connections are controlled independently; whether they work together depends on the clients and their routes.
 
 **Music.** Title, artist, artwork and a seekable progress bar for whatever is playing — Yandex Music, Music, Spotify, a video in the browser — and which app is playing.
 
@@ -46,7 +46,7 @@ While closed, the notch shows what matters right now: a shield when your VPN is 
 
 ## Install
 
-1. Download the ZIP from the [beta build](https://github.com/romabmstu/polka/releases/tag/nightly) (or check all [releases](https://github.com/romabmstu/polka/releases)) and move **Polka** to Applications.
+1. Download the ZIP with the highest build number from the [beta build](https://github.com/romabmstu/polka/releases/tag/nightly) and move **Polka** to Applications. Older archives remain available for update compatibility.
 2. The app is not notarized by Apple yet, so the first launch is blocked. Run once in Terminal:
    ```sh
    xattr -dr com.apple.quarantine /Applications/Polka.app
@@ -70,13 +70,13 @@ Polka checks for updates: use Settings › Updates › *Check Now*, or the *Upda
 | --- | --- |
 | <kbd>⌥⇧K</kbd> | Open or close Polka |
 | <kbd>⌥⇧S</kbd> | Save the current browser tab, choosing the group |
-| <kbd>⌘1</kbd> … <kbd>⌘8</kbd> | Switch sections |
+| <kbd>⌘1</kbd> … <kbd>⌘9</kbd> | Switch sections |
 | <kbd>⌘V</kbd> | Paste links into the open group |
 | <kbd>Esc</kbd> | Close the panel |
 
 ## Privacy
 
-Polka has no account, no analytics and no telemetry. Your tabs are stored in a single file only you can read: `~/Library/Application Support/Polka/library.json`.
+Polka has no account, no analytics and no telemetry. Your tabs are stored locally in `~/Library/Application Support/Polka/library.json`. Before saving, Polka keeps previous copies in the adjacent `Recovery` folder; keep a separate backup to protect against disk loss.
 
 It uses the network to check for updates and, if enabled, to fetch exchange rates. Details and the full list of permissions are in [PRIVACY.md](PRIVACY.md).
 

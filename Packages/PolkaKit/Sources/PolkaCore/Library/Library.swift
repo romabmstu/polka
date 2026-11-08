@@ -147,6 +147,26 @@ public struct Library: Codable, Equatable, Sendable {
         groups.insert(moving, at: after ? target + 1 : target)
     }
 
+    /// Nests a group without separating it from its descendants.
+    public mutating func moveGroup(_ id: UUID, into parentID: UUID) {
+        guard id != parentID, groups.contains(where: { $0.id == parentID }),
+              groups.contains(where: { $0.id == id }) else { return }
+        var ancestor: UUID? = parentID
+        var seen = Set<UUID>()
+        while let current = ancestor, seen.insert(current).inserted {
+            if current == id { return }
+            ancestor = groups.first(where: { $0.id == current })?.parentID
+        }
+        if groupOrder != .manual {
+            groups = orderedGroups
+            groupOrder = .manual
+        }
+        guard let index = groups.firstIndex(where: { $0.id == id }) else { return }
+        var moving = groups.remove(at: index)
+        moving.parentID = parentID
+        groups.append(moving)
+    }
+
     // MARK: Tabs
 
     @discardableResult

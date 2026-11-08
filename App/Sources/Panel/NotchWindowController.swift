@@ -31,6 +31,15 @@ final class NotchPanel: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 
+    override func sendEvent(_ event: NSEvent) {
+        // Hovering must not steal focus, but an explicit click inside the
+        // shelf should make keyboard shortcuts work in the shelf.
+        if (event.type == .leftMouseDown || event.type == .rightMouseDown), !isKeyWindow {
+            makeKey()
+        }
+        super.sendEvent(event)
+    }
+
     override func cancelOperation(_ sender: Any?) {
         onCancel()
     }
@@ -78,7 +87,7 @@ final class NotchWindowController {
             forName: NSWindow.didBecomeKeyNotification, object: nil, queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
-                guard let self, let window = NSApp.keyWindow, window !== self.panel else { return }
+                guard let self, let window = NSApp.keyWindow, self.isAuxiliaryWindow(window) else { return }
                 self.cancelHover()
                 self.model.panel.collapse()
             }
@@ -248,7 +257,7 @@ final class NotchWindowController {
         }
 
         // A settings or setup window must remain usable above the shelf.
-        if NSApp.windows.contains(where: { $0 !== panel && $0.isVisible && $0.isKeyWindow }) {
+        if NSApp.windows.contains(where: { isAuxiliaryWindow($0) && $0.isVisible && $0.isKeyWindow }) {
             cancelHover()
             return
         }
@@ -288,6 +297,12 @@ final class NotchWindowController {
     private func cancelHover() {
         hoverTask?.cancel()
         hoverTask = nil
+    }
+
+    /// Popovers and context menus may become key too; they are part of the
+    /// shelf and must not collapse it like a separate settings window.
+    private func isAuxiliaryWindow(_ window: NSWindow) -> Bool {
+        window !== panel && (window.styleMask.contains(.titled) || window is NSSavePanel)
     }
 
     // MARK: State changes

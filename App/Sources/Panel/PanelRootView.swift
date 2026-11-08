@@ -51,7 +51,10 @@ struct PanelRootView: View {
             }
         }
         .frame(width: size.width, height: size.height, alignment: .top)
-        .background(panel.hasNotch ? Color.black : Color.black.opacity(panel.isExpanded ? 0.94 : 0.78))
+        .background {
+            if panel.isExpanded { Theme.panelBackground }
+            else { Color.black.opacity(panel.hasNotch ? 1 : 0.88) }
+        }
         .clipShape(shape)
         .overlay {
             if !panel.hasNotch { shape.stroke(Color.white.opacity(panel.isExpanded ? 0.12 : 0.16), lineWidth: 0.75) }

@@ -106,7 +106,8 @@ private struct VPNCard: View {
                 }
                 Spacer(minLength: 8)
                 (active != nil ? Text("VPN active") : (vpn.hasUnknownStatus ? Text("Status unknown") : Text("No active VPN")))
-                    .font(.system(size: 19, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
+                    .lineLimit(2)
                     .foregroundStyle(active == nil ? Theme.warning : Theme.active)
                 Text(active?.name ?? (vpn.connections.isEmpty ? String(localized: "No VPN set up") : String(localized: "No active VPN detected")))
                     .font(.system(size: 12.5))
