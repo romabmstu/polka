@@ -33,6 +33,8 @@ final class AppModel {
         agenda = AgendaModel(preferences: preferences)
         vpn = VPNModel(preferences: preferences)
         calculator = CalculatorModel(defaultCurrency: preferences.favoriteCurrencies.first ?? "USD")
+        let tabs = self.tabs
+        updates.beforeInstall = { try await tabs.flush() }
     }
 
     func start() {
@@ -69,6 +71,10 @@ final class AppModel {
     /// ⌥⇧S: save the tab open in the frontmost browser, asking where unless
     /// the user turned that off.
     func saveFromBrowser() {
+        guard tabs.isLoaded else {
+            panel.flash(.init(symbol: "exclamationmark.triangle", text: String(localized: "Tabs are not ready. Open the Tabs section to check.")))
+            return
+        }
         Task {
             guard let request = await tabs.captureFrontWindow() else {
                 flashBrowserProblem()
@@ -85,6 +91,10 @@ final class AppModel {
     /// Pages handed over by the Services menu. Without links in the selection,
     /// the page the selection came from is saved instead.
     func saveFromService(_ pages: [PageReference], sourceApp: String?) {
+        guard tabs.isLoaded else {
+            panel.flash(.init(symbol: "exclamationmark.triangle", text: String(localized: "Tabs are not ready. Open the Tabs section to check.")))
+            return
+        }
         if pages.isEmpty {
             saveFromBrowser()
             return

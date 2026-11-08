@@ -8,9 +8,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settingsController: SettingsWindowController?
     private var hotKeys: [GlobalHotKey] = []
     private var servicesProvider: ServicesProvider?
+    private var isSavingBeforeQuit = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        replaceOtherInstances()
+        guard replaceOtherInstances() else {
+            NSApp.activate()
+            let alert = NSAlert()
+            alert.alertStyle = .warning
+            alert.messageText = String(localized: "Polka is already open")
+            alert.informativeText = String(localized: "The other copy could not close. Resolve any save error there before opening another copy.")
+            alert.addButton(withTitle: String(localized: "OK"))
+            alert.runModal()
+            NSApp.terminate(nil)
+            return
+        }
         NSApp.mainMenu = MainMenu.make()
         let settings = SettingsWindowController(model: model)
         settingsController = settings
@@ -36,23 +47,49 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSUpdateDynamicServices()
     }
 
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard model.tabs.hasUnsavedChanges else { return .terminateNow }
+        guard !isSavingBeforeQuit else { return .terminateCancel }
+        isSavingBeforeQuit = true
+        Task {
+            do {
+                try await model.tabs.flush()
+                isSavingBeforeQuit = false
+                sender.terminate(nil)
+            } catch {
+                isSavingBeforeQuit = false
+                model.panel.collapse()
+                NSApp.activate()
+                let alert = NSAlert()
+                alert.alertStyle = .warning
+                alert.messageText = String(localized: "Could not save tabs")
+                alert.informativeText = String(localized: "Polka is still open so your changes are not lost. Check available disk space and folder permissions, then try again.")
+                alert.addButton(withTitle: String(localized: "OK"))
+                alert.runModal()
+            }
+        }
+        // Return to the run loop before starting asynchronous work. A nested
+        // AppKit termination loop can otherwise block main-actor tasks.
+        return .terminateCancel
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
-        model.tabs.saveNow()
         model.media.stop()
     }
 
     /// Only one Polka should run: a second copy (an update, or the same app
     /// started from another folder) takes over from the first.
-    private func replaceOtherInstances() {
-        guard let id = Bundle.main.bundleIdentifier else { return }
+    private func replaceOtherInstances() -> Bool {
+        guard let id = Bundle.main.bundleIdentifier else { return true }
         let others = NSRunningApplication.runningApplications(withBundleIdentifier: id)
             .filter { $0 != NSRunningApplication.current }
-        guard !others.isEmpty else { return }
+        guard !others.isEmpty else { return true }
         others.forEach { $0.terminate() }
         let deadline = Date.now.addingTimeInterval(3)
         while others.contains(where: { !$0.isTerminated }), Date.now < deadline {
             RunLoop.current.run(until: .now.addingTimeInterval(0.05))
         }
+        return !others.contains(where: { !$0.isTerminated })
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

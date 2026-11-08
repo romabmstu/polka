@@ -89,4 +89,26 @@ import Testing
         await #expect(throws: LibraryStore.StoreError.unsupportedVersion(99)) { try await store.load() }
         #expect(FileManager.default.fileExists(atPath: url.path(percentEncoded: false)))
     }
+
+    @Test func saveDoesNotOverwriteNewerFormatWrittenAfterLoad() async throws {
+        let url = directory.appending(path: "library.json")
+        let store = LibraryStore(fileURL: url)
+        let loaded = try await store.load()
+        let newer = Data(#"{"version": 99, "groups": []}"#.utf8)
+        try newer.write(to: url)
+        await #expect(throws: LibraryStore.StoreError.unsupportedVersion(99)) { try await store.save(loaded) }
+        #expect(try Data(contentsOf: url) == newer)
+    }
+
+    @Test func olderSaveCannotOverwriteNewerSnapshot() async throws {
+        let store = LibraryStore(fileURL: directory.appending(path: "library.json"))
+        var old = Library()
+        let group = old.groups[0].id
+        old.add([PageReference(url: URL(string: "https://example.com/old")!)], to: group)
+        var newer = old
+        newer.add([PageReference(url: URL(string: "https://example.com/new")!)], to: group)
+        try await store.save(newer, generation: 2)
+        try await store.save(old, generation: 1)
+        #expect(try await store.load().group(group)?.tabs.count == 2)
+    }
 }

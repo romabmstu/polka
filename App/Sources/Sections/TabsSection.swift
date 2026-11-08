@@ -23,8 +23,13 @@ struct TabsSection: View {
 
     var body: some View {
         let tabs = app.tabs
-        if let error = tabs.loadError, !tabs.isLoaded {
-            Placeholder(symbol: "exclamationmark.triangle", title: "Tabs are unavailable", message: LocalizedStringKey(error))
+        if !tabs.isLoaded {
+            if let error = tabs.loadError {
+                Placeholder(symbol: "exclamationmark.triangle", title: "Tabs are unavailable", message: LocalizedStringKey(error))
+            } else {
+                ProgressView("Loading tabs…")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         } else {
             HStack(alignment: .top, spacing: 14) {
                 GroupList(editingGroupID: $editingGroupID, groupName: $groupName, isCreating: $isCreating,
@@ -37,6 +42,21 @@ struct TabsSection: View {
                     } else {
                         SearchResults()
                     }
+                }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 8) {
+                if let error = tabs.saveError ?? tabs.loadError {
+                    HStack(spacing: 10) {
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Theme.warning)
+                        Text(error).font(.system(size: 12)).fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                        if tabs.saveError != nil {
+                            Button("Try Again") { Task { try? await tabs.flush() } }
+                                .buttonStyle(CapsuleButtonStyle())
+                        }
+                    }
+                    .padding(10)
+                    .background(Theme.card, in: .rect(cornerRadius: 12))
                 }
             }
         }

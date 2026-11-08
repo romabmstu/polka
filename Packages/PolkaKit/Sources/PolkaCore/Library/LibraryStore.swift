@@ -13,6 +13,7 @@ public actor LibraryStore {
 
     public nonisolated let fileURL: URL
     private let fileManager = FileManager()
+    private var lastSaveGeneration: Int?
 
     public init(fileURL: URL) {
         self.fileURL = fileURL
@@ -47,7 +48,8 @@ public actor LibraryStore {
         }
     }
 
-    public func save(_ library: Library) throws {
+    public func save(_ library: Library, generation: Int? = nil) throws {
+        if let generation, let lastSaveGeneration, generation <= lastSaveGeneration { return }
         let directory = fileURL.deletingLastPathComponent()
         try fileManager.createDirectory(
             at: directory, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
@@ -56,6 +58,13 @@ public actor LibraryStore {
         let data = try Self.makeEncoder().encode(updated)
         let recovery = directory.appending(path: "Recovery", directoryHint: .isDirectory)
         if fileManager.fileExists(atPath: fileURL.path(percentEncoded: false)) {
+            // A newer instance may have written the file since this instance
+            // loaded it. Do not overwrite a format we cannot understand.
+            let existing = try Data(contentsOf: fileURL)
+            if let header = try? Self.makeDecoder().decode(VersionHeader.self, from: existing),
+               header.version > Library.currentVersion {
+                throw StoreError.unsupportedVersion(header.version)
+            }
             try fileManager.createDirectory(at: recovery, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
             let backup = recovery.appending(path: "auto-\(UUID().uuidString).json")
             try fileManager.copyItem(at: fileURL, to: backup)
@@ -63,6 +72,7 @@ public actor LibraryStore {
         }
         try data.write(to: fileURL, options: [.atomic])
         try fileManager.setAttributes([.posixPermissions: 0o600], ofItemAtPath: fileURL.path(percentEncoded: false))
+        if let generation { lastSaveGeneration = generation }
         if let files = try? fileManager.contentsOfDirectory(at: recovery, includingPropertiesForKeys: [.creationDateKey]) {
             let backups = files.filter { $0.lastPathComponent.hasPrefix("auto-") }.sorted {
                 ((try? $0.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? .distantPast)

@@ -1,6 +1,15 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Loading tabs…": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Загрузка вкладок…" } } } },
+    "Could not save tabs. Check available disk space and folder permissions, then try again.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось сохранить вкладки. Проверьте свободное место и доступ к папке, затем повторите попытку." } } } },
+    "Could not save tabs": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось сохранить вкладки" } } } },
+    "Polka is still open so your changes are not lost. Check available disk space and folder permissions, then try again.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Polka остаётся открытой, чтобы изменения не пропали. Проверьте свободное место и доступ к папке, затем повторите попытку." } } } },
+    "Could not save tabs, so the update was not installed. Check disk space and permissions, then try again.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Обновление не установлено: не удалось сохранить вкладки. Проверьте свободное место и доступ к папке, затем повторите попытку." } } } },
+    "Tabs are not ready. Open the Tabs section to check.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Вкладки ещё недоступны. Откройте раздел «Вкладки», чтобы проверить состояние." } } } },
+    "Try Again": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Повторить" } } } },
+    "Polka is already open": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Polka уже открыта" } } } },
+    "The other copy could not close. Resolve any save error there before opening another copy.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось закрыть другую копию. Исправьте в ней ошибку сохранения, прежде чем открывать новую." } } } },
     "Drag to reorder": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Перетащите, чтобы изменить порядок" } } } },
     "Drag to an edge to reorder, or to the center to nest": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Перетащите к краю строки для изменения порядка или в центр для вложения" } } } },
     "Add Link": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Добавить ссылку" } } } },

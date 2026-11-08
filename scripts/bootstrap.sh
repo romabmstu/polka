@@ -1,7 +1,7 @@
 #!/bin/bash
-# One-time setup on the maintainer's Mac, from a fresh clone with .secrets/:
+# One-time setup on the maintainer's Mac, with signing files outside the clone:
 #   1. installs the GitHub CLI if needed and signs in (in the browser),
-#   2. uploads the signing secrets from .secrets/ to the repository,
+#   2. uploads signing secrets from ~/PolkaSigning/ to the repository,
 #   3. pushes local commits and waits for CI to publish the beta,
 #   4. installs that beta into /Applications and switches Polka to the beta
 #      channel, so every later push arrives as an in-app update.
@@ -12,13 +12,14 @@ set -euo pipefail
 repo="romabmstu/polka"
 bundle_id="io.github.romabmstu.Polka"
 root="$(cd "$(dirname "$0")/.." && pwd)"
+signing_dir="${POLKA_SIGNING_DIR:-$HOME/PolkaSigning}"
 cd "$root"
 
 say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 fail() { printf '\n\033[31m%s\033[0m\n' "$*" >&2; exit 1; }
 
 for file in update-signing-key.txt codesign-p12-base64.txt codesign-p12-password.txt; do
-  [[ -s ".secrets/$file" ]] || fail "Missing .secrets/$file"
+  [[ -s "$signing_dir/$file" ]] || fail "Missing $signing_dir/$file"
 done
 
 # 1. GitHub CLI
@@ -53,7 +54,7 @@ say "Uploading signing secrets…"
 for pair in UPDATE_SIGNING_KEY:update-signing-key.txt CODESIGN_P12_BASE64:codesign-p12-base64.txt \
   CODESIGN_P12_PASSWORD:codesign-p12-password.txt; do
   name="${pair%%:*}"; file="${pair#*:}"
-  tr -d '\r\n' < ".secrets/$file" | gh secret set "$name" -R "$repo"
+  tr -d '\r\n' < "$signing_dir/$file" | gh secret set "$name" -R "$repo"
 done
 
 # 3. Push and wait for the beta.
@@ -75,15 +76,23 @@ gh run watch "$run_id" -R "$repo" --exit-status --interval 15 ||
 # 4. Install the beta.
 say "Downloading the beta…"
 tmp=$(mktemp -d)
-gh release download nightly -R "$repo" -p 'Polka-*.zip' -D "$tmp"
-zip=$(ls "$tmp"/Polka-*.zip | head -1)
+name=$(gh release view nightly -R "$repo" --json assets --jq '.assets[].name' |
+  perl -ne 'if (/^Polka-[A-Za-z0-9._-]+-(\d+)\.zip$/ && (!defined($n) || $1 > $n)) { $n=$1; $best=$_ } END { print $best if defined $best }')
+[[ -n "$name" ]] || fail "No beta archive found on the release page."
+gh release download nightly -R "$repo" -p "$name" -D "$tmp"
+zip="$tmp/$name"
 ditto -x -k "$zip" "$tmp/app"
 [[ -d "$tmp/app/Polka.app" ]] || fail "The downloaded archive has no Polka.app"
 
 say "Installing into /Applications…"
 osascript -e 'tell application id "io.github.romabmstu.Polka" to quit' >/dev/null 2>&1 || true
-pkill -x Polka >/dev/null 2>&1 || true
-sleep 1
+for _ in $(seq 1 30); do
+  pgrep -x Polka >/dev/null 2>&1 || break
+  sleep 1
+done
+if pgrep -x Polka >/dev/null 2>&1; then
+  fail "Polka is still running. Resolve any save error and close it before installing."
+fi
 for old in /Applications/Polka.app /Applications/Polka-2.app; do
   # To the Trash rather than deleted, in case anything needs to come back.
   if [[ -e "$old" ]]; then

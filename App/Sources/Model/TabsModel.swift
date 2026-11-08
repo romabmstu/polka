@@ -16,6 +16,7 @@ final class TabsModel {
     /// Set when the file on disk could not be read; nothing is saved until the
     /// user decides what to do, so their data is never overwritten.
     private(set) var loadError: String?
+    private(set) var saveError: String?
     var selectedGroupID: UUID?
     var query = ""
 
@@ -28,6 +29,8 @@ final class TabsModel {
     @ObservationIgnored private let store: LibraryStore?
     @ObservationIgnored private let browsers = BrowserBridge()
     @ObservationIgnored private var pendingSave: Task<Void, Never>?
+    @ObservationIgnored private var changeGeneration = 0
+    @ObservationIgnored private var savedGeneration = 0
     @ObservationIgnored private var undoSnapshot: Library?
     @ObservationIgnored private let log = Logger(subsystem: "Polka", category: "tabs")
 
@@ -91,31 +94,51 @@ final class TabsModel {
 
     private func scheduleSave() {
         guard isLoaded, let store else { return }
+        changeGeneration += 1
+        let generation = changeGeneration
         pendingSave?.cancel()
         let snapshot = library
-        pendingSave = Task { [log] in
+        pendingSave = Task { [weak self, log] in
             try? await Task.sleep(for: .milliseconds(400))
             guard !Task.isCancelled else { return }
-            do { try await store.save(snapshot) } catch {
+            do {
+                try await store.save(snapshot, generation: generation)
+                guard let self else { return }
+                self.savedGeneration = max(self.savedGeneration, generation)
+                if self.changeGeneration == generation { self.saveError = nil }
+            } catch {
                 log.error("Saving library failed: \(error.localizedDescription, privacy: .public)")
+                self?.saveError = String(localized: "Could not save tabs. Check available disk space and folder permissions, then try again.")
             }
         }
     }
 
-    /// Flushes the pending write synchronously; called on quit.
-    func saveNow() {
-        guard isLoaded, let store, pendingSave != nil else { return }
-        pendingSave?.cancel()
-        let snapshot = library
-        let done = DispatchSemaphore(value: 0)
-        Task.detached {
-            try? await store.save(snapshot)
-            done.signal()
+    var hasUnsavedChanges: Bool { changeGeneration != savedGeneration }
+
+    /// Wait for a pending write, then persist the newest snapshot. Changes may
+    /// arrive while disk I/O is in progress, so keep flushing until caught up.
+    func flush() async throws {
+        guard isLoaded, let store, hasUnsavedChanges else { return }
+        let pending = pendingSave
+        pending?.cancel()
+        await pending?.value
+        while hasUnsavedChanges {
+            let generation = changeGeneration
+            let snapshot = library
+            do {
+                try await store.save(snapshot, generation: generation)
+                savedGeneration = max(savedGeneration, generation)
+                saveError = nil
+            } catch {
+                saveError = String(localized: "Could not save tabs. Check available disk space and folder permissions, then try again.")
+                throw error
+            }
         }
-        _ = done.wait(timeout: .now() + 2)
+        pendingSave = nil
     }
 
     private func mutate(undoable: Bool = false, _ change: (inout Library) -> Void) {
+        guard isLoaded else { return }
         if undoable { undoSnapshot = library }
         change(&library)
         scheduleSave()

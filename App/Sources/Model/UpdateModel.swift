@@ -24,6 +24,7 @@ final class UpdateModel {
 
     /// Called when a build newer than the last announced one shows up.
     @ObservationIgnored var onNewUpdate: (UpdateManifest) -> Void = { _ in }
+    @ObservationIgnored var beforeInstall: () async throws -> Void = {}
     @ObservationIgnored private var announcedBuild = 0
     @ObservationIgnored private let updater: Updater?
     @ObservationIgnored private var schedule: Task<Void, Never>?
@@ -90,6 +91,12 @@ final class UpdateModel {
         state = .downloading(manifest)
         do {
             let app = try await updater.prepare(manifest, bundleIdentifier: id)
+            do {
+                try await beforeInstall()
+            } catch {
+                state = .failed(String(localized: "Could not save tabs, so the update was not installed. Check disk space and permissions, then try again."))
+                return
+            }
             try Updater.installAndRelaunch(app, replacing: Bundle.main.bundleURL)
         } catch Updater.Failure.notInstalledInApplications {
             state = .failed(String(localized: "Move Polka to the Applications folder, open it from there and try again."))

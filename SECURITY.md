@@ -23,7 +23,7 @@ Polka runs with your user’s privileges and touches sensitive things (browser t
 
 **Minimal network surface.** HTTPS requests for update checks and optional exchange rates, using an ephemeral `URLSession` with no cookies, cache or credentials, TLS 1.2 or later. The optional Throne integration uses an authenticated encrypted TCP connection restricted to loopback; its control key is stored in Keychain.
 
-**Careful storage.** The library is written atomically with `0600` permissions in a `0700` folder. A file that fails to parse is moved aside instead of being overwritten, and a file written by a newer version is left untouched.
+**Careful storage.** The library is written atomically with `0600` permissions in a `0700` folder. Previous versions are kept in the adjacent `Recovery` folder. A file that fails to parse is moved aside instead of being overwritten, and a file written by a newer version is left untouched. Polka waits for pending library changes before quitting or installing an update; if saving fails, it reports the error and does not proceed.
 
 **Least privilege.** Hardened Runtime is on. The only entitlements are Apple Events and Calendars. Each system permission is requested when the related feature is first used.
 
@@ -31,7 +31,9 @@ Polka runs with your user’s privileges and touches sensitive things (browser t
 
 **Code identity.** Published builds require the project signing certificate; publication fails if it cannot be used. This keeps a consistent code identity across releases, although changing from an older ad hoc build may require granting permissions again. The self-signed certificate does not replace Apple notarization.
 
-**Supply chain.** One vendored component: the [MediaRemote Adapter](Vendor/MediaRemoteAdapter) (BSD 3-Clause), pinned to a reviewed commit and built from source with the app; Polka runs it inside `/usr/bin/perl` with fixed arguments. No package-manager dependencies. CI uses GitHub-hosted runners with read-only tokens; releases are built in CI from tags and carry SHA-256 checksums and build provenance attestations.
+**Supply chain.** One vendored component: the [MediaRemote Adapter](Vendor/MediaRemoteAdapter) (BSD 3-Clause), pinned to a reviewed commit and built from source with the app; Polka runs it inside `/usr/bin/perl` with fixed arguments. No package-manager dependencies. GitHub Actions are pinned to commit SHAs. CI uses GitHub-hosted runners with permissions scoped per job; tagged releases carry SHA-256 checksums and build provenance attestations.
+
+Maintainer signing files belong outside the checkout, by default in `~/PolkaSigning` with access restricted to the maintainer. `POLKA_SIGNING_DIR` overrides this location for `scripts/bootstrap.sh`. Back up the signing keys securely: replacing the update key without a migration would prevent installed copies from trusting new updates.
 
 ## Known limitations
 
