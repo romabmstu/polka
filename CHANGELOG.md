@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- Welcome window on first launch with the live status of every permission (each installed browser, calendars, accessibility), one-click requests, open at login and the shortcuts. Available again from Settings › About.
+- **Report a Problem** opens a pre-filled GitHub issue with diagnostics (versions, model, displays, permission status; no personal data); **Copy Diagnostics** puts the same text on the clipboard.
+- After a crash, the next launch offers to report it with the crash summary and shows the crash file to attach.
+- A designed disk image window with an arrow to Applications; every image is mounted and its app signature checked before it is published.
+
+### Changed
+
+- CI launches each build for 20 seconds and fails it if Polka quits, before it can reach anyone.
+
 ## [0.1.0] - 2026-11-08
 
 The first public release.

@@ -79,25 +79,57 @@ ditto -c -k --keepParent "$app" "$out/$name"
 # A disk image for people: drag Polka onto Applications. The zip above stays
 # the format the in-app updater uses. The image has a fixed name so
 # releases/latest/download/Polka.dmg always points at the newest one.
-dmg_root="$(mktemp -d)/Polka"
-mkdir -p "$dmg_root"
-ditto "$app" "$dmg_root/Polka.app"
-ln -s /Applications "$dmg_root/Applications"
-for attempt in 1 2 3; do
-  # hdiutil occasionally reports "Resource busy" on CI runners; retry.
-  if hdiutil create -volname Polka -srcfolder "$dmg_root" -fs HFS+ -format UDZO -ov "$out/Polka.dmg" >/dev/null; then
-    break
+# Designed window when dmgbuild is available (CI installs it), plain image
+# otherwise; either way the disk image is never what fails a release.
+#
+# Mounts the image and checks what a user would get: a validly signed app and
+# the Applications link.
+dmg_is_sound() {
+  local mount status=0
+  mount=$(mktemp -d)
+  hdiutil attach "$out/Polka.dmg" -nobrowse -readonly -mountpoint "$mount" >/dev/null || { rmdir "$mount"; return 1; }
+  codesign --verify --deep --strict "$mount/Polka.app" || status=1
+  [[ -L "$mount/Applications" ]] || status=1
+  hdiutil detach "$mount" -force >/dev/null || true
+  rmdir "$mount" 2>/dev/null || true
+  return $status
+}
+
+if command -v dmgbuild >/dev/null 2>&1; then
+  background="$(mktemp -d)/background.tiff"
+  if tiffutil -cathidpicheck scripts/dmg/background.png scripts/dmg/background@2x.png -out "$background" >/dev/null 2>&1 &&
+    dmgbuild -s scripts/dmg/settings.py -D app="$app" -D background="$background" Polka "$out/Polka.dmg" >/dev/null &&
+    dmg_is_sound; then
+    echo "Built the designed disk image"
+  else
+    rm -f "$out/Polka.dmg"
+    echo "::warning title=Plain disk image::dmgbuild failed; publishing a plain disk image instead."
   fi
+  rm -rf "$(dirname "$background")"
+fi
+if [[ ! -f "$out/Polka.dmg" ]]; then
+  dmg_root="$(mktemp -d)/Polka"
+  mkdir -p "$dmg_root"
+  ditto "$app" "$dmg_root/Polka.app"
+  ln -s /Applications "$dmg_root/Applications"
+  for attempt in 1 2 3; do
+    # hdiutil occasionally reports "Resource busy" on CI runners; retry.
+    if hdiutil create -volname Polka -srcfolder "$dmg_root" -fs HFS+ -format UDZO -ov "$out/Polka.dmg" >/dev/null; then
+      break
+    fi
+    rm -f "$out/Polka.dmg"
+    sleep $((attempt * 5))
+  done
+  rm -rf "$(dirname "$dmg_root")"
+fi
+if [[ -f "$out/Polka.dmg" ]] && ! { hdiutil verify "$out/Polka.dmg" >/dev/null && dmg_is_sound; }; then
   rm -f "$out/Polka.dmg"
-  sleep $((attempt * 5))
-done
-rm -rf "$(dirname "$dmg_root")"
+fi
 if [[ -f "$out/Polka.dmg" ]]; then
-  hdiutil verify "$out/Polka.dmg" >/dev/null
   shasum -a 256 "$out/Polka.dmg" > "$out/Polka.dmg.sha256"
   echo "dmg=Polka.dmg" >> "${GITHUB_OUTPUT:-/dev/null}"
 else
-  echo "::warning title=No disk image::hdiutil failed three times; the zip is still published."
+  echo "::warning title=No disk image::The disk image could not be built or did not verify; the zip is still published."
 fi
 
 git log -1 --format='%s%n%n%b' > "$out/notes.txt"

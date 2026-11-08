@@ -95,6 +95,35 @@ jobs:
           fi
           ditto -c -k --keepParent "$app" Polka.zip
 
+      - name: Launch smoke test
+        # Catches crashes at startup before a build reaches anyone: the app
+        # must still be running 20 seconds after launch.
+        if: steps.build.outcome == 'success'
+        run: |
+          app=build/Build/Products/Release/Polka.app
+          defaults write io.github.romabmstu.Polka hasSeenWelcome -bool true
+          defaults write io.github.romabmstu.Polka checkForUpdatesAutomatically -bool false
+          "$app/Contents/MacOS/Polka" > launch.log 2>&1 &
+          pid=$!
+          sleep 20
+          if kill -0 "$pid" 2>/dev/null; then
+            kill "$pid"
+            wait "$pid" 2>/dev/null || true
+            echo "::notice title=Launch::Polka ran for 20 seconds without crashing"
+            exit 0
+          fi
+          status=0
+          wait "$pid" || status=$?
+          report=$(ls -t ~/Library/Logs/DiagnosticReports/Polka*.ips 2>/dev/null | head -1 || true)
+          {
+            echo "Exit status $status"
+            tail -n 30 launch.log
+            if [[ -n "$report" ]]; then head -c 4000 "$report"; fi
+          } > failure.txt
+          cat failure.txt
+          echo "::error title=Polka quit during launch::$(awk '{ gsub(/%/, "%25"); printf "%s%%0A", $0 }' failure.txt)"
+          exit 1
+
       - name: Upload build
         if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -131,6 +160,14 @@ jobs:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: Polka-app
+
+      - name: Install dmgbuild
+        # Only for the designed disk image; packaging falls back without it.
+        continue-on-error: true
+        run: |
+          python3 -m venv "$RUNNER_TEMP/dmgbuild"
+          "$RUNNER_TEMP/dmgbuild/bin/pip" install --quiet --disable-pip-version-check "dmgbuild>=1.6,<2"
+          echo "$RUNNER_TEMP/dmgbuild/bin" >> "$GITHUB_PATH"
 
       - name: Sign and package
         id: package

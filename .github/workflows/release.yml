@@ -38,6 +38,14 @@ jobs:
             MARKETING_VERSION="${GITHUB_REF_NAME#v}" CURRENT_PROJECT_VERSION="$(git rev-list --count HEAD)" \
             CODE_SIGN_IDENTITY=- -quiet build
 
+      - name: Install dmgbuild
+        # Only for the designed disk image; packaging falls back without it.
+        continue-on-error: true
+        run: |
+          python3 -m venv "$RUNNER_TEMP/dmgbuild"
+          "$RUNNER_TEMP/dmgbuild/bin/pip" install --quiet --disable-pip-version-check "dmgbuild>=1.6,<2"
+          echo "$RUNNER_TEMP/dmgbuild/bin" >> "$GITHUB_PATH"
+
       - name: Sign and package
         id: package
         env:
