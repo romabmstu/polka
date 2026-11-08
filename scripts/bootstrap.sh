@@ -23,31 +23,9 @@ for file in update-signing-key.txt codesign-p12-base64.txt codesign-p12-password
 done
 
 # 1. GitHub CLI
-if ! command -v gh >/dev/null 2>&1; then
-  if command -v brew >/dev/null 2>&1; then
-    say "Installing the GitHub CLI with Homebrew…"
-    brew install gh
-  else
-    say "Installing the GitHub CLI into ~/.local/gh…"
-    url=$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest |
-      grep -o '"browser_download_url": *"[^"]*macOS_universal\.zip"' | head -1 | sed 's/.*"\(https[^"]*\)"/\1/')
-    [[ -n "$url" ]] || fail "Could not find the GitHub CLI download. Install it from https://cli.github.com and run this again."
-    tmp=$(mktemp -d)
-    curl -fsSL "$url" -o "$tmp/gh.zip"
-    ditto -x -k "$tmp/gh.zip" "$tmp"
-    rm -rf "$HOME/.local/gh"
-    mkdir -p "$HOME/.local"
-    mv "$tmp"/gh_*_macOS_universal "$HOME/.local/gh"
-    rm -rf "$tmp"
-  fi
-fi
-command -v gh >/dev/null 2>&1 || export PATH="$HOME/.local/gh/bin:$PATH"
-
-if ! gh auth status -h github.com >/dev/null 2>&1; then
-  say "Sign in to GitHub in the browser window that opens…"
-  gh auth login -h github.com -p https -w -s repo,workflow
-fi
-gh auth setup-git -h github.com
+# shellcheck source=lib/github-cli.sh
+source "$root/scripts/lib/github-cli.sh"
+ensure_github_cli
 
 # 2. Secrets, read straight from the files so nothing is mistyped.
 say "Uploading signing secrets…"

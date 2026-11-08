@@ -6,20 +6,19 @@
 #
 #   scripts/launch.sh [version]      # default: MARKETING_VERSION from Config/Base.xcconfig
 #
-# Needs the GitHub CLI signed in; scripts/bootstrap.sh sets that up.
+# Installs the GitHub CLI if needed and signs in through the browser.
 set -euo pipefail
 
 repo="romabmstu/polka"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
-command -v gh >/dev/null 2>&1 || export PATH="$HOME/.local/gh/bin:$PATH"
 
 say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 fail() { printf '\n\033[31m%s\033[0m\n' "$*" >&2; exit 1; }
 
-command -v gh >/dev/null 2>&1 || fail "GitHub CLI not found. Run scripts/bootstrap.sh first."
-gh auth status -h github.com >/dev/null 2>&1 || gh auth login -h github.com -p https -w -s repo,workflow
-gh auth setup-git -h github.com
+# shellcheck source=lib/github-cli.sh
+source "$root/scripts/lib/github-cli.sh"
+ensure_github_cli
 
 version="${1:-$(sed -n 's/^MARKETING_VERSION *= *//p' Config/Base.xcconfig | tr -d ' ')}"
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "Version '$version' is not X.Y.Z"
