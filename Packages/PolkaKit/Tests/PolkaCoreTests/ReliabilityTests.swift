@@ -37,12 +37,15 @@ import Testing
         history.record(picture(bytes: big, seed: 2), at: Date(timeIntervalSince1970: 2))
         let newest = try #require(history.entries.first)
         let older = try #require(history.entries.last)
-        #expect(history.togglePin(newest.id))
+        let pinnedNewest = history.togglePin(newest.id)
+        #expect(pinnedNewest)
         // A second 15 MB picture would take pins past their share.
         #expect(!history.canPin(older.id))
-        #expect(!history.togglePin(older.id))
+        let pinnedOlder = history.togglePin(older.id)
+        #expect(!pinnedOlder)
         #expect(history.canPin(newest.id))
-        #expect(history.togglePin(newest.id))
+        let unpinned = history.togglePin(newest.id)
+        #expect(unpinned)
         #expect(history.entries.allSatisfy { !$0.isPinned })
     }
 
@@ -59,7 +62,8 @@ import Testing
         for seed in 1...6 {
             history.record(picture(bytes: ClipboardHistory.maximumImageBytes, seed: UInt8(seed)))
         }
-        #expect(history.record("note"))
+        let recorded = history.record("note")
+        #expect(recorded)
         #expect(history.entries.first?.text == "note")
     }
 }
