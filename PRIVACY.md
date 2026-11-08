@@ -40,3 +40,10 @@ VPN switching uses the system `scutil` tool and needs no permission. For FSNT / 
 ## Clipboard
 
 When clipboard history is on, Polka checks the pasteboard twice a second for new text or pictures. Pictures over 15 MB are skipped, and at most 8 are kept. Content that password managers mark as concealed or transient (see [nspasteboard.org](http://nspasteboard.org)) is skipped without being read. History is kept in memory only.
+
+## Bug reports
+
+Polka never sends reports by itself. **Report a Problem** (Settings › About, or the **…** menu in the panel) opens a GitHub issue in your browser with the form already filled in, and you decide whether to post it. The filled-in diagnostics are: Polka version and update channel, macOS version, Mac model identifier and architecture, number of displays and whether one has a notch, your preferred language, the enabled sections, whether clipboard history is on, and which permissions are granted (browser automation per browser, calendars, accessibility, open at login). No tabs, links, events, clipboard contents, VPN names or files are included.
+
+After an unexpected quit, Polka looks in `~/Library/Logs/DiagnosticReports` for its own crash report from that session and offers to report it the same way: the summary (exception and the top of the crashed thread) goes into the form, and Finder shows the full file so you can attach it if you want. Reports of other apps are never read.
+

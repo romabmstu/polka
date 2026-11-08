@@ -47,10 +47,6 @@ final class AppModel {
             self?.panel.flash(.init(symbol: "arrow.down.circle", text: String(localized: "Polka \(manifest.version) is available")))
         }
         updates.startAutomaticChecks(preferences: preferences)
-        if !preferences.hasSeenWelcome {
-            panel.section = .overview
-            panel.expand(pinned: true)
-        }
     }
 
     /// Called whenever the panel opens, so what it shows is fresh.

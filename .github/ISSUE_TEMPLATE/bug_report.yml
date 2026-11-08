@@ -24,6 +24,12 @@ body:
     validations:
       required: true
   - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Filled in by Polka › Settings › About › Report a Problem. Versions, display setup and which permissions are on; no personal data.
+      render: text
+  - type: textarea
     id: logs
     attributes:
       label: Logs

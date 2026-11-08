@@ -34,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.start()
         registerHotKeys()
         registerServices()
+        SupportCenter.shared.start(model: model)
     }
 
     private func registerServices() {

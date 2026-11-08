@@ -1,0 +1,316 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "A report helps fix it. It opens on GitHub with the crash summary and basic system details, and you can read it before posting. Polka also shows the full crash file so you can attach it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отчёт поможет это исправить. Он откроется на GitHub с кратким описанием сбоя и основными сведениями о системе — перед отправкой его можно прочитать. Polka также покажет полный файл сбоя, чтобы его можно было приложить."
+          }
+        }
+      }
+    },
+    "A report opens on GitHub with your Polka and macOS versions and which permissions are on — no personal data. You can read it before posting.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отчёт откроется на GitHub с версиями Polka и macOS и списком включённых разрешений — без личных данных. Перед отправкой его можно прочитать."
+          }
+        }
+      }
+    },
+    "Accessibility": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Универсальный доступ"
+          }
+        }
+      }
+    },
+    "Allow": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешить"
+          }
+        }
+      }
+    },
+    "Allowed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешено"
+          }
+        }
+      }
+    },
+    "Calendars": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Календари"
+          }
+        }
+      }
+    },
+    "Copy Diagnostics": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировать диагностику"
+          }
+        }
+      }
+    },
+    "Diagnostics copied": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Диагностика скопирована"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
+          }
+        }
+      }
+    },
+    "Not Now": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не сейчас"
+          }
+        }
+      }
+    },
+    "Open and Allow": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть и разрешить"
+          }
+        }
+      }
+    },
+    "Open or close the panel": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть или закрыть панель"
+          }
+        }
+      }
+    },
+    "Open Polka at login": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открывать Polka при входе в систему"
+          }
+        }
+      }
+    },
+    "Open Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть настройки"
+          }
+        }
+      }
+    },
+    "Optional: ⌥⇧T translates the text you select in any app.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "По желанию: ⌥⇧T переводит текст, выделенный в любом приложении."
+          }
+        }
+      }
+    },
+    "Permissions": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешения"
+          }
+        }
+      }
+    },
+    "Point at the notch to open the panel, move away to close it. On a display without a notch, use the small capsule in the menu bar.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Наведите курсор на чёлку, чтобы открыть панель, уведите — она закроется. На мониторе без чёлки используйте небольшую капсулу в строке меню."
+          }
+        }
+      }
+    },
+    "Polka asks only for what a feature needs, and everything stays on your Mac. You can change these any time in System Settings › Privacy & Security.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polka запрашивает только то, что нужно функции, и всё остаётся на вашем Mac. Изменить это можно в любой момент в Системных настройках › «Конфиденциальность и безопасность»."
+          }
+        }
+      }
+    },
+    "Polka quit unexpectedly last time": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В прошлый раз Polka неожиданно завершилась"
+          }
+        }
+      }
+    },
+    "Report a Problem…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сообщить о проблеме…"
+          }
+        }
+      }
+    },
+    "Report on GitHub…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сообщить на GitHub…"
+          }
+        }
+      }
+    },
+    "Save its tabs with ⌥⇧S and open saved groups.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранять вкладки по ⌥⇧S и открывать сохранённые группы."
+          }
+        }
+      }
+    },
+    "Save the current browser tab": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранить текущую вкладку браузера"
+          }
+        }
+      }
+    },
+    "Shortcuts": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сочетания клавиш"
+          }
+        }
+      }
+    },
+    "Show Me the Panel": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать панель"
+          }
+        }
+      }
+    },
+    "Start": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запуск"
+          }
+        }
+      }
+    },
+    "Today’s events and the next meeting. Read-only.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "События на сегодня и ближайшая встреча. Только чтение."
+          }
+        }
+      }
+    },
+    "Translate the selected text": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перевести выделенный текст"
+          }
+        }
+      }
+    },
+    "Turned off in System Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выключено в Системных настройках"
+          }
+        }
+      }
+    },
+    "Welcome Guide…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Знакомство с Polka…"
+          }
+        }
+      }
+    },
+    "Welcome to Polka": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добро пожаловать в Polka"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

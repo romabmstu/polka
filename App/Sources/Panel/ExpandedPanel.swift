@@ -59,6 +59,11 @@ struct ExpandedPanel: View {
                     app.settingsPage = .updates
                     app.openSettings()
                 }
+                Button {
+                    SupportCenter.shared.reportProblem()
+                } label: {
+                    Text("Report a Problem…", tableName: "Support")
+                }
                 Divider()
                 Button("Quit Polka") { NSApp.terminate(nil) }
                     .keyboardShortcut("q", modifiers: .command)

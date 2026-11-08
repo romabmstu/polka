@@ -448,8 +448,29 @@ private struct AboutSettings: View {
             HStack(spacing: 16) {
                 Link("Website", destination: URL(string: "https://romabmstu.github.io/polka/")!)
                 Link("Source code", destination: URL(string: "https://github.com/romabmstu/polka")!)
-                Link("Report a problem", destination: URL(string: "https://github.com/romabmstu/polka/issues/new/choose")!)
             }
+            HStack(spacing: 10) {
+                Button {
+                    SupportCenter.shared.reportProblem()
+                } label: {
+                    Label { Text("Report a Problem…", tableName: "Support") } icon: { Image(systemName: "ladybug") }
+                }
+                Button {
+                    SupportCenter.shared.copyDiagnostics()
+                } label: {
+                    Text("Copy Diagnostics", tableName: "Support")
+                }
+                Button {
+                    SupportCenter.shared.showWelcome()
+                } label: {
+                    Text("Welcome Guide…", tableName: "Support")
+                }
+            }
+            Text("A report opens on GitHub with your Polka and macOS versions and which permissions are on — no personal data. You can read it before posting.", tableName: "Support")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 460)
             HStack(spacing: 10) {
                 Link(destination: URL(string: "https://github.com/romabmstu/polka")!) {
                     Label("Star on GitHub", systemImage: "star.fill")
