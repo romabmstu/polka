@@ -1,6 +1,8 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Open Player": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Открыть плеер" } } } },
+    "Choose a player or start playback.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Выберите плеер или включите музыку." } } } },
     "Could not connect to GitHub. Check your connection and VPN settings, then try again.": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Не удалось подключиться к GitHub. Проверьте интернет и настройки VPN, затем повторите попытку." } } } },
     "Volume": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Громкость" } } } },
     "Expand folder": { "localizations": { "ru": { "stringUnit": { "state": "translated", "value": "Развернуть папку" } } } },

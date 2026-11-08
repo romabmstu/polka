@@ -27,6 +27,10 @@ struct MediaSection: View {
             ) {
                 Button("Open Settings") { SystemSettings.open(.accessibility) }
                     .buttonStyle(CapsuleButtonStyle(prominent: true))
+                if !app.preferences.playerBundleID.isEmpty {
+                    Button("Open Player") { media.openPlayer(bundleID: app.preferences.playerBundleID) }
+                        .buttonStyle(CapsuleButtonStyle())
+                }
             }
         } else {
             HStack(spacing: 24) {
@@ -45,7 +49,7 @@ struct MediaSection: View {
                                 .lineLimit(1)
                         } else {
                             Text("Nothing is playing").font(.system(size: 24, weight: .bold))
-                            Text("Start music in any app — Polka shows it here and controls it.")
+                            Text("Choose a player or start playback.")
                                 .font(.system(size: 13))
                                 .foregroundStyle(Theme.secondary)
                         }
@@ -199,23 +203,31 @@ struct MediaSection: View {
     private var playerButton: some View {
         let preferred = app.preferences.playerBundleID
         HStack(spacing: 8) {
-            if let name = MediaModel.appName(bundleID: preferred), app.media.nowPlaying?.appBundleIdentifier != preferred {
+            if let current = app.media.nowPlaying,
+               let name = MediaModel.appName(bundleID: preferred), current.appBundleIdentifier != preferred {
                 if preferred == YandexMusicControl.bundleID {
                     Button { app.media.playPreferredPlayer(bundleID: preferred) } label: {
-                        Label("Play \(name)", systemImage: "play.fill")
+                        Label("Play", systemImage: "play.fill").lineLimit(1)
                     }
                     .buttonStyle(CapsuleButtonStyle())
                     .disabled(app.media.isStartingPlayer)
+                    .help(Text("Play \(name)"))
+                    .accessibilityLabel(Text("Play \(name)"))
                 } else {
                     Button { app.media.openPlayer(bundleID: preferred) } label: {
-                        Label("Open \(name)", systemImage: "arrow.up.forward.app")
+                        Label("Open", systemImage: "arrow.up.forward.app").lineLimit(1)
                     }.buttonStyle(CapsuleButtonStyle())
+                    .help(Text("Open \(name)"))
+                    .accessibilityLabel(Text("Open \(name)"))
                 }
             }
-            Button("Choose your player…") { app.settingsPage = .music; app.openSettings() }
+            Button { app.settingsPage = .music; app.openSettings() } label: {
+                Label("Player", systemImage: "slider.horizontal.3").lineLimit(1)
+            }
                 .buttonStyle(.plain)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(Theme.secondary)
+                .help(Text("Choose your player…"))
         }
     }
 }

@@ -50,6 +50,9 @@ final class MediaModel {
             artwork = item?.artwork.flatMap(NSImage.init(data:))
         }
         nowPlaying = item
+        if item?.appBundleIdentifier == YandexMusicControl.bundleID, item?.isPlaying == true {
+            startMessage = nil
+        }
         clock = .now
         updateTicker()
     }
@@ -136,6 +139,9 @@ final class MediaModel {
             return
         }
         guard MediaKeys.isAllowed else {
+            // Opening a player does not require Accessibility access. Keep it
+            // usable even if macOS has a stale or denied permission entry.
+            openPlayer(bundleID: bundleID)
             MediaKeys.requestPermission()
             startMessage = String(localized: "Allow Accessibility access for Polka, then press play again.")
             return
