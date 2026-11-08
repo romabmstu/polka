@@ -39,3 +39,5 @@ The first public release.
 - Built-in updates verified with an Ed25519 signature; a beta channel gets every build from `main`.
 - Release builds carry a build provenance attestation.
 
+[Unreleased]: https://github.com/romabmstu/polka/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/romabmstu/polka/releases/tag/v0.1.0
