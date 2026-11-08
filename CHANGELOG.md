@@ -4,17 +4,6 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Added
-
-- Welcome window on first launch with the live status of every permission (each installed browser, calendars, accessibility), one-click requests, open at login and the shortcuts. Available again from Settings › About.
-- **Report a Problem** opens a pre-filled GitHub issue with diagnostics (versions, model, displays, permission status; no personal data); **Copy Diagnostics** puts the same text on the clipboard.
-- After a crash, the next launch offers to report it with the crash summary and shows the crash file to attach.
-- A designed disk image window with an arrow to Applications; every image is mounted and its app signature checked before it is published.
-
-### Changed
-
-- CI launches each build for 20 seconds and fails it if Polka quits, before it can reach anyone.
-
 ## [0.1.0] - 2026-11-08
 
 The first public release.
@@ -24,6 +13,7 @@ The first public release.
 - Opens from the MacBook notch on hover or with ⌥⇧K; on other displays it is a slim capsule in the menu bar and follows the pointer between screens.
 - The closed notch shows what is playing, an active VPN and a countdown to the next meeting.
 - English and Russian.
+- A welcome window on first launch shows the live status of every permission (each installed browser, calendars, accessibility) with one-click requests, open at login and the shortcuts. It is available again from Settings › About.
 
 ### Sections
 
@@ -37,9 +27,15 @@ The first public release.
 - **Shelf** for files, with AirDrop.
 - **Scenarios:** VPN, music, tabs, links, Shortcuts, opening and quitting apps, dark mode and volume in one click.
 
+### Help
+
+- **Report a Problem** opens a pre-filled GitHub issue with diagnostics (versions, Mac model, displays, permission status; no personal data). **Copy Diagnostics** puts the same text on the clipboard.
+- After a crash, the next launch offers to report it with the crash summary and shows the crash file to attach.
+
 ### Distribution
 
-- Disk image and Homebrew cask.
+- A disk image with a drag-to-Applications window, and a Homebrew cask. Every image is mounted and its app signature checked before it is published.
+- Every build is launched on CI and must keep running before it reaches anyone.
 - Built-in updates verified with an Ed25519 signature; a beta channel gets every build from `main`.
 - Release builds carry a build provenance attestation.
 
