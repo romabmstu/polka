@@ -150,14 +150,10 @@ final class MediaModel {
         isStartingPlayer = true
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.activates = false
-        NSWorkspace.shared.openApplication(at: url, configuration: configuration) { [weak self] application, error in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                guard let application, error == nil else {
-                    self.isStartingPlayer = false
-                    self.startMessage = String(localized: "The selected player could not be opened.")
-                    return
-                }
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                let application = try await NSWorkspace.shared.openApplication(at: url, configuration: configuration)
                 let result = await YandexMusicControl.start(pid: application.processIdentifier)
                 self.isStartingPlayer = false
                 switch result {
@@ -165,6 +161,9 @@ final class MediaModel {
                 case .permissionRequired: self.startMessage = String(localized: "Allow Accessibility access for Polka, then press play again.")
                 case .notReady: self.startMessage = String(localized: "Could not start Yandex Music. Open the player and check that a track is selected.")
                 }
+            } catch {
+                self.isStartingPlayer = false
+                self.startMessage = String(localized: "The selected player could not be opened.")
             }
         }
     }
