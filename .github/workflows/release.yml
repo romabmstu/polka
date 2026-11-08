@@ -71,6 +71,8 @@ jobs:
           - **Homebrew:** `brew tap romabmstu/polka https://github.com/romabmstu/polka && brew install --cask romabmstu/polka/polka`
           - **Disk image:** open `Polka.dmg`, drag Polka to Applications, then run `xattr -dr com.apple.quarantine /Applications/Polka.app` once (Polka is not notarized yet).
 
+          Step by step, with pictures and fixes for common problems: https://romabmstu.github.io/polka/install.html
+
           Already installed? Polka updates itself — no need to download this by hand.
           NOTES
 

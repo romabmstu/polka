@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installing Polka</title>
+<meta name="description" content="Step-by-step guide to installing Polka on macOS, allowing the first launch, granting permissions and fixing common problems.">
+<meta property="og:title" content="Installing Polka">
+<meta property="og:image" content="https://romabmstu.github.io/polka/assets/og.png">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<style>
+:root {
+  --bg: #07070a; --fg: #f5f5f7; --muted: #a1a1aa; --dim: #6e6e78; --card: #111114;
+  --line: rgba(255,255,255,.08); --green: #30d158; --blue: #6aa3ff; --orange: #ff9f0a; --sys: #0a84ff;
+}
+* { box-sizing: border-box; }
+html { color-scheme: dark; scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--blue); }
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+header.nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 17px; text-decoration: none; color: var(--fg); }
+.brand img { width: 30px; height: 30px; }
+.nav-links { display: flex; gap: 20px; align-items: center; font-size: 14px; }
+.nav-links a { text-decoration: none; color: var(--muted); }
+.nav-links a:hover { color: var(--fg); }
+.lang { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; }
+[data-lang="ru"] .en, [data-lang="en"] .ru { display: none; }
+
+h1 { font-size: clamp(34px, 5vw, 48px); letter-spacing: -.03em; line-height: 1.1; margin: 40px 0 14px; }
+.lead { color: var(--muted); font-size: 18px; max-width: 680px; margin: 0 0 28px; }
+h2 { font-size: 28px; letter-spacing: -.02em; margin: 72px 0 8px; scroll-margin-top: 24px; }
+h3 { font-size: 18px; margin: 0 0 6px; }
+p { margin: 0 0 12px; }
+.muted { color: var(--muted); }
+.pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.pick a { display: block; text-decoration: none; color: var(--fg); background: var(--card); border-radius: 18px; padding: 20px; box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow .15s; }
+.pick a:hover { box-shadow: inset 0 0 0 1.5px var(--blue); }
+.pick b { font-size: 17px; }
+.pick span.tag { display: inline-block; margin-left: 8px; font-size: 11.5px; font-weight: 700; color: #000; background: var(--green); border-radius: 6px; padding: 1px 7px; vertical-align: 2px; }
+.pick p { color: var(--muted); font-size: 14.5px; margin: 6px 0 0; }
+
+.step { display: grid; grid-template-columns: 44px 1fr; gap: 18px; margin-top: 34px; }
+.num { width: 44px; height: 44px; border-radius: 50%; background: rgba(106,163,255,.14); color: var(--blue); display: grid; place-items: center; font-weight: 750; font-size: 18px; }
+.step-body > p { color: #d4d4d8; }
+.cmd { position: relative; margin: 12px 0; }
+.cmd pre { margin: 0; background: var(--card); border-radius: 14px; padding: 14px 112px 14px 16px; overflow-x: auto; font: 13.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; box-shadow: inset 0 0 0 1px var(--line); white-space: pre-wrap; word-break: break-all; }
+.copy { position: absolute; top: 9px; right: 9px; height: 30px; padding: 0 12px; border: 0; border-radius: 15px; background: rgba(255,255,255,.1); color: var(--fg); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.copy:hover { background: rgba(255,255,255,.16); }
+.copy.done { background: rgba(48,209,88,.2); color: var(--green); }
+.note { display: flex; gap: 10px; padding: 12px 14px; border-radius: 12px; background: rgba(255,159,10,.08); box-shadow: inset 0 0 0 1px rgba(255,159,10,.22); color: #ffd18a; font-size: 14.5px; margin: 14px 0; }
+.tip { display: flex; gap: 10px; padding: 12px 14px; border-radius: 12px; background: rgba(106,163,255,.08); box-shadow: inset 0 0 0 1px rgba(106,163,255,.22); color: #c4dbff; font-size: 14.5px; margin: 14px 0; }
+kbd { font: 600 12.5px/1 -apple-system, system-ui, sans-serif; padding: 3px 7px; border-radius: 6px; background: rgba(255,255,255,.1); box-shadow: inset 0 -1px 0 rgba(255,255,255,.12); }
+
+/* Illustrations of macOS screens */
+figure { margin: 16px 0 6px; }
+figcaption { color: var(--dim); font-size: 13px; margin-top: 8px; }
+.scene { border-radius: 16px; padding: 28px; background: radial-gradient(500px 300px at 85% 110%, #2b4a8a 0%, transparent 60%), radial-gradient(420px 300px at 0% -20%, #4a2f6b 0%, transparent 60%), #10131c; display: grid; place-items: center; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+.win { width: 100%; max-width: 560px; background: #ececee; color: #1d1d1f; border-radius: 12px; box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 0 .5px rgba(0,0,0,.4); overflow: hidden; font-size: 13px; line-height: 1.45; }
+.win.dark { background: #1e1e1e; color: #e6e6e6; }
+.bar { height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: rgba(0,0,0,.04); border-bottom: 1px solid rgba(0,0,0,.08); font-weight: 600; font-size: 12.5px; color: #4a4a4f; }
+.win.dark .bar { background: #2a2a2a; border-color: #111; color: #aaa; }
+.dots { display: flex; gap: 7px; margin-right: 8px; }
+.dots i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
+.dots i:nth-child(2) { background: #febc2e; } .dots i:nth-child(3) { background: #28c840; }
+.term { padding: 14px 16px 20px; font: 12.5px/1.65 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.term .p { color: #6ad46a; }
+.term .o { color: #9a9a9a; }
+.dmg { padding: 34px 20px 30px; display: flex; justify-content: center; align-items: center; gap: 46px; background: #f6f6f8; }
+.app-ic { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12.5px; }
+.app-ic img { width: 88px; height: 88px; }
+.folder { width: 88px; height: 70px; border-radius: 8px 8px 10px 10px; background: linear-gradient(#6cb7ff, #3d8fe6); position: relative; margin-top: 14px; box-shadow: 0 4px 10px rgba(0,0,0,.15); }
+.folder::before { content: ""; position: absolute; top: -10px; left: 6px; width: 36px; height: 14px; border-radius: 5px 5px 0 0; background: #5aa8f5; }
+.folder::after { content: "A"; position: absolute; inset: 0; display: grid; place-items: center; font: 800 28px/1 -apple-system, system-ui; color: rgba(255,255,255,.85); }
+.arrow { width: 90px; height: 3px; background: #1d1d1f; position: relative; opacity: .7; animation: nudge 1.6s ease-in-out infinite; }
+.arrow::after { content: ""; position: absolute; right: -2px; top: -6px; border: 7.5px solid transparent; border-left: 12px solid #1d1d1f; border-right: 0; }
+@keyframes nudge { 50% { transform: translateX(8px); } }
+.alert { width: 300px; background: rgba(240,240,242,.98); color: #1d1d1f; border-radius: 14px; padding: 20px 18px 16px; text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,.55), 0 0 0 .5px rgba(0,0,0,.35); font-size: 12.5px; line-height: 1.45; }
+.alert img { width: 56px; height: 56px; }
+.alert b { display: block; font-size: 13.5px; margin: 10px 0 6px; }
+.alert .btns { display: grid; gap: 8px; margin-top: 14px; }
+.alert .btns > span { display: block; padding: 6px 0; border-radius: 7px; background: #fff; font-weight: 500; box-shadow: 0 0 0 .5px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.06); }
+.alert .btns > span.primary { background: var(--sys); color: #fff; }
+.alert .btns.row { grid-template-columns: 1fr 1fr; }
+.settings { display: grid; grid-template-columns: 170px 1fr; min-height: 240px; }
+.side { background: #e3e3e6; padding: 12px 8px; font-size: 12.5px; }
+.side div { padding: 5px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; }
+.side i { width: 16px; height: 16px; border-radius: 4px; background: #8e8e93; flex: none; }
+.side .on { background: var(--sys); color: #fff; }
+.side .on i { background: #fff; opacity: .9; }
+.pane { padding: 16px 18px; background: #f4f4f6; }
+.pane h4 { margin: 0 0 12px; font-size: 15px; }
+.group { background: #fff; border-radius: 10px; box-shadow: 0 0 0 .5px rgba(0,0,0,.1); }
+.line { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,.06); font-size: 12.5px; }
+.line:last-child { border-bottom: 0; }
+.line .grow { flex: 1; }
+.btn { padding: 4px 12px; border-radius: 7px; background: #fff; box-shadow: 0 0 0 .5px rgba(0,0,0,.2), 0 1px 1px rgba(0,0,0,.08); font-weight: 500; white-space: nowrap; }
+.hl { position: relative; }
+.hl::after { content: ""; position: absolute; inset: -5px; border-radius: 11px; border: 2.5px solid var(--orange); animation: pulse 1.6s ease-in-out infinite; pointer-events: none; }
+@keyframes pulse { 50% { opacity: .35; } }
+.toggle { width: 34px; height: 20px; border-radius: 10px; background: #34c759; position: relative; flex: none; }
+.toggle::after { content: ""; position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.toggle.off { background: #d1d1d6; }
+.toggle.off::after { right: auto; left: 2px; }
+.mini { width: 22px; height: 22px; border-radius: 5px; }
+
+details { background: var(--card); border-radius: 14px; box-shadow: inset 0 0 0 1px var(--line); margin-top: 10px; }
+summary { cursor: pointer; padding: 16px 18px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; color: var(--dim); font-weight: 400; font-size: 20px; line-height: 1; }
+details[open] summary::after { content: "−"; }
+details > div { padding: 0 18px 16px; color: #d4d4d8; font-size: 15px; }
+details > div p:last-child { margin-bottom: 0; }
+footer { padding: 80px 0 50px; color: var(--dim); font-size: 13.5px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+footer a { color: var(--muted); }
+@media (max-width: 640px) {
+  .step { grid-template-columns: 1fr; gap: 10px; }
+  .settings { grid-template-columns: 1fr; } .side { display: none; }
+  .dmg { gap: 18px; } .arrow { width: 40px; }
+  .scene { padding: 18px; }
+  .nav-links a.hide-sm { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+</head>
+<body data-lang="en">
+<div class="wrap">
+  <header class="nav">
+    <a class="brand" href="./"><img src="assets/favicon.png" alt="">Polka</a>
+    <nav class="nav-links">
+      <a class="hide-sm" href="./#features"><span class="en">Features</span><span class="ru">Возможности</span></a>
+      <a href="https://github.com/romabmstu/polka">GitHub</a>
+      <button class="lang" id="lang" type="button">RU</button>
+    </nav>
+  </header>
+
+  <h1><span class="en">Installing Polka</span><span class="ru">Установка Polka</span></h1>
+  <p class="lead"><span class="en">Five minutes, start to finish. Pick one way to install, then allow the first launch and the permissions you need. Problems are answered at the end.</span><span class="ru">Пять минут от начала до конца. Выберите способ установки, затем разрешите первый запуск и нужные доступы. Ответы на частые проблемы — в конце.</span></p>
+
+  <div class="pick">
+    <a href="#homebrew"><b>Homebrew</b><span class="tag"><span class="en">easiest</span><span class="ru">проще всего</span></span>
+      <p><span class="en">One command in Terminal. No security prompts, and Polka keeps itself updated.</span><span class="ru">Одна команда в Терминале. Без предупреждений безопасности, дальше Polka обновляется сама.</span></p></a>
+    <a href="#dmg"><b><span class="en">Disk image</span><span class="ru">Образ диска</span></b>
+      <p><span class="en">Download Polka.dmg and drag the app to Applications, then allow the first launch once.</span><span class="ru">Скачайте Polka.dmg и перетащите приложение в «Программы», затем один раз разрешите запуск.</span></p></a>
+  </div>
+
+  <p class="muted" style="margin-top:18px;font-size:14.5px"><span class="en">Requirements: macOS 14 Sonoma or later, Apple silicon or Intel. The Translator needs macOS 15.</span><span class="ru">Требования: macOS 14 Sonoma или новее, Apple silicon или Intel. Для переводчика нужна macOS 15.</span></p>
+
+  <!-- ===================== Homebrew ===================== -->
+  <h2 id="homebrew">Homebrew</h2>
+  <p class="muted"><span class="en">Homebrew is the standard package manager for the Mac. If you already have it, step 2 is all you need.</span><span class="ru">Homebrew — стандартный менеджер пакетов для Mac. Если он уже есть, достаточно шага 2.</span></p>
+
+  <div class="step"><div class="num">1</div><div class="step-body">
+    <h3><span class="en">Open Terminal</span><span class="ru">Откройте Терминал</span></h3>
+    <p><span class="en">Press <kbd>⌘</kbd> <kbd>Space</kbd>, type <b>Terminal</b> and press <kbd>Return</kbd>.</span><span class="ru">Нажмите <kbd>⌘</kbd> <kbd>Пробел</kbd>, введите <b>Терминал</b> и нажмите <kbd>Return</kbd>.</span></p>
+    <p><span class="en">No Homebrew yet? Paste this, press <kbd>Return</kbd> and follow what it asks (it needs your Mac password):</span><span class="ru">Homebrew ещё нет? Вставьте это, нажмите <kbd>Return</kbd> и следуйте подсказкам (понадобится пароль от Mac):</span></p>
+    <div class="cmd"><pre>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</pre><button class="copy" type="button"><span class="en">Copy</span><span class="ru">Копировать</span></button></div>
+    <p class="muted" style="font-size:14px"><span class="en">That is the official installer from <a href="https://brew.sh">brew.sh</a>.</span><span class="ru">Это официальный установщик с <a href="https://brew.sh">brew.sh</a>.</span></p>
+  </div></div>
+
+  <div class="step"><div class="num">2</div><div class="step-body">
+    <h3><span class="en">Install Polka</span><span class="ru">Установите Polka</span></h3>
+    <div class="cmd"><pre>brew tap romabmstu/polka https://github.com/romabmstu/polka &amp;&amp; brew install --cask romabmstu/polka/polka</pre><button class="copy" type="button"><span class="en">Copy</span><span class="ru">Копировать</span></button></div>
+    <figure>
+      <div class="scene"><div class="win dark">
+        <div class="bar"><div class="dots"><i></i><i></i><i></i></div>Terminal — zsh</div>
+        <div class="term">
+          <div><span class="p">~ %</span> brew tap romabmstu/polka https://github.com/romabmstu/polka &amp;&amp; brew install --cask romabmstu/polka/polka</div>
+          <div class="o">==&gt; Tapping romabmstu/polka</div>
+          <div class="o">==&gt; Downloading https://github.com/romabmstu/polka/releases/latest/download/Polka.dmg</div>
+          <div class="o">==&gt; Installing Cask polka</div>
+          <div class="o">==&gt; Moving App 'Polka.app' to '/Applications/Polka.app'</div>
+          <div>🍺  polka was successfully installed!</div>
+        </div>
+      </div></div>
+      <figcaption><span class="en">What a successful install looks like.</span><span class="ru">Так выглядит успешная установка.</span></figcaption>
+    </figure>
+    <div class="tip">✓ <span><span class="en">Homebrew already allows the first launch for you — skip to <a href="#first-launch">First launch</a>.</span><span class="ru">Homebrew сам разрешает первый запуск — переходите к разделу <a href="#first-launch">«Первый запуск»</a>.</span></span></div>
+  </div></div>
+
+  <!-- ===================== DMG ===================== -->
+  <h2 id="dmg"><span class="en">Disk image</span><span class="ru">Образ диска</span></h2>
+
+  <div class="step"><div class="num">1</div><div class="step-body">
+    <h3><span class="en">Download and drag to Applications</span><span class="ru">Скачайте и перетащите в «Программы»</span></h3>
+    <p><span class="en">Download <a href="https://github.com/romabmstu/polka/releases/latest/download/Polka.dmg">Polka.dmg</a>, open it and drag Polka onto the Applications folder. Then eject the disk image.</span><span class="ru">Скачайте <a href="https://github.com/romabmstu/polka/releases/latest/download/Polka.dmg">Polka.dmg</a>, откройте его и перетащите Polka на папку «Программы». Потом извлеките образ.</span></p>
+    <figure>
+      <div class="scene"><div class="win" style="max-width:460px">
+        <div class="bar"><div class="dots"><i></i><i></i><i></i></div>Polka</div>
+        <div class="dmg">
+          <div class="app-ic"><img src="assets/favicon.png" alt="">Polka</div>
+          <div class="arrow"></div>
+          <div class="app-ic"><div class="folder"></div><span class="en">Applications</span><span class="ru">Программы</span></div>
+        </div>
+      </div></div>
+    </figure>
+  </div></div>
+
+  <div class="step"><div class="num">2</div><div class="step-body">
+    <h3><span class="en">Allow the first launch</span><span class="ru">Разрешите первый запуск</span></h3>
+    <p><span class="en">Polka is not notarized by Apple yet (that needs a paid developer account), so the first time you open it macOS stops it with a message like this. That is expected — press <b>Done</b>.</span><span class="ru">Polka пока не нотаризована Apple (для этого нужен платный аккаунт разработчика), поэтому при первом открытии macOS остановит её таким сообщением. Это нормально — нажмите <b>«Готово»</b>.</span></p>
+    <figure>
+      <div class="scene"><div class="alert">
+        <img src="assets/favicon.png" alt="">
+        <b><span class="en">“Polka” Not Opened</span><span class="ru">Не удалось открыть «Polka»</span></b>
+        <span class="en">Apple could not verify “Polka” is free of malware that may harm your Mac or compromise your privacy.</span><span class="ru">Apple не может проверить, что в «Polka» нет вредоносного ПО, которое может нанести вред Mac или поставить под угрозу конфиденциальность.</span>
+        <div class="btns"><span class="primary"><span class="en">Done</span><span class="ru">Готово</span></span><span><span class="en">Move to Trash</span><span class="ru">Переместить в Корзину</span></span></div>
+      </div></div>
+      <figcaption><span class="en">The wording differs slightly between macOS versions.</span><span class="ru">Формулировка немного отличается в разных версиях macOS.</span></figcaption>
+    </figure>
+    <p style="margin-top:18px"><span class="en">Then allow it in one of two ways.</span><span class="ru">Затем разрешите запуск одним из двух способов.</span></p>
+    <p><b><span class="en">Way A — System Settings.</span><span class="ru">Способ А — Системные настройки.</span></b> <span class="en">Open  › System Settings › Privacy &amp; Security, scroll down to Security and click <b>Open Anyway</b> next to the line about Polka. Confirm with your password or Touch ID, then press <b>Open Anyway</b> once more.</span><span class="ru">Откройте  › Системные настройки › «Конфиденциальность и безопасность», прокрутите до раздела «Безопасность» и нажмите <b>«Всё равно открыть»</b> рядом со строкой про Polka. Подтвердите паролем или Touch ID и ещё раз нажмите <b>«Всё равно открыть»</b>.</span></p>
+    <figure>
+      <div class="scene"><div class="win">
+        <div class="bar"><div class="dots"><i></i><i></i><i></i></div><span class="en">Privacy &amp; Security</span><span class="ru">Конфиденциальность и безопасность</span></div>
+        <div class="settings">
+          <div class="side"><div><i></i><span class="en">General</span><span class="ru">Основные</span></div><div><i></i><span class="en">Appearance</span><span class="ru">Оформление</span></div><div><i></i><span class="en">Desktop &amp; Dock</span><span class="ru">Рабочий стол и Dock</span></div><div class="on"><i></i><span class="en">Privacy &amp; Security</span><span class="ru">Конфиденциальность и безопасность</span></div><div><i></i>Touch ID</div></div>
+          <div class="pane"><h4><span class="en">Security</span><span class="ru">Безопасность</span></h4>
+            <div class="group">
+              <div class="line"><span class="grow"><span class="en">Allow applications from</span><span class="ru">Разрешать программы из</span></span><span class="muted" style="color:#6e6e73"><span class="en">App Store &amp; Known Developers</span><span class="ru">App Store и от известных разработчиков</span></span></div>
+              <div class="line"><span class="grow"><span class="en">“Polka” was blocked to protect your Mac.</span><span class="ru">Программа «Polka» заблокирована для защиты Mac.</span></span><span class="btn hl"><span class="en">Open Anyway</span><span class="ru">Всё равно открыть</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><span class="en">The button appears for about an hour after the blocked launch. Not there? Open Polka again, then come back.</span><span class="ru">Кнопка появляется примерно на час после заблокированного запуска. Нет кнопки? Откройте Polka ещё раз и вернитесь сюда.</span></figcaption>
+    </figure>
+    <p style="margin-top:18px"><b><span class="en">Way B — Terminal.</span><span class="ru">Способ Б — Терминал.</span></b> <span class="en">Paste this once, press <kbd>Return</kbd> and open Polka normally:</span><span class="ru">Вставьте один раз, нажмите <kbd>Return</kbd> и откройте Polka как обычно:</span></p>
+    <div class="cmd"><pre>xattr -dr com.apple.quarantine /Applications/Polka.app</pre><button class="copy" type="button"><span class="en">Copy</span><span class="ru">Копировать</span></button></div>
+    <p class="muted" style="font-size:14.5px"><span class="en">It removes the “downloaded from the internet” mark that triggers the check, only for Polka. You only do this once: updates install from inside the app.</span><span class="ru">Команда снимает с Polka отметку «скачано из интернета», из-за которой срабатывает проверка, — только с неё. Это нужно один раз: обновления ставятся изнутри приложения.</span></p>
+  </div></div>
+
+  <!-- ===================== First launch ===================== -->
+  <h2 id="first-launch"><span class="en">First launch</span><span class="ru">Первый запуск</span></h2>
+  <div class="step"><div class="num">✓</div><div class="step-body">
+    <p><span class="en">Polka has no Dock icon — it lives in the notch. Point at the notch or press <kbd>⌥</kbd> <kbd>⇧</kbd> <kbd>K</kbd>. On a display without a notch it is a small capsule in the middle of the menu bar.</span><span class="ru">У Polka нет значка в Dock — она живёт в чёлке. Наведите курсор на чёлку или нажмите <kbd>⌥</kbd> <kbd>⇧</kbd> <kbd>K</kbd>. На мониторе без чёлки это небольшая капсула в середине строки меню.</span></p>
+    <p><span class="en">Want it to start with your Mac? Settings › General › <b>Open at login</b>. Settings open from the <b>…</b> button in the panel, or by launching Polka again from Applications.</span><span class="ru">Чтобы она запускалась вместе с Mac: Настройки › Основные › <b>«Открывать при входе в систему»</b>. Настройки открываются кнопкой <b>…</b> в панели или повторным запуском Polka из «Программ».</span></p>
+  </div></div>
+
+  <!-- ===================== Permissions ===================== -->
+  <h2 id="permissions"><span class="en">Permissions</span><span class="ru">Разрешения</span></h2>
+  <p class="muted"><span class="en">Polka asks for each one only when you first use the feature that needs it. Everything stays on your Mac.</span><span class="ru">Polka просит каждое разрешение только при первом использовании нужной функции. Всё остаётся на вашем Mac.</span></p>
+
+  <div class="step"><div class="num">1</div><div class="step-body">
+    <h3><span class="en">Your browser — to save tabs</span><span class="ru">Браузер — чтобы сохранять вкладки</span></h3>
+    <p><span class="en">The first <kbd>⌥⇧S</kbd> in each browser shows this prompt. Press <b>Allow</b>: Polka only reads the address and title of open tabs and opens saved groups.</span><span class="ru">При первом <kbd>⌥⇧S</kbd> в каждом браузере появится такой запрос. Нажмите <b>«Разрешить»</b>: Polka только читает адрес и заголовок открытых вкладок и открывает сохранённые группы.</span></p>
+    <figure>
+      <div class="scene"><div class="alert">
+        <img src="assets/favicon.png" alt="">
+        <b><span class="en">“Polka” wants access to control “Safari”.</span><span class="ru">Программа «Polka» запрашивает доступ на управление программой «Safari».</span></b>
+        <span class="en">Allowing control will provide access to documents and data in “Safari”, and to perform actions within that app.</span><span class="ru">При разрешении управления будет предоставлен доступ к документам и данным в программе «Safari», а также к выполнению действий в ней.</span>
+        <div class="btns row"><span><span class="en">Don’t Allow</span><span class="ru">Не разрешать</span></span><span class="primary hl"><span class="en">Allow</span><span class="ru">Разрешить</span></span></div>
+      </div></div>
+    </figure>
+  </div></div>
+
+  <div class="step"><div class="num">2</div><div class="step-body">
+    <h3><span class="en">Calendars — for your agenda</span><span class="ru">Календари — для расписания</span></h3>
+    <p><span class="en">Asked when you open the Calendar section. Polka reads events from calendars already on your Mac (Google, iCloud, Exchange) and never changes them.</span><span class="ru">Запрашивается при открытии раздела «Календарь». Polka читает события из календарей, уже подключённых к Mac (Google, iCloud, Exchange), и никогда их не меняет.</span></p>
+  </div></div>
+
+  <div class="step"><div class="num">3</div><div class="step-body">
+    <h3><span class="en">Accessibility — for <kbd>⌥⇧T</kbd>, optional</span><span class="ru">Универсальный доступ — для <kbd>⌥⇧T</kbd>, по желанию</span></h3>
+    <p><span class="en">Needed only to translate text you select in other apps. Turn Polka on in System Settings › Privacy &amp; Security › Accessibility.</span><span class="ru">Нужен только для перевода текста, выделенного в других приложениях. Включите Polka в Системных настройках › «Конфиденциальность и безопасность» › «Универсальный доступ».</span></p>
+    <figure>
+      <div class="scene"><div class="win" style="max-width:460px">
+        <div class="bar"><div class="dots"><i></i><i></i><i></i></div><span class="en">Accessibility</span><span class="ru">Универсальный доступ</span></div>
+        <div class="pane"><div class="group">
+          <div class="line"><div class="mini" style="background:#8e8e93"></div><span class="grow">Raycast</span><div class="toggle"></div></div>
+          <div class="line"><img class="mini" src="assets/favicon.png" alt=""><span class="grow">Polka</span><div class="toggle hl"></div></div>
+          <div class="line"><div class="mini" style="background:#5856d6"></div><span class="grow">Rectangle</span><div class="toggle off"></div></div>
+        </div></div>
+      </div></div>
+    </figure>
+  </div></div>
+
+  <!-- ===================== Troubleshooting ===================== -->
+  <h2 id="problems"><span class="en">Something went wrong</span><span class="ru">Если что-то пошло не так</span></h2>
+
+  <details><summary><span class="en">“Polka is damaged and can’t be opened”</span><span class="ru">«Программа Polka повреждена, и её не удаётся открыть»</span></summary><div>
+    <p><span class="en">The app is fine — macOS shows this for downloaded apps that are not notarized. Run the command from <a href="#dmg">Way B</a> and open Polka again.</span><span class="ru">С приложением всё в порядке — так macOS реагирует на скачанные ненотаризованные программы. Выполните команду из <a href="#dmg">способа Б</a> и откройте Polka снова.</span></p>
+  </div></details>
+
+  <details><summary><span class="en">Nothing happens when I point at the notch</span><span class="ru">Ничего не происходит при наведении на чёлку</span></summary><div>
+    <p><span class="en">Check that Polka is running: press <kbd>⌥⇧K</kbd>. If the panel opens, see Settings › General: <b>Open when the pointer reaches the notch</b> and the delay. With several displays, choose where Polka appears under <b>Show on</b>.</span><span class="ru">Проверьте, что Polka запущена: нажмите <kbd>⌥⇧K</kbd>. Если панель открылась, загляните в Настройки › Основные: <b>«Открывать, когда курсор у чёлки»</b> и задержку. Если мониторов несколько, выберите, где показывать Polka, в пункте <b>«Показывать на»</b>.</span></p>
+  </div></details>
+
+  <details><summary><span class="en">Tabs don’t save from my browser</span><span class="ru">Не сохраняются вкладки из браузера</span></summary><div>
+    <p><span class="en">You probably pressed “Don’t Allow” once. Open System Settings › Privacy &amp; Security › Automation › Polka and turn your browser on.</span><span class="ru">Скорее всего, один раз было нажато «Не разрешать». Откройте Системные настройки › «Конфиденциальность и безопасность» › «Автоматизация» › Polka и включите нужный браузер.</span></p>
+  </div></details>
+
+  <details><summary><span class="en">My VPN isn’t listed or shows no status</span><span class="ru">Мой VPN не виден или без статуса</span></summary><div>
+    <p><span class="en">Polka shows connections from System Settings › VPN, Tunnelblick configurations, and FSNT Client / Throne through its local API (enter the port and key in Polka’s settings). Connect once in your client so it registers its configuration, then reopen the panel.</span><span class="ru">Polka показывает подключения из Системных настроек › VPN, конфигурации Tunnelblick и FSNT Client / Throne через его локальный API (порт и ключ вводятся в настройках Polka). Подключитесь один раз в самом клиенте, чтобы он зарегистрировал конфигурацию, и откройте панель снова.</span></p>
+  </div></details>
+
+  <details><summary><span class="en">The translator says the languages aren’t available</span><span class="ru">Переводчик пишет, что языки недоступны</span></summary><div>
+    <p><span class="en">Download the pair in System Settings › General › Language &amp; Region › Translation Languages. The Translator needs macOS 15 or later.</span><span class="ru">Загрузите нужную пару в Системных настройках › Основные › «Язык и регион» › «Языки перевода». Переводчику нужна macOS 15 или новее.</span></p>
+  </div></details>
+
+  <details><summary><span class="en">An update won’t install</span><span class="ru">Не устанавливается обновление</span></summary><div>
+    <p><span class="en">Check your connection, and try with the VPN switched off if GitHub is blocked through it. You can always install the latest version over the old one with Homebrew (<code>brew upgrade --cask romabmstu/polka/polka</code>) or from the disk image — your tabs and settings stay.</span><span class="ru">Проверьте интернет и попробуйте с выключенным VPN, если через него недоступен GitHub. Последнюю версию всегда можно поставить поверх старой через Homebrew (<code>brew upgrade --cask romabmstu/polka/polka</code>) или из образа диска — вкладки и настройки сохранятся.</span></p>
+  </div></details>
+
+  <details><summary><span class="en">How do I remove Polka completely?</span><span class="ru">Как полностью удалить Polka?</span></summary><div>
+    <p><span class="en">With Homebrew: <code>brew uninstall --zap --cask romabmstu/polka/polka</code>. Otherwise quit Polka, move it to the Trash and delete <code>~/Library/Application Support/Polka</code>.</span><span class="ru">Через Homebrew: <code>brew uninstall --zap --cask romabmstu/polka/polka</code>. Иначе закройте Polka, перенесите её в Корзину и удалите папку <code>~/Library/Application Support/Polka</code>.</span></p>
+  </div></details>
+
+  <p style="margin-top:28px"><span class="en">Still stuck? <a href="https://github.com/romabmstu/polka/issues/new/choose">Open an issue</a> with your macOS version and what you see — a screenshot helps.</span><span class="ru">Не получилось? <a href="https://github.com/romabmstu/polka/issues/new/choose">Создайте issue</a> с версией macOS и описанием того, что видите, — скриншот очень поможет.</span></p>
+
+  <footer>
+    <span>© 2026 romabmstu · <span class="en">MIT License</span><span class="ru">Лицензия MIT</span></span>
+    <span><a href="./">Polka</a> · <a href="https://github.com/romabmstu/polka">GitHub</a></span>
+  </footer>
+</div>
+<script>
+(() => {
+  const body = document.body;
+  let saved = null;
+  try { saved = localStorage.getItem('polka-lang'); } catch (e) {}
+  const lang = saved === 'ru' || saved === 'en' ? saved : ((navigator.language || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en');
+  const apply = l => {
+    body.dataset.lang = l;
+    document.documentElement.lang = l;
+    document.title = l === 'ru' ? 'Установка Polka' : 'Installing Polka';
+    document.getElementById('lang').textContent = l === 'ru' ? 'EN' : 'RU';
+  };
+  apply(lang);
+  document.getElementById('lang').addEventListener('click', () => {
+    const next = body.dataset.lang === 'ru' ? 'en' : 'ru';
+    try { localStorage.setItem('polka-lang', next); } catch (e) {}
+    apply(next);
+  });
+  document.querySelectorAll('.cmd').forEach(block => {
+    const button = block.querySelector('.copy');
+    const original = button.innerHTML;
+    button.addEventListener('click', async () => {
+      const text = block.querySelector('pre').textContent;
+      try { await navigator.clipboard.writeText(text); } catch (e) {
+        const field = document.createElement('textarea');
+        field.value = text; field.style.position = 'fixed'; field.style.opacity = '0';
+        document.body.appendChild(field); field.select();
+        try { document.execCommand('copy'); } catch (err) {}
+        field.remove();
+      }
+      button.classList.add('done');
+      button.innerHTML = '<span class="en">Copied</span><span class="ru">Скопировано</span>';
+      setTimeout(() => { button.classList.remove('done'); button.innerHTML = original; }, 1600);
+    });
+  });
+})();
+</script>
+</body>
+</html>

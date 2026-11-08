@@ -66,6 +66,9 @@ While closed, the notch shows what matters right now: what is playing, a shield 
 
 ## Install
 
+> [!TIP]
+> New to this? The [illustrated installation guide](https://romabmstu.github.io/polka/install.html) walks through every step, the macOS security prompt and the permissions, with fixes for common problems.
+
 **Homebrew** (recommended — nothing else to do):
 
 ```sh
