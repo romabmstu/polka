@@ -85,7 +85,7 @@ struct PanelRootView: View {
             if panel.flash != nil {
                 return CGSize(width: width + shoulders + 2 * PanelMetrics.wingWidth + 60, height: height + 30)
             }
-            let wings = CollapsedPanel.hasActivity(app) ? 2 * PanelMetrics.wingWidth : 0
+            let wings = CollapsedPanel.hasActivity(app) ? 2 * CollapsedPanel.wingWidth(app) : 0
             return CGSize(width: width + shoulders + wings, height: height)
         case .pill(let menuBar):
             // Only as wide as what it shows: a small handle when idle.

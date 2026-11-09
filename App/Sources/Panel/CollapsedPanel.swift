@@ -26,6 +26,25 @@ struct CollapsedPanel: View {
         app.preferences.showMusicIndicator && app.media.isPlaying
     }
 
+    /// Width of each wing beside the camera. Both wings are always the same
+    /// width so the camera stays in the middle; they widen when the right one
+    /// has to hold a meeting countdown next to the VPN shield.
+    static func wingWidth(_ app: AppModel) -> CGFloat {
+        let crowded = showsMusic(app) && upcomingMeeting(app) != nil && showsVPN(app)
+        return crowded ? PanelMetrics.wideWingWidth : PanelMetrics.wingWidth
+    }
+
+    /// Room a wing keeps free: 14 pt from the outer edge and a few points
+    /// short of the camera, so nothing slides underneath it.
+    private static let wingInset: CGFloat = 12
+
+    /// The waveform usually sits on the right, opposite the artwork. When the
+    /// right wing also has to show a meeting countdown, it moves next to the
+    /// artwork so neither wing overflows.
+    private static func waveformBesideArtwork(_ app: AppModel) -> Bool {
+        upcomingMeeting(app) != nil
+    }
+
     var body: some View {
         switch app.panel.style {
         case .notch(_, let height):
@@ -50,13 +69,14 @@ struct CollapsedPanel: View {
             }
             .foregroundStyle(.white)
         } else {
+            let wing = Self.wingWidth(app)
             HStack(spacing: 0) {
                 leadingStatus
-                    .frame(width: PanelMetrics.wingWidth, alignment: .leading)
+                    .frame(width: wing - Self.wingInset, alignment: .leading)
                     .padding(.leading, 14)
                 Spacer(minLength: 0)
                 trailingStatus
-                    .frame(width: PanelMetrics.wingWidth, alignment: .trailing)
+                    .frame(width: wing - Self.wingInset, alignment: .trailing)
                     .padding(.trailing, 14)
             }
             .frame(height: notchHeight)
@@ -119,7 +139,10 @@ struct CollapsedPanel: View {
     @ViewBuilder
     private var leadingStatus: some View {
         if Self.showsMusic(app) {
-            ArtworkView(size: app.panel.hasNotch ? 20 : 16, cornerRadius: 5)
+            HStack(spacing: 7) {
+                ArtworkView(size: app.panel.hasNotch ? 20 : 16, cornerRadius: 5)
+                if Self.waveformBesideArtwork(app) { waveform }
+            }
         } else if let meeting = Self.upcomingMeeting(app) {
             MeetingBadge(meeting: meeting, now: app.agenda.now)
         }
@@ -138,13 +161,16 @@ struct CollapsedPanel: View {
                     .symbolEffect(.pulse, isActive: active.status == .connecting)
                     .help(Text(active.name))
             }
-            if Self.showsMusic(app) {
-                Image(systemName: "waveform")
-                    .font(.system(size: 13, weight: .semibold))
-                    .symbolEffect(.variableColor.iterative, isActive: true)
-                    .foregroundStyle(.white)
-            }
+            if Self.showsMusic(app), !Self.waveformBesideArtwork(app) { waveform }
         }
+        .fixedSize()
+    }
+
+    private var waveform: some View {
+        Image(systemName: "waveform")
+            .font(.system(size: 13, weight: .semibold))
+            .symbolEffect(.variableColor.iterative, isActive: true)
+            .foregroundStyle(.white)
     }
 }
 
@@ -161,7 +187,9 @@ private struct MeetingBadge: View {
                 .foregroundStyle(Theme.accent)
             Text(happening ? String(localized: "now") : String(localized: "\(minutes) min"))
                 .monospacedDigit()
+                .lineLimit(1)
         }
+        .fixedSize()
         .font(.system(size: compact ? 10.5 : 11.5, weight: .semibold))
         .foregroundStyle(.white)
     }

@@ -1,4 +1,5 @@
 import AppKit
+import PolkaCore
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -58,7 +59,12 @@ final class NotchWindowController {
     private var screen: NSScreen?
     private var monitors: [Any] = []
     private var screenObserver: NSObjectProtocol?
+    private var wakeObservers: [NSObjectProtocol] = []
     private var windowObserver: NSObjectProtocol?
+    private var settleTask: Task<Void, Never>?
+    /// Display frames as of the last layout, for following the pointer
+    /// without asking AppKit about every display on each mouse move.
+    private var knownDisplays: [DisplayInfo] = []
     private var hoverTask: Task<Void, Never>?
     private var suppressHoverUntilExit = false
 
@@ -81,7 +87,13 @@ final class NotchWindowController {
         screenObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.layout() }
+            MainActor.assumeIsolated { self?.displaysChanged() }
+        }
+        let workspace = NSWorkspace.shared.notificationCenter
+        wakeObservers = [NSWorkspace.didWakeNotification, NSWorkspace.screensDidWakeNotification].map { name in
+            workspace.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.displaysChanged() }
+            }
         }
         windowObserver = NotificationCenter.default.addObserver(
             forName: NSWindow.didBecomeKeyNotification, object: nil, queue: .main
@@ -111,14 +123,38 @@ final class NotchWindowController {
 
     // MARK: Layout
 
+    /// Connected displays with what Polka needs to know about each one,
+    /// main display first.
+    static func displays() -> [(screen: NSScreen, info: DisplayInfo)] {
+        NSScreen.screens.map { screen in
+            let id = screen.displayID
+            let info = DisplayInfo(
+                id: id,
+                frame: screen.frame,
+                isBuiltIn: CGDisplayIsBuiltin(id) != 0,
+                safeAreaTop: screen.safeAreaInsets.top,
+                topLeftArea: screen.auxiliaryTopLeftArea,
+                topRightArea: screen.auxiliaryTopRightArea
+            )
+            return (screen, info)
+        }
+    }
+
     private func targetScreen() -> NSScreen? {
+        let displays = Self.displays()
+        knownDisplays = displays.map { $0.info }
+        func screenOf(_ info: DisplayInfo?) -> NSScreen? {
+            info.flatMap { info in displays.first { $0.info.id == info.id }?.screen }
+        }
         switch model.preferences.display {
         case .pointer:
-            Self.screen(at: NSEvent.mouseLocation) ?? screen ?? NSScreen.screens.first
+            let current = displays.first { $0.info.id == self.screen?.displayID }?.screen
+            return screenOf(DisplayGeometry.display(at: NSEvent.mouseLocation, in: knownDisplays))
+                ?? current ?? displays.first?.screen
         case .builtIn:
-            NSScreen.screens.first { $0.safeAreaInsets.top > 0 } ?? NSScreen.screens.first
+            return screenOf(DisplayGeometry.builtIn(in: knownDisplays))
         case .main:
-            NSScreen.screens.first
+            return displays.first?.screen
         }
     }
 
@@ -126,7 +162,7 @@ final class NotchWindowController {
         guard let screen = targetScreen() else { return }
         self.screen = screen
         let style = Self.style(for: screen)
-        model.panel.style = style
+        if model.panel.style != style { model.panel.style = style }
 
         let expanded = PanelState.expandedSize
         let width = expanded.width + Self.shadowMargin * 2
@@ -137,7 +173,24 @@ final class NotchWindowController {
             width: width,
             height: height
         )
-        panel.setFrame(frame, display: true)
+        if panel.frame != frame { panel.setFrame(frame, display: true) }
+    }
+
+    /// A display was attached, removed, rearranged or woke up. macOS sends
+    /// this before every display has settled: the notch can read as missing
+    /// for a moment, especially on the built-in display right after a monitor
+    /// is connected. Lay out now and look again once things have settled.
+    private func displaysChanged() {
+        layout()
+        settleTask?.cancel()
+        settleTask = Task { [weak self] in
+            for delay in [Duration.milliseconds(400), .milliseconds(1500), .seconds(4)] {
+                try? await Task.sleep(for: delay)
+                guard let self, !Task.isCancelled else { return }
+                // An open panel stays where the user is working with it.
+                if !self.model.panel.isExpanded { self.layout() }
+            }
+        }
     }
 
     private func observeDisplayPreference() {
@@ -151,19 +204,19 @@ final class NotchWindowController {
         }
     }
 
-    static func screen(at point: NSPoint) -> NSScreen? {
-        NSScreen.screens.first { NSMouseInRect(point, $0.frame, false) }
-    }
-
     static func style(for screen: NSScreen) -> PanelState.Style {
-        if screen.safeAreaInsets.top > 0,
-            let left = screen.auxiliaryTopLeftArea,
-            let right = screen.auxiliaryTopRightArea
-        {
-            return .notch(width: screen.frame.width - left.width - right.width, height: screen.safeAreaInsets.top)
+        let info = DisplayInfo(
+            id: screen.displayID,
+            frame: screen.frame,
+            isBuiltIn: false,
+            safeAreaTop: screen.safeAreaInsets.top,
+            topLeftArea: screen.auxiliaryTopLeftArea,
+            topRightArea: screen.auxiliaryTopRightArea
+        )
+        if let notch = info.notch {
+            return .notch(width: notch.width, height: notch.height)
         }
-        let menuBar = NSStatusBar.system.thickness
-        return .pill(menuBarHeight: menuBar)
+        return .pill(menuBarHeight: NSStatusBar.system.thickness)
     }
 
     /// Distance from the top of the screen to the panel surface. On displays
@@ -183,7 +236,7 @@ final class NotchWindowController {
         guard let screen else { return .zero }
         switch model.panel.style {
         case .notch(let width, let height):
-            let w = width + 2 * PanelMetrics.wingWidth
+            let w = width + 2 * CollapsedPanel.wingWidth(model)
             return NSRect(x: screen.frame.midX - w / 2, y: screen.frame.maxY - height - 2, width: w, height: height + 2)
         case .pill(let menuBar):
             return NSRect(
@@ -246,7 +299,10 @@ final class NotchWindowController {
         }
 
         // Follow the pointer to another display while closed.
-        if model.preferences.display == .pointer, let pointerScreen = Self.screen(at: point), pointerScreen != screen {
+        if model.preferences.display == .pointer,
+            let pointer = DisplayGeometry.display(at: point, in: knownDisplays),
+            pointer.id != screen?.displayID
+        {
             cancelHover()
             layout()
         }
@@ -319,5 +375,14 @@ final class NotchWindowController {
         panel.ignoresMouseEvents = true
         if panel.isKeyWindow { panel.resignKey() }
         model.panelDidCollapse()
+    }
+}
+
+extension NSScreen {
+    /// The Core Graphics display number, stable while the display stays
+    /// connected (unlike the `NSScreen` object, which macOS replaces whenever
+    /// the arrangement changes).
+    var displayID: CGDirectDisplayID {
+        (deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
     }
 }

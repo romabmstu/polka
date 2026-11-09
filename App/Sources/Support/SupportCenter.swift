@@ -91,8 +91,18 @@ final class SupportCenter {
             items.append(.init("Sections", preferences.sections.map(\.rawValue).joined(separator: ", ")))
             items.append(.init("Clipboard history", preferences.clipboardHistoryEnabled ? "on" : "off"))
         }
-        let notch = NSScreen.screens.contains { $0.safeAreaInsets.top > 0 }
-        items.append(.init("Displays", "\(NSScreen.screens.count), notch: \(notch ? "yes" : "no")"))
+        let displays = NotchWindowController.displays().map { $0.info }
+        items.append(.init("Displays", displays.enumerated().map { index, display in
+            var parts = [display.isBuiltIn ? "built-in" : "external"]
+            if index == 0 { parts.append("main") }
+            parts.append("\(Int(display.frame.width))×\(Int(display.frame.height))")
+            if let notch = display.notch {
+                parts.append("notch \(Int(notch.width))×\(Int(notch.height))")
+            } else {
+                parts.append("no notch (safe area \(Int(display.safeAreaTop)), side areas \(display.topLeftArea == nil ? "none" : "yes"))")
+            }
+            return parts.joined(separator: " ")
+        }.joined(separator: "; ")))
         items.append(.init("Language", Locale.preferredLanguages.first ?? "?"))
         for line in permissions.summary.split(separator: "\n") {
             let parts = line.split(separator: ":", maxSplits: 1)

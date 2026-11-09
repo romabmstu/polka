@@ -3,6 +3,8 @@ import SwiftUI
 
 enum PanelMetrics {
     static let wingWidth: CGFloat = 74
+    /// Wing width when the right wing holds a meeting countdown and the VPN shield.
+    static let wideWingWidth: CGFloat = 96
     static let expandedCorner: CGFloat = 30
     static let shoulder: CGFloat = 12
     static let contentPadding: CGFloat = 18

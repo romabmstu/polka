@@ -167,3 +167,59 @@ import Testing
         #expect(UpdatePolicy.shouldOffer(later, currentBuild: 55, skippedBuild: 60, automatic: true, system: system))
     }
 }
+
+@Suite struct DisplayGeometryTests {
+    /// A 14-inch MacBook Pro at its default resolution: 1512×982 points with
+    /// a 32-point camera housing about 185 points wide.
+    private func macBook(id: UInt32 = 1, origin: CGPoint = .zero, safeAreaTop: CGFloat = 32, sideAreas: Bool = true) -> DisplayInfo {
+        let frame = CGRect(origin: origin, size: CGSize(width: 1512, height: 982))
+        let left = CGRect(x: frame.minX, y: frame.maxY - 32, width: 663.5, height: 32)
+        let right = CGRect(x: frame.maxX - 663.5, y: frame.maxY - 32, width: 663.5, height: 32)
+        return DisplayInfo(
+            id: id, frame: frame, isBuiltIn: true, safeAreaTop: safeAreaTop,
+            topLeftArea: sideAreas ? left : nil, topRightArea: sideAreas ? right : nil)
+    }
+
+    private func monitor(id: UInt32 = 2, origin: CGPoint) -> DisplayInfo {
+        DisplayInfo(
+            id: id, frame: CGRect(origin: origin, size: CGSize(width: 2560, height: 1440)), isBuiltIn: false,
+            safeAreaTop: 0, topLeftArea: nil, topRightArea: nil)
+    }
+
+    @Test func findsTheNotch() {
+        #expect(macBook().notch == CGSize(width: 185, height: 32))
+        #expect(monitor(origin: .zero).notch == nil)
+    }
+
+    @Test func notchSurvivesAMomentaryZeroSafeArea() {
+        // Right after a monitor is plugged in the safe area can read as zero
+        // while the areas beside the camera are already there.
+        #expect(macBook(safeAreaTop: 0).notch == CGSize(width: 185, height: 32))
+    }
+
+    @Test func resolutionBelowTheCameraHasNoNotch() {
+        #expect(macBook(safeAreaTop: 0, sideAreas: false).notch == nil)
+    }
+
+    @Test func builtInChoicePrefersTheNotchWhateverIsMain() {
+        let laptop = macBook()
+        let external = monitor(origin: CGPoint(x: 1512, y: 0))
+        #expect(DisplayGeometry.builtIn(in: [laptop, external])?.id == laptop.id)
+        #expect(DisplayGeometry.builtIn(in: [external, laptop])?.id == laptop.id)
+        // Notch hidden by the resolution: still the built-in display.
+        let hidden = macBook(safeAreaTop: 0, sideAreas: false)
+        #expect(DisplayGeometry.builtIn(in: [external, hidden])?.id == hidden.id)
+        #expect(DisplayGeometry.builtIn(in: [external])?.id == external.id)
+    }
+
+    @Test func pointerAtTheTopEdgeBelongsToTheLowerDisplay() {
+        // A monitor arranged above the MacBook: their edges meet at y = 982.
+        let laptop = macBook()
+        let above = monitor(origin: CGPoint(x: -524, y: 982))
+        let displays = [laptop, above]
+        #expect(DisplayGeometry.display(at: CGPoint(x: 756, y: 982), in: displays)?.id == laptop.id)
+        #expect(DisplayGeometry.display(at: CGPoint(x: 756, y: 983), in: displays)?.id == above.id)
+        #expect(DisplayGeometry.display(at: CGPoint(x: 756, y: 500), in: displays)?.id == laptop.id)
+        #expect(DisplayGeometry.display(at: CGPoint(x: 5000, y: 500), in: displays) == nil)
+    }
+}
