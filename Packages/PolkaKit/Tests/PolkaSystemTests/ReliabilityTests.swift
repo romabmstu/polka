@@ -111,3 +111,29 @@ import PolkaCore
         #expect(BrowserBridge.webPages(urls).map(\.absoluteString) == ["https://example.com", "http://example.org"])
     }
 }
+
+@Suite struct OutputVolumeTests {
+    /// The stream starts with the current level (or `nil` on a machine with
+    /// no output device, like a CI runner) and stops listening when the
+    /// consuming task ends.
+    @Test func streamStartsWithTheCurrentLevel() async {
+        let first = await withTaskGroup(of: OutputVolume.Level??.self) { group in
+            group.addTask {
+                for await level in OutputVolume.changes() { return .some(level) }
+                return nil
+            }
+            group.addTask {
+                try? await Task.sleep(for: .seconds(5))
+                return nil
+            }
+            let result = await group.next() ?? nil
+            group.cancelAll()
+            return result
+        }
+        #expect(first != nil)
+        #expect(first.flatMap { $0 } == OutputVolume.current())
+        if let level = OutputVolume.current() {
+            #expect((0...100).contains(level.percent))
+        }
+    }
+}

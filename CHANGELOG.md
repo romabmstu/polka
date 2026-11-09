@@ -10,6 +10,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - The notch is recognized on a MacBook with an external monitor attached, including right after the monitor is connected and after waking from sleep. Polka looks at the display again once macOS has finished rearranging displays.
 - "Built-in display" in settings picks the MacBook screen even when its notch is hidden by the chosen resolution or the monitor is the main display.
+- The volume in the Music section follows the volume keys, Control Center and a Bluetooth speaker's own buttons straight away, and shows when the sound is muted. It used to catch up only every few seconds.
 - The wings beside the notch no longer overflow when music, a meeting countdown and VPN are shown together: they widen evenly and the countdown stays on one line.
 
 ### Changed

@@ -6,6 +6,7 @@ struct MediaSection: View {
     @Environment(AppModel.self) private var app
     @State private var volume: Double = 0
     @State private var volumeAvailable = false
+    @State private var isMuted = false
     @State private var editingVolume = false
     @State private var volumeError = false
     @State private var outputs: AudioOutputs.Snapshot?
@@ -77,7 +78,12 @@ struct MediaSection: View {
             .background(Theme.card, in: .rect(cornerRadius: 22))
             .frame(maxHeight: .infinity, alignment: .center)
             .task {
-                var tick = 0
+                // Volume keys, Control Center and the speaker's own buttons.
+                for await level in OutputVolume.changes() {
+                    showVolume(level)
+                }
+            }
+            .task {
                 while !Task.isCancelled {
                     if !isChangingOutput {
                         let revision = volumeRevision
@@ -86,7 +92,6 @@ struct MediaSection: View {
                             if revision == volumeRevision && !isChangingOutput {
                                 if let previous = outputs, previous.selectedID != next.selectedID {
                                     volumeRevision += 1
-                                    tick = 0
                                 }
                                 outputs = next
                                 outputError = false
@@ -95,25 +100,30 @@ struct MediaSection: View {
                             if revision == volumeRevision { outputError = true }
                         }
                     }
-                    if !editingVolume && !isWritingVolume && !isChangingOutput && tick % 5 == 0 {
-                        let revision = volumeRevision
-                        let value = try? await system.outputVolume()
-                        if !editingVolume && !isWritingVolume && !isChangingOutput && revision == volumeRevision {
-                            if let value { volume = Double(value) }
-                            volumeAvailable = value != nil
-                        }
-                    }
-                    tick += 1
+                    // Changes arrive at once from the task above; this catches
+                    // a device that doesn't announce them.
+                    showVolume(OutputVolume.current())
                     try? await Task.sleep(for: .seconds(2))
                 }
             }
         }
     }
 
+    /// Shows the system volume unless the user is dragging the slider or a
+    /// change of volume or output is still being applied.
+    private func showVolume(_ level: OutputVolume.Level?) {
+        guard !editingVolume, !isWritingVolume, !isChangingOutput else { return }
+        if let level {
+            volume = Double(level.percent)
+            isMuted = level.isMuted
+        }
+        volumeAvailable = level != nil
+    }
+
     private var volumeControl: some View {
         VStack(alignment: .leading, spacing: 6) {
           HStack(spacing: 10) {
-            Image(systemName: volume == 0 ? "speaker.slash.fill" : "speaker.wave.2.fill")
+            Image(systemName: isMuted || volume == 0 ? "speaker.slash.fill" : "speaker.wave.2.fill")
                 .foregroundStyle(Theme.secondary)
             Slider(value: $volume, in: 0...100, onEditingChanged: { editing in
                 editingVolume = editing
@@ -129,7 +139,7 @@ struct MediaSection: View {
                     isWritingVolume = true
                     volumeRevision += 1
                     Task {
-                        do { try await system.setVolume(percent: value); volumeError = false }
+                        do { try await system.setVolume(percent: value); volumeError = false; isMuted = false }
                         catch { volumeError = true }
                         isWritingVolume = false
                     }
@@ -163,10 +173,13 @@ struct MediaSection: View {
                                       outputs = next
                                       outputError = false
                                       selectionError = false
-                                      let value = try? await system.outputVolume()
+                                      let level = OutputVolume.current()
                                       if revision == volumeRevision && !editingVolume && !isWritingVolume {
-                                          if let value { volume = Double(value) }
-                                          volumeAvailable = value != nil
+                                          if let level {
+                                              volume = Double(level.percent)
+                                              isMuted = level.isMuted
+                                          }
+                                          volumeAvailable = level != nil
                                       }
                                   } catch { selectionError = true }
                                   isChangingOutput = false
