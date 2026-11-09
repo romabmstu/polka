@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-09
+
 ### Fixed
 
 - The notch is recognized on a MacBook with an external monitor attached, including right after the monitor is connected and after waking from sleep. Polka looks at the display again once macOS has finished rearranging displays.
@@ -69,6 +71,7 @@ The first public release.
 - Built-in updates verified with an Ed25519 signature; a beta channel gets every build from `main`.
 - Release builds carry a build provenance attestation.
 
-[Unreleased]: https://github.com/romabmstu/polka/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/romabmstu/polka/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/romabmstu/polka/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/romabmstu/polka/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/romabmstu/polka/releases/tag/v0.1.0
