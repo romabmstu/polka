@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Polka downloads</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<style>
+:root {
+  --bg: #07070a; --fg: #f5f5f7; --muted: #a1a1aa; --dim: #6e6e78; --card: #111114;
+  --line: rgba(255,255,255,.08); --green: #30d158; --blue: #6aa3ff; --orange: #ff9f0a;
+}
+* { box-sizing: border-box; }
+html { color-scheme: dark; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--blue); }
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+header.nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 17px; text-decoration: none; color: var(--fg); }
+.brand img { width: 30px; height: 30px; }
+.nav-links { display: flex; gap: 16px; align-items: center; font-size: 14px; }
+.nav-links a { text-decoration: none; color: var(--muted); }
+.lang, .refresh { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; }
+.refresh:disabled { opacity: .5; cursor: default; }
+[data-lang="ru"] .en, [data-lang="en"] .ru { display: none; }
+
+h1 { font-size: clamp(30px, 5vw, 44px); letter-spacing: -.03em; line-height: 1.1; margin: 28px 0 10px; }
+.lead { color: var(--muted); margin: 0 0 24px; }
+.status { color: var(--dim); font-size: 13.5px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+.error { color: #ffd18a; background: rgba(255,159,10,.08); box-shadow: inset 0 0 0 1px rgba(255,159,10,.22); border-radius: 12px; padding: 12px 14px; font-size: 14.5px; margin-bottom: 18px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; }
+.tile { background: var(--card); border-radius: 18px; padding: 18px; box-shadow: inset 0 0 0 1px var(--line); }
+.tile.main { box-shadow: inset 0 0 0 1.5px rgba(48,209,88,.5); }
+.tile .label { color: var(--muted); font-size: 13.5px; }
+.tile .value { font-size: 40px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; margin: 4px 0; font-variant-numeric: tabular-nums; }
+.tile .note { color: var(--dim); font-size: 13px; }
+h2 { font-size: 22px; letter-spacing: -.01em; margin: 40px 0 10px; }
+.table { background: var(--card); border-radius: 18px; box-shadow: inset 0 0 0 1px var(--line); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12.5px; padding: 12px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 11px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.bar { display: inline-block; height: 8px; border-radius: 4px; background: var(--green); vertical-align: middle; margin-right: 8px; }
+.explain { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+.explain li { margin: 4px 0; }
+@media (max-width: 520px) { .bar { display: none; } th, td { padding-left: 12px; padding-right: 12px; } .tile .value { font-size: 34px; } }
+footer { padding: 50px 0 40px; color: var(--dim); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="nav">
+    <a class="brand" href="./"><img src="assets/favicon.png" alt="">Polka</a>
+    <nav class="nav-links">
+      <a href="https://github.com/romabmstu/polka/releases">Releases</a>
+      <button class="lang" id="lang" type="button">RU</button>
+    </nav>
+  </header>
+
+  <h1><span class="en">Downloads</span><span class="ru">Скачивания</span></h1>
+  <p class="lead"><span class="en">Live counts from GitHub releases. The main number is downloads of the disk image: installs from the site, the README and Homebrew.</span><span class="ru">Живые цифры из релизов на GitHub. Главное число: скачивания образа диска: установки с сайта, из README и через Homebrew.</span></p>
+
+  <div class="status">
+    <span id="updated"><span class="en">Loading…</span><span class="ru">Загружаю…</span></span>
+    <button class="refresh" id="refresh" type="button"><span class="en">Refresh</span><span class="ru">Обновить</span></button>
+  </div>
+  <div class="error" id="error" hidden></div>
+
+  <section class="tiles">
+    <div class="tile main">
+      <div class="label"><span class="en">Installs (Polka.dmg)</span><span class="ru">Установки (Polka.dmg)</span></div>
+      <div class="value" id="installs">—</div>
+      <div class="note"><span class="en">All releases together</span><span class="ru">Все релизы вместе</span></div>
+    </div>
+    <div class="tile">
+      <div class="label"><span class="en">Latest release</span><span class="ru">Последний релиз</span></div>
+      <div class="value" id="latest">—</div>
+      <div class="note" id="latest-note">&nbsp;</div>
+    </div>
+    <div class="tile">
+      <div class="label"><span class="en">In-app updates</span><span class="ru">Обновления из приложения</span></div>
+      <div class="value" id="updates">—</div>
+      <div class="note"><span class="en">Release archives downloaded by Polka</span><span class="ru">Архивы релизов, скачанные самой Polka</span></div>
+    </div>
+    <div class="tile">
+      <div class="label"><span class="en">GitHub stars</span><span class="ru">Звёзды на GitHub</span></div>
+      <div class="value" id="stars">—</div>
+      <div class="note" id="forks">&nbsp;</div>
+    </div>
+  </section>
+
+  <h2><span class="en">By release</span><span class="ru">По релизам</span></h2>
+  <div class="table">
+    <table>
+      <thead><tr>
+        <th><span class="en">Version</span><span class="ru">Версия</span></th>
+        <th><span class="en">Published</span><span class="ru">Вышла</span></th>
+        <th class="num"><span class="en">Installs</span><span class="ru">Установки</span></th>
+        <th class="num"><span class="en">Updates</span><span class="ru">Обновления</span></th>
+      </tr></thead>
+      <tbody id="releases"></tbody>
+    </table>
+  </div>
+
+  <h2><span class="en">Beta</span><span class="ru">Бета</span></h2>
+  <div class="table">
+    <table>
+      <tbody>
+        <tr><td><span class="en">Updates to the current beta build</span><span class="ru">Обновления до текущей бета-сборки</span></td><td class="num" id="beta-updates">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ul class="explain">
+    <li><span class="en">GitHub counts every download, yours included, and can't tell people apart.</span><span class="ru">GitHub считает каждое скачивание, включая ваши, и не различает людей.</span></li>
+    <li><span class="en">update.json is left out: running copies of Polka fetch it to check for updates, so it counts checks, not people.</span><span class="ru">update.json не учитывается: запущенные копии Polka запрашивают его при проверке обновлений, это проверки, а не люди.</span></li>
+    <li><span class="en">Beta files are replaced with every build, so their counters start again from zero each time.</span><span class="ru">Файлы беты заменяются при каждой сборке, поэтому их счётчики каждый раз начинаются с нуля.</span></li>
+  </ul>
+
+  <footer><span class="en">Counts come from the public GitHub API, at most 60 requests an hour from one network.</span><span class="ru">Цифры из открытого API GitHub, не больше 60 запросов в час с одной сети.</span></footer>
+</div>
+
+<script>
+(() => {
+  const repo = 'romabmstu/polka';
+  const body = document.body;
+  const $ = id => document.getElementById(id);
+  let saved = null;
+  try { saved = localStorage.getItem('polka-lang'); } catch (e) {}
+  let lang = saved === 'ru' || saved === 'en' ? saved : ((navigator.language || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en');
+  let last = null;
+
+  const t = (en, ru) => lang === 'ru' ? ru : en;
+  const number = n => new Intl.NumberFormat(lang).format(n);
+  const date = iso => new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso));
+  const time = d => new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' }).format(d);
+
+  const applyLang = l => {
+    lang = l;
+    body.dataset.lang = l;
+    document.documentElement.lang = l;
+    document.title = t('Polka downloads', 'Скачивания Polka');
+    $('lang').textContent = l === 'ru' ? 'EN' : 'RU';
+    if (last) render(last.releases, last.repo, last.at);
+  };
+
+  const isUpdateArchive = name => /^Polka-.+\.zip$/.test(name);
+  const count = (assets, test) => assets.filter(a => test(a.name)).reduce((s, a) => s + a.download_count, 0);
+
+  function render(releases, info, at) {
+    const stable = releases.filter(r => !r.prerelease && !r.draft);
+    const beta = releases.filter(r => r.prerelease);
+    const rows = stable.map(r => ({
+      tag: r.tag_name, published: r.published_at,
+      installs: count(r.assets, n => n === 'Polka.dmg'),
+      updates: count(r.assets, isUpdateArchive),
+    }));
+    $('installs').textContent = number(rows.reduce((s, r) => s + r.installs, 0));
+    $('updates').textContent = number(rows.reduce((s, r) => s + r.updates, 0));
+    if (rows.length) {
+      $('latest').textContent = rows[0].tag;
+      $('latest-note').textContent = t(`${number(rows[0].installs)} installs since ${date(rows[0].published)}`,
+        `Установок: ${number(rows[0].installs)}, с ${date(rows[0].published)}`);
+    }
+    $('stars').textContent = number(info.stargazers_count);
+    $('forks').textContent = t(`${number(info.forks_count)} forks`, `Форков: ${number(info.forks_count)}`);
+
+    const max = Math.max(1, ...rows.map(r => r.installs));
+    const tbody = $('releases');
+    tbody.replaceChildren(...rows.map(r => {
+      const tr = document.createElement('tr');
+      const version = document.createElement('td');
+      const link = document.createElement('a');
+      link.href = `https://github.com/${repo}/releases/tag/${encodeURIComponent(r.tag)}`;
+      link.textContent = r.tag;
+      version.append(link);
+      const published = document.createElement('td');
+      published.textContent = date(r.published);
+      const installs = document.createElement('td');
+      installs.className = 'num';
+      const bar = document.createElement('span');
+      bar.className = 'bar';
+      bar.style.width = `${Math.round((r.installs / max) * 80)}px`;
+      installs.append(bar, document.createTextNode(number(r.installs)));
+      const updates = document.createElement('td');
+      updates.className = 'num';
+      updates.textContent = number(r.updates);
+      tr.append(version, published, installs, updates);
+      return tr;
+    }));
+
+    $('beta-updates').textContent = number(beta.reduce((s, r) => s + count(r.assets, isUpdateArchive), 0));
+    $('updated').textContent = t(`Updated at ${time(at)}`, `Обновлено в ${time(at)}`);
+  }
+
+  async function load() {
+    $('refresh').disabled = true;
+    $('error').hidden = true;
+    try {
+      const headers = { Accept: 'application/vnd.github+json' };
+      const [releasesResponse, repoResponse] = await Promise.all([
+        fetch(`https://api.github.com/repos/${repo}/releases?per_page=100`, { headers, cache: 'no-store' }),
+        fetch(`https://api.github.com/repos/${repo}`, { headers, cache: 'no-store' }),
+      ]);
+      if (releasesResponse.status === 403 || releasesResponse.status === 429) {
+        const reset = Number(releasesResponse.headers.get('x-ratelimit-reset')) * 1000;
+        const when = reset ? time(new Date(reset)) : '';
+        throw new Error(t(`GitHub's hourly limit for this network is used up. Try again after ${when}.`,
+          `Часовой лимит GitHub для этой сети исчерпан. Попробуйте после ${when}.`));
+      }
+      if (!releasesResponse.ok || !repoResponse.ok) {
+        throw new Error(t(`GitHub answered ${releasesResponse.status}. Try again in a minute.`,
+          `GitHub ответил ${releasesResponse.status}. Попробуйте через минуту.`));
+      }
+      last = { releases: await releasesResponse.json(), repo: await repoResponse.json(), at: new Date() };
+      render(last.releases, last.repo, last.at);
+    } catch (error) {
+      $('error').textContent = error.message || t('Could not reach GitHub.', 'Не удалось связаться с GitHub.');
+      $('error').hidden = false;
+      if (!last) $('updated').textContent = '';
+    } finally {
+      $('refresh').disabled = false;
+    }
+  }
+
+  applyLang(lang);
+  $('lang').addEventListener('click', () => {
+    const next = lang === 'ru' ? 'en' : 'ru';
+    try { localStorage.setItem('polka-lang', next); } catch (e) {}
+    applyLang(next);
+  });
+  $('refresh').addEventListener('click', load);
+  load();
+})();
+</script>
+</body>
+</html>
