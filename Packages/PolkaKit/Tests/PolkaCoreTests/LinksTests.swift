@@ -22,6 +22,23 @@ import Testing
         #expect(a == b)
     }
 
+    @Test func pathFormNamesTheFileBehindAReference() throws {
+        let file = FileManager.default.temporaryDirectory.appending(path: "polka-\(UUID().uuidString) отчёт.xlsx")
+        try Data("x".utf8).write(to: file)
+        defer { try? FileManager.default.removeItem(at: file) }
+        let reference = try #require((file as NSURL).fileReferenceURL()?.absoluteString)
+        let url = try #require(URL(string: reference))
+
+        #expect(URLNormalizer.pathForm(of: url).lastPathComponent == file.lastPathComponent)
+    }
+
+    @Test func pathFormLeavesOtherURLsAlone() {
+        let page = URL(string: "https://example.com/.file/id=1")!
+        let file = URL(string: "file:///Users/me/notes.txt")!
+        #expect(URLNormalizer.pathForm(of: page) == page)
+        #expect(URLNormalizer.pathForm(of: file) == file)
+    }
+
     @Test func identityKeepsFragments() {
         let a = URLNormalizer.identity(of: URL(string: "https://app.com/#/inbox")!)
         let b = URLNormalizer.identity(of: URL(string: "https://app.com/#/sent")!)

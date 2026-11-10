@@ -7,6 +7,9 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Fixed
 
 - A file dragged from the Files section into Mail or another app keeps its name. The receiving app now gets the file itself instead of a copy it had to name on its own.
+- Files follows a file that was renamed or moved after it was added: the tile shows the current name and dragging it out still works. A deleted file is marked as not found instead of dragging out as nothing.
+- A file dropped onto the panel or pasted as a link is stored by its real path, not by a system reference that has no name.
+- Two pictures sent to Files from clipboard history within the same second no longer overwrite each other.
 
 ## [0.1.2] - 2026-11-09
 

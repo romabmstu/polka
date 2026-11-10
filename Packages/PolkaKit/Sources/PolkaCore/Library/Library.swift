@@ -191,12 +191,13 @@ public struct Library: Codable, Equatable, Sendable {
         var insertAt = position.map { min(max(0, $0), groups[index].tabs.count) } ?? groups[index].tabs.count
 
         for page in pages where URLNormalizer.isSavable(page.url) {
-            let key = URLNormalizer.identity(of: page.url)
+            let url = URLNormalizer.pathForm(of: page.url)
+            let key = URLNormalizer.identity(of: url)
             guard known.insert(key).inserted else {
-                result.duplicates.append(page.url)
+                result.duplicates.append(url)
                 continue
             }
-            let tab = SavedTab(title: String(page.title.prefix(300)), url: page.url)
+            let tab = SavedTab(title: String(page.title.prefix(300)), url: url)
             groups[index].tabs.insert(tab, at: insertAt)
             insertAt += 1
             result.added.append(tab)

@@ -27,6 +27,14 @@ public enum URLNormalizer {
         return components.string ?? url.absoluteString
     }
 
+    /// A file URL as a plain path. Finder and the pasteboard may hand over a
+    /// file reference (`file:///.file/id=…`), which carries no name and stops
+    /// working once the file is replaced. Other URLs are returned as they are.
+    public static func pathForm(of url: URL) -> URL {
+        guard url.isFileURL, url.path(percentEncoded: false).hasPrefix("/.file/") else { return url }
+        return (url as NSURL).filePathURL ?? url
+    }
+
     /// `example.com/docs/page` — for places where a title is missing.
     public static func readableForm(of url: URL) -> String {
         if url.isFileURL { return url.lastPathComponent }

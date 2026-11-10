@@ -64,6 +64,7 @@ struct ShelfSection: View {
                 return urls.contains(where: \.isFileURL)
             } isTargeted: { isTargeted = $0 }
         }
+        .onAppear { shelf.refresh() }
     }
 }
 
@@ -77,11 +78,15 @@ private struct ShelfTile: View {
             Image(nsImage: shelf.icon(for: item))
                 .resizable()
                 .frame(width: 48, height: 48)
+                .opacity(item.isMissing ? 0.4 : 1)
             Text(item.name)
                 .font(.system(size: 12, weight: .medium))
                 .lineLimit(1)
                 .truncationMode(.middle)
-            if let size = shelf.size(of: item) {
+                .foregroundStyle(item.isMissing ? Theme.secondary : Color.primary)
+            if item.isMissing {
+                Text("File not found").font(.system(size: 11)).foregroundStyle(Theme.tertiary)
+            } else if let size = shelf.size(of: item) {
                 Text(size).font(.system(size: 11)).foregroundStyle(Theme.tertiary)
             }
         }
@@ -92,9 +97,12 @@ private struct ShelfTile: View {
         .onDrag { shelf.dragProvider(for: item) }
         .onTapGesture(count: 2) { shelf.open(item) }
         .contextMenu {
-            Button("Open") { shelf.open(item) }
-            Button("Show in Finder") { shelf.reveal(item) }
-            Button("AirDrop") { shelf.airDrop([item]) }
+            Group {
+                Button("Open") { shelf.open(item) }
+                Button("Show in Finder") { shelf.reveal(item) }
+                Button("AirDrop") { shelf.airDrop([item]) }
+            }
+            .disabled(item.isMissing)
             Divider()
             Button("Remove from Shelf") { shelf.remove(item) }
         }

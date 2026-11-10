@@ -1080,6 +1080,16 @@
         }
       }
     },
+    "File not found": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файл не найден"
+          }
+        }
+      }
+    },
     "Files": {
       "localizations": {
         "ru": {
