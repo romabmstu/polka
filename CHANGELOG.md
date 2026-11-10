@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed
+
+- A file dragged from the Files section into Mail or another app keeps its name. The receiving app now gets the file itself instead of a copy it had to name on its own.
+
 ## [0.1.2] - 2026-11-09
 
 ### Fixed

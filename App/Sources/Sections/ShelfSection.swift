@@ -89,7 +89,7 @@ private struct ShelfTile: View {
         .frame(maxWidth: .infinity)
         .background(Theme.card, in: .rect(cornerRadius: 14, style: .continuous))
         .hoverHighlight(cornerRadius: 14)
-        .onDrag { NSItemProvider(contentsOf: item.url) ?? NSItemProvider() }
+        .onDrag { shelf.dragProvider(for: item) }
         .onTapGesture(count: 2) { shelf.open(item) }
         .contextMenu {
             Button("Open") { shelf.open(item) }

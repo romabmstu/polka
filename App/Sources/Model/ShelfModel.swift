@@ -44,6 +44,13 @@ final class ShelfModel {
         }
     }
 
+    /// Hands the receiving app the file itself, the way Finder does, so the
+    /// name and contents arrive untouched. A provider built from the file's
+    /// contents becomes a file promise, and the receiver names its own copy.
+    func dragProvider(for item: Item) -> NSItemProvider {
+        NSItemProvider(object: item.url as NSURL)
+    }
+
     func remove(_ item: Item) { items.removeAll { $0 == item } }
     func clear() { items.removeAll() }
 
