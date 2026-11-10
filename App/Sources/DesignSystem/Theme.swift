@@ -19,6 +19,8 @@ enum Theme {
     static let secondary = Color(red: 0.78, green: 0.81, blue: 0.88)
     static let tertiary = Color(red: 0.65, green: 0.69, blue: 0.77)
     static let active = Color(red: 0.19, green: 0.82, blue: 0.35)
+    /// A switch that is on: brighter than `active`, which is tuned for text.
+    static let switchOn = Color(red: 0.16, green: 0.90, blue: 0.36)
     static let accent = Color(red: 0.42, green: 0.64, blue: 1)
     static let warning = Color(red: 1, green: 0.62, blue: 0.04)
     static let cornerRadius: CGFloat = 16
@@ -154,6 +156,39 @@ struct IconButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.9 : 1)
             .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
             .contentShape(.circle)
+    }
+}
+
+/// The on/off switch used in the panel. The system switch loses its color
+/// whenever its window is not the key window, which the panel rarely is, so
+/// an active VPN often looked switched off. This one is drawn by hand and
+/// stays bright green.
+struct PanelSwitchStyle: ToggleStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        Button {
+            configuration.isOn.toggle()
+        } label: {
+            Capsule()
+                .fill(configuration.isOn ? Theme.switchOn : Color.white.opacity(0.2))
+                .frame(width: 40, height: 24)
+                .overlay(alignment: configuration.isOn ? .trailing : .leading) {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 20, height: 20)
+                        .shadow(color: .black.opacity(0.3), radius: 1.5, y: 1)
+                        .padding(2)
+                }
+                .shadow(color: configuration.isOn ? Theme.switchOn.opacity(0.45) : .clear, radius: 6)
+                .animation(.spring(response: 0.26, dampingFraction: 0.82), value: configuration.isOn)
+                .contentShape(.capsule)
+        }
+        .buttonStyle(.plain)
+        .opacity(isEnabled ? 1 : 0.5)
+        .accessibilityRepresentation {
+            Toggle(isOn: configuration.$isOn) { configuration.label }
+        }
     }
 }
 

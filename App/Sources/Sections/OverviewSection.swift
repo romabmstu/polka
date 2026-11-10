@@ -103,9 +103,7 @@ private struct VPNCard: View {
                         Toggle(isOn: Binding(get: { active != nil }, set: { _ in Task { await vpn.toggle(first) } })) {
                             Text("VPN")
                         }
-                        .toggleStyle(.switch)
-                        .labelsHidden()
-                        .tint(Theme.active)
+                        .toggleStyle(PanelSwitchStyle())
                         .disabled(vpn.switching || first.status == .unknown)
                     }
                 }

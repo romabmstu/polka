@@ -3490,42 +3490,12 @@
         }
       }
     },
-    "FSNT integration connected.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Интеграция с FSNT подключена."
-          }
-        }
-      }
-    },
-    "Could not connect. Check the API, key, and local address in FSNT.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не удалось подключиться. Проверьте API, ключ и локальный адрес в FSNT."
-          }
-        }
-      }
-    },
     "Could not remove the key from Keychain.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Не удалось удалить ключ из Связки ключей."
-          }
-        }
-      }
-    },
-    "The key is stored in macOS Keychain. Polka only connects to this Mac. Other VPN apps need their own integration.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ключ хранится в Связке ключей macOS. Polka подключается только к этому Mac. Для других VPN-приложений нужна отдельная интеграция."
           }
         }
       }
@@ -3560,6 +3530,206 @@
         }
       }
     },
+    "Open the integration settings in FSNT": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откройте настройки интеграции в FSNT"
+          }
+        }
+      }
+    },
+    "In the FSNT menu bar at the top of the screen, choose:": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В строке меню FSNT вверху экрана выберите:"
+          }
+        }
+      }
+    },
+    "Preferences": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки"
+          }
+        }
+      }
+    },
+    "Integration Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки интеграции"
+          }
+        }
+      }
+    },
+    "Throne API": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Throne API"
+          }
+        }
+      }
+    },
+    "Open FSNT": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть FSNT"
+          }
+        }
+      }
+    },
+    "No Preferences menu? FSNT is showing its simple interface. Switch it to the advanced one first.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет меню «Настройки»? Значит, FSNT открыт в простом интерфейсе. Сначала переключите его на расширенный."
+          }
+        }
+      }
+    },
+    "Turn on the API and copy the key": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включите API и скопируйте ключ"
+          }
+        }
+      }
+    },
+    "Tick “Enable Throne API”.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поставьте галочку «Включить Throne API»."
+          }
+        }
+      }
+    },
+    "Leave “Listen” on “This computer only” and the port on 9095.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В поле «Прослушивать» оставьте «Только этот компьютер», порт оставьте 9095."
+          }
+        }
+      }
+    },
+    "Press “Copy” under the key, then “OK”.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите «Копировать» под ключом, затем «OK»."
+          }
+        }
+      }
+    },
+    "Paste the key into Polka": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вставьте ключ в Polka"
+          }
+        }
+      }
+    },
+    "FSNT is connected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FSNT подключён"
+          }
+        }
+      }
+    },
+    "FSNT is not connected yet": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FSNT пока не подключён"
+          }
+        }
+      }
+    },
+    "Polka shows whether FSNT is on and switches it from the VPN section.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polka показывает, включён ли FSNT, и переключает его в разделе VPN."
+          }
+        }
+      }
+    },
+    "Three steps, about a minute. After that Polka shows whether FSNT is on and switches it for you.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Три шага, около минуты. После этого Polka показывает, включён ли FSNT, и переключает его сама."
+          }
+        }
+      }
+    },
+    "The key gives full control of FSNT, so do not share it. Polka keeps it in macOS Keychain and only talks to FSNT on this Mac.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ключ даёт полный доступ к управлению FSNT, никому его не передавайте. Polka хранит его в Связке ключей macOS и обращается к FSNT только на этом Mac."
+          }
+        }
+      }
+    },
+    "Connected. You can close this window.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключено. Это окно можно закрыть."
+          }
+        }
+      }
+    },
+    "This does not look like an FSNT key. Press “Copy” in FSNT again, then “Paste” here.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это не похоже на ключ FSNT. Нажмите в FSNT «Копировать» ещё раз, а здесь «Вставить»."
+          }
+        }
+      }
+    },
+    "FSNT did not accept the connection. Check that FSNT is running, “Enable Throne API” is ticked and you pressed “OK”, then copy the key again.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FSNT не принял подключение. Проверьте, что FSNT запущен, галочка «Включить Throne API» стоит и вы нажали «OK», затем скопируйте ключ заново."
+          }
+        }
+      }
+    },
     "Set up FSNT…": {
       "localizations": {
         "ru": {
@@ -3576,56 +3746,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Настройка FSNT / Throne"
-          }
-        }
-      }
-    },
-    "Open FSNT / Throne": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Открыть FSNT / Throne"
-          }
-        }
-      }
-    },
-    "2. In Preferences → Integration Settings → Throne API, enable the API on 127.0.0.1. Copy the API key and check its port.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "2. В настройках интеграций откройте Throne API и включите API на адресе 127.0.0.1. Скопируйте ключ API и проверьте порт."
-          }
-        }
-      }
-    },
-    "3. Enter the port and key below, then select Connect. The key gives full control of this client; do not share it.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "3. Введите ниже порт и ключ, затем нажмите «Подключить». Ключ даёт полный доступ к управлению клиентом; никому его не передавайте."
-          }
-        }
-      }
-    },
-    "1. Open the client. In FSNT, look for Advanced mode under More; in Throne, choose Program → Advanced Mode.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1. Откройте клиент. В FSNT найдите «Расширенный режим» в меню «Ещё»; в Throne выберите «Программа → Расширенный режим»."
-          }
-        }
-      }
-    },
-    "If your version has no advanced mode or Throne API, use Open App to control the VPN there; Polka cannot control it without the API.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Если в вашей версии нет расширенного режима или Throne API, нажмите «Открыть приложение» и управляйте VPN в нём. Без API Polka не сможет управлять подключением."
           }
         }
       }

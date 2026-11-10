@@ -8,11 +8,11 @@ enum FSNTSetupWindow {
 
     static func show(_ app: AppModel) {
         if window == nil {
-            let controller = NSHostingController(rootView: ThroneSettings().environment(app))
+            let controller = NSHostingController(rootView: ThroneSettings().padding(.top, 10).environment(app))
             let newWindow = NSWindow(contentViewController: controller)
             newWindow.title = String(localized: "Set up FSNT / Throne")
             newWindow.styleMask = [.titled, .closable, .miniaturizable, .resizable]
-            newWindow.setContentSize(NSSize(width: 560, height: 500))
+            newWindow.setContentSize(NSSize(width: 600, height: 640))
             newWindow.minSize = NSSize(width: 420, height: 380)
             newWindow.isReleasedWhenClosed = false
             newWindow.center()

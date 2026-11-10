@@ -10,6 +10,11 @@ All notable changes to this project are documented here. The format follows [Kee
 - Files follows a file that was renamed or moved after it was added: the tile shows the current name and dragging it out still works. A deleted file is marked as not found instead of dragging out as nothing.
 - A file dropped onto the panel or pasted as a link is stored by its real path, not by a system reference that has no name.
 - Two pictures sent to Files from clipboard history within the same second no longer overwrite each other.
+- VPN switches are bright green whenever a VPN is on. The system switch lost its color while the panel was not the active window, so a connected VPN could look switched off.
+
+### Changed
+
+- Setting up FSNT is three numbered steps that name the menus and buttons as FSNT shows them, with a Paste button for the key and a clear message when the key or the connection is wrong.
 
 ## [0.1.2] - 2026-11-09
 

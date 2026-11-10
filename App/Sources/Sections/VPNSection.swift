@@ -122,9 +122,7 @@ private struct ConnectionTile: View {
                         Toggle(isOn: Binding(get: { isOn }, set: { _ in Task { await vpn.toggle(connection) } })) {
                             Text(connection.name)
                         }
-                        .toggleStyle(.switch)
-                        .labelsHidden()
-                        .tint(Theme.active)
+                        .toggleStyle(PanelSwitchStyle())
                         .disabled(vpn.switching || connection.status == .unknown || connection.status == .disconnecting)
                     }
                 }
