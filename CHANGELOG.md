@@ -10,6 +10,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Files follows a file that was renamed or moved after it was added: the tile shows the current name and dragging it out still works. A deleted file is marked as not found instead of dragging out as nothing.
 - A file dropped onto the panel or pasted as a link is stored by its real path, not by a system reference that has no name.
 - Two pictures sent to Files from clipboard history within the same second no longer overwrite each other.
+- Music that stopped on its own, for example when the internet dropped, no longer looks like it is playing. The waveform beside the notch turns into an amber sign, the cover goes gray, the position stands still, and the Music section says why: no internet, or no sound on this Mac. Everything comes back by itself when the sound does.
 - VPN switches are bright green whenever a VPN is on. The system switch lost its color while the panel was not the active window, so a connected VPN could look switched off.
 
 ### Changed

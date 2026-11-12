@@ -27,8 +27,11 @@ struct ArtworkView: View {
         }
         .frame(width: size, height: size)
         .clipShape(.rect(cornerRadius: cornerRadius, style: .continuous))
+        .saturation(media.isStalled ? 0 : 1)
+        .opacity(media.isStalled ? 0.6 : 1)
         .scaleEffect(media.isPlaying || media.nowPlaying == nil ? 1 : 0.94)
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: media.isPlaying)
+        .animation(.easeInOut(duration: 0.35), value: media.isStalled)
     }
 }
 
@@ -52,7 +55,7 @@ struct TransportControls: View {
                 if media.isStartingPlayer {
                     ProgressView().controlSize(.small)
                 } else {
-                    Image(systemName: media.isPlaying ? "pause.fill" : "play.fill")
+                    Image(systemName: media.reportsPlaying ? "pause.fill" : "play.fill")
                         .contentTransition(.symbolEffect(.replace))
                 }
             }
@@ -74,12 +77,13 @@ struct PlaybackBar: View {
     var body: some View {
         let media = app.media
         let item = media.nowPlaying
-        let fraction = dragFraction ?? item?.progress ?? 0
+        let fraction = dragFraction ?? media.progress ?? 0
         VStack(spacing: 4) {
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(Color.white.opacity(0.15))
-                    Capsule().fill(Color.white).frame(width: max(4, proxy.size.width * fraction))
+                    Capsule().fill(media.isStalled ? Theme.warning : Color.white)
+                        .frame(width: max(4, proxy.size.width * fraction))
                 }
                 .frame(height: dragFraction == nil ? 5 : 7)
                 .frame(maxHeight: .infinity)
@@ -95,8 +99,9 @@ struct PlaybackBar: View {
             }
             .frame(height: 14)
             .animation(.easeOut(duration: 0.12), value: dragFraction == nil)
+            .animation(.easeInOut(duration: 0.35), value: media.isStalled)
             HStack {
-                Text(Self.format(item?.elapsed(at: media.clock)))
+                Text(Self.format(media.elapsed))
                 Spacer()
                 Text(Self.format(item?.duration))
             }
@@ -113,6 +118,90 @@ struct PlaybackBar: View {
         return total >= 3600
             ? String(format: "%d:%02d:%02d", total / 3600, total / 60 % 60, total % 60)
             : String(format: "%d:%02d", total / 60, total % 60)
+    }
+}
+
+/// The moving waveform while music plays. When the player says it is playing
+/// but nothing comes out, an amber sign that breathes slowly instead: a
+/// crossed-out Wi-Fi symbol without a connection, a flat line otherwise.
+struct PlaybackGlyph: View {
+    @Environment(AppModel.self) private var app
+    var size: CGFloat = 13
+
+    var body: some View {
+        let media = app.media
+        if media.isStalled {
+            Group {
+                if media.isOffline {
+                    Image(systemName: "wifi.slash").font(.system(size: size * 0.92, weight: .bold))
+                } else {
+                    FlatLine(size: size)
+                }
+            }
+            .foregroundStyle(Theme.warning)
+            .modifier(Breathing())
+            .help(StalledLabel.text(offline: media.isOffline))
+            .accessibilityLabel(StalledLabel.text(offline: media.isOffline))
+            .transition(.opacity)
+        } else {
+            Image(systemName: "waveform")
+                .font(.system(size: size, weight: .semibold))
+                .symbolEffect(.variableColor.iterative, isActive: true)
+                .foregroundStyle(.white)
+                .transition(.opacity)
+        }
+    }
+}
+
+/// A waveform with no sound in it: five dots on one line.
+private struct FlatLine: View {
+    var size: CGFloat
+
+    var body: some View {
+        HStack(spacing: size * 0.13) {
+            ForEach(0..<5, id: \.self) { _ in
+                Capsule().frame(width: size * 0.15, height: size * 0.22)
+            }
+        }
+        .frame(height: size)
+    }
+}
+
+/// Fades in and out slowly. Stands still when Reduce Motion is on.
+private struct Breathing: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var dimmed = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(dimmed ? 0.4 : 1)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) { dimmed = true }
+            }
+    }
+}
+
+/// One line saying why nothing is heard. Takes the place of the artist while
+/// playback is stalled, so the layout does not jump.
+struct StalledLabel: View {
+    @Environment(AppModel.self) private var app
+    var size: CGFloat = 13
+
+    static func text(offline: Bool) -> Text {
+        offline ? Text("No internet. Music is not playing") : Text("No sound on this Mac")
+    }
+
+    var body: some View {
+        let offline = app.media.isOffline
+        HStack(spacing: 6) {
+            Image(systemName: offline ? "wifi.slash" : "speaker.slash.fill")
+                .font(.system(size: size * 0.9, weight: .semibold))
+            Self.text(offline: offline).lineLimit(1)
+        }
+        .font(.system(size: size, weight: .semibold))
+        .foregroundStyle(Theme.warning)
+        .transition(.opacity)
     }
 }
 

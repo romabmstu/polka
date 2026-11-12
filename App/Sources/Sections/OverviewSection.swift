@@ -66,7 +66,11 @@ private struct MediaCard: View {
                     }
                     if let item = media.nowPlaying {
                         Text(item.title).font(.system(size: 15, weight: .semibold)).lineLimit(1)
-                        Text(item.artist ?? "").font(.system(size: 12.5)).foregroundStyle(Theme.secondary).lineLimit(1)
+                        if media.isStalled {
+                            StalledLabel(size: 12.5)
+                        } else {
+                            Text(item.artist ?? "").font(.system(size: 12.5)).foregroundStyle(Theme.secondary).lineLimit(1)
+                        }
                     } else {
                         Text("Nothing is playing").font(.system(size: 15, weight: .semibold)).lineLimit(1)
                         if let message = media.startMessage {

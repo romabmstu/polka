@@ -1760,6 +1760,26 @@
         }
       }
     },
+    "No internet. Music is not playing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет интернета. Музыка не играет"
+          }
+        }
+      }
+    },
+    "No sound on this Mac": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На этом Mac нет звука"
+          }
+        }
+      }
+    },
     "Nothing is playing": {
       "localizations": {
         "ru": {

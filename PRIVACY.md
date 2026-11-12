@@ -19,7 +19,7 @@ Polka makes two kinds of requests, both without cookies, identifiers or personal
 - **Updates.** Every 15 minutes (and when you click *Check Now*) it reads a small `update.json` from this project's GitHub releases. Turn this off in Settings › Updates.
 - **Exchange rates.** Only if you turn on currency conversion: public rates from `https://open.er-api.com` (ExchangeRate-API), a few times a day.
 
-Nothing else goes over the network. Polka does not download site icons, so the sites you save never see a request from it.
+Nothing else goes over the network. Polka does not download site icons, so the sites you save never see a request from it. To tell you why music stopped, it asks macOS whether the Mac is online; that is a local question and sends nothing.
 
 ## Permissions
 

@@ -23,7 +23,8 @@ struct CollapsedPanel: View {
     }
 
     static func showsMusic(_ app: AppModel) -> Bool {
-        app.preferences.showMusicIndicator && app.media.isPlaying
+        // Stalled playback stays visible, with a sign that nothing is heard.
+        app.preferences.showMusicIndicator && (app.media.isPlaying || app.media.isStalled)
     }
 
     /// Width of each wing beside the camera. Both wings are always the same
@@ -107,9 +108,7 @@ struct CollapsedPanel: View {
                 HStack(spacing: 8) {
                     if Self.showsMusic(app) {
                         ArtworkView(size: 14, cornerRadius: 3.5)
-                        Image(systemName: "waveform")
-                            .font(.system(size: 10.5, weight: .bold))
-                            .symbolEffect(.variableColor.iterative, isActive: true)
+                        PlaybackGlyph(size: 10.5)
                     }
                     if let meeting = Self.upcomingMeeting(app) {
                         MeetingBadge(meeting: meeting, now: app.agenda.now, compact: true)
@@ -167,10 +166,8 @@ struct CollapsedPanel: View {
     }
 
     private var waveform: some View {
-        Image(systemName: "waveform")
-            .font(.system(size: 13, weight: .semibold))
-            .symbolEffect(.variableColor.iterative, isActive: true)
-            .foregroundStyle(.white)
+        PlaybackGlyph(size: 13)
+            .animation(.easeInOut(duration: 0.3), value: app.media.isStalled)
     }
 }
 

@@ -38,6 +38,50 @@ import Testing
     }
 }
 
+@Suite struct PlaybackWatchTests {
+    private let start = Date(timeIntervalSince1970: 1_700_000_000)
+
+    @Test func soundComingOutMeansPlaying() {
+        var watch = PlaybackWatch()
+        #expect(watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: true, at: start) == .playing)
+        #expect(watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: nil, at: start + 60) == .playing)
+        #expect(watch.quietSince == nil)
+    }
+
+    @Test func silenceCountsAsStalledOnlyAfterTheGrace() {
+        var watch = PlaybackWatch()
+        watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: true, at: start)
+        #expect(watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: false, at: start + 1) == .playing)
+        #expect(watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: false, at: start + 2) == .playing)
+        let later = start + 1 + PlaybackWatch.grace
+        #expect(watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: false, at: later) == .stalled)
+        #expect(watch.quietSince == start + 1)
+    }
+
+    @Test func aBufferingPlayerIsStalledEvenIfAnotherAppMakesSound() {
+        var watch = PlaybackWatch()
+        watch.update(reportsPlaying: true, playbackRate: 0, soundIsOut: true, at: start)
+        #expect(watch.update(reportsPlaying: true, playbackRate: 0, soundIsOut: true, at: start + 10) == .stalled)
+    }
+
+    @Test func recoversAsSoonAsSoundIsBack() {
+        var watch = PlaybackWatch()
+        watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: false, at: start)
+        watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: false, at: start + 10)
+        #expect(watch.state == .stalled)
+        #expect(watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: true, at: start + 11) == .playing)
+        // A new silence starts its own grace period.
+        #expect(watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: false, at: start + 12) == .playing)
+    }
+
+    @Test func aPausedPlayerIsNeverStalled() {
+        var watch = PlaybackWatch()
+        watch.update(reportsPlaying: true, playbackRate: 1, soundIsOut: false, at: start)
+        #expect(watch.update(reportsPlaying: false, playbackRate: 0, soundIsOut: false, at: start + 60) == .idle)
+        #expect(watch.quietSince == nil)
+    }
+}
+
 @Suite struct UpdateTests {
     private let key = Curve25519.Signing.PrivateKey()
 

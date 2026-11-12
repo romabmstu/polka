@@ -44,10 +44,14 @@ struct MediaSection: View {
                             Text(item.title)
                                 .font(.system(size: 24, weight: .bold))
                                 .lineLimit(2)
-                            Text([item.artist, item.album].compactMap { $0 }.joined(separator: " — "))
-                                .font(.system(size: 14))
-                                .foregroundStyle(Theme.secondary)
-                                .lineLimit(1)
+                            if media.isStalled {
+                                StalledLabel(size: 14)
+                            } else {
+                                Text([item.artist, item.album].compactMap { $0 }.joined(separator: " — "))
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(Theme.secondary)
+                                    .lineLimit(1)
+                            }
                         } else {
                             Text("Nothing is playing").font(.system(size: 24, weight: .bold))
                             Text("Choose a player or start playback.")
@@ -55,6 +59,7 @@ struct MediaSection: View {
                                 .foregroundStyle(Theme.secondary)
                         }
                     }
+                    .animation(.easeInOut(duration: 0.25), value: media.isStalled)
                     PlaybackBar()
                     if let message = media.startMessage {
                         HStack {
